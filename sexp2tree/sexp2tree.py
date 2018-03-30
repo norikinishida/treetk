@@ -1,6 +1,8 @@
 # -*- coding: utf-8 -*-
 
-def sexp2tree(sexp, pattern=0, LPAREN="(", RPAREN=")"):
+import nltk.tree
+
+def sexp2tree(sexp, pattern, LPAREN="(", RPAREN=")"):
     if pattern == 0:
         return sexp2tree_pattern_0(sexp, LPAREN=LPAREN, RPAREN=RPAREN)
     elif pattern == 1:
@@ -135,3 +137,8 @@ def check_whether_completely_binary(node):
         acc *= check_whether_completely_binary(c)
     return acc
 
+def pretty_print(tree, pattern, LPAREN="(", RPAREN=")"):
+    text = tree.__str__()
+    if pattern == 0:
+        text = text.replace(LPAREN, "%s * " % LPAREN)
+    nltk.tree.Tree.fromstring(text).pretty_print()

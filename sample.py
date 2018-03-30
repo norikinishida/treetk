@@ -16,6 +16,7 @@ ranges = sexp2tree.aggregate_ranges(tree, acc=[])
 print("ranges of constituents =\n%s" % ranges)
 mrg_ranges = sexp2tree.aggregate_merging_ranges(tree, acc=[])
 print("merging ranges of constituents =\n%s" % mrg_ranges)
+sexp2tree.pretty_print(tree, pattern=0)
 
 # Pattern 1: labels for non-terminals, but no labels for terminals
 print("\nPattern 1: labels for non-terminals, but no labels for terminals")
@@ -31,6 +32,7 @@ ranges = sexp2tree.aggregate_ranges(tree, acc=[])
 print("ranges of constituents =\n%s" % ranges)
 mrg_ranges = sexp2tree.aggregate_merging_ranges(tree, acc=[])
 print("merging ranges of constituents =\n%s" % mrg_ranges)
+sexp2tree.pretty_print(tree, pattern=1)
 
 # Pattern 2: labels for non-terminals and terminals
 print("\nPattern 2: labels for non-terminals and terminals")
@@ -46,3 +48,4 @@ ranges = sexp2tree.aggregate_ranges(tree, acc=[])
 print("ranges of constituents =\n%s" % ranges)
 mrg_ranges = sexp2tree.aggregate_merging_ranges(tree, acc=[])
 print("merging ranges of constituents =\n%s" % mrg_ranges)
+sexp2tree.pretty_print(tree, pattern=2)
