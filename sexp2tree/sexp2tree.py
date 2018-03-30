@@ -110,6 +110,8 @@ def sexp2tree_pattern_2(sexp, LPAREN, RPAREN):
     assert len(ROOT.children) == 1
     return ROOT.children[0]
 
+################
+# rangesの収集 e.g., {(i, j)}, or {[(i,k), (k+1,j)]}
 def aggregate_ranges(node, acc=[]):
     if node.is_terminal():
         return acc
@@ -127,6 +129,8 @@ def aggregate_merging_ranges(node, acc=[]):
         acc = aggregate_merging_ranges(c, acc=acc)
     return acc
 
+################
+# チェック
 def check_whether_completely_binary(node):
     if node.is_terminal():
         return 1
@@ -137,8 +141,17 @@ def check_whether_completely_binary(node):
         acc *= check_whether_completely_binary(c)
     return acc
 
+################
+# 描画周り
 def pretty_print(tree, pattern, LPAREN="(", RPAREN=")"):
     text = tree.__str__()
     if pattern == 0:
         text = text.replace(LPAREN, "%s * " % LPAREN)
     nltk.tree.Tree.fromstring(text).pretty_print()
+
+def draw(tree, pattern, LPAREN="(", RPAREN=")"):
+    text = tree.__str__()
+    if pattern == 0:
+        text = text.replace(LPAREN, "%s * " % LPAREN)
+    nltk.tree.Tree.fromstring(text).draw()
+
