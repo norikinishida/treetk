@@ -124,3 +124,14 @@ def aggregate_merging_ranges(node, acc=[]):
     for c in node.children:
         acc = aggregate_merging_ranges(c, acc=acc)
     return acc
+
+def check_whether_completely_binary(node):
+    if node.is_terminal():
+        return 1
+    if len(node.children) != 2:
+        return 0
+    acc = 1
+    for c in node.children:
+        acc *= check_whether_completely_binary(c)
+    return acc
+

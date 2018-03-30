@@ -46,5 +46,3 @@ ranges = sexp2tree.aggregate_ranges(tree, acc=[])
 print("ranges of constituents =\n%s" % ranges)
 mrg_ranges = sexp2tree.aggregate_merging_ranges(tree, acc=[])
 print("merging ranges of constituents =\n%s" % mrg_ranges)
-
-
