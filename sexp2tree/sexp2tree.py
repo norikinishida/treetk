@@ -112,21 +112,31 @@ def sexp2tree_pattern_2(sexp, LPAREN, RPAREN):
 
 ################
 # rangesの収集 e.g., {(i, j)}, or {[(i,k), (k+1,j)]}
-def aggregate_ranges(node, acc=[]):
+def aggregate_ranges(node, acc=None, with_nonterminal_labels=False):
+    if acc is None:
+        acc = []
     if node.is_terminal():
         return acc
-    acc.append(node.index_range)
+    if with_nonterminal_labels:
+        acc.append(tuple([node.label] + list(node.index_range)))
+    else:
+        acc.append(node.index_range)
     for c in node.children:
-        acc = aggregate_ranges(c, acc=acc)
+        acc = aggregate_ranges(c, acc=acc, with_nonterminal_labels=with_nonterminal_labels)
     return acc
 
-def aggregate_merging_ranges(node, acc=[]):
+def aggregate_merging_ranges(node, acc=None, with_nonterminal_labels=False):
+    if acc is None:
+        acc = []
     if node.is_terminal():
         return acc
     assert len(node.children) == 2
-    acc.append([node.children[0].index_range, node.children[1].index_range])
+    if with_nonterminal_labels:
+        acc.append([node.label, node.children[0].index_range, node.children[1].index_range])
+    else:
+        acc.append([node.children[0].index_range, node.children[1].index_range])
     for c in node.children:
-        acc = aggregate_merging_ranges(c, acc=acc)
+        acc = aggregate_merging_ranges(c, acc=acc, with_nonterminal_labels=with_nonterminal_labels)
     return acc
 
 ################
