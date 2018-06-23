@@ -1,118 +1,54 @@
 # -*- coding: utf-8 -*-
 
+import sys
+
 import nltk.tree
 
-def sexp2tree(sexp, pattern, LPAREN="(", RPAREN=")"):
-    if pattern == 0:
-        return sexp2tree_pattern_0(sexp, LPAREN=LPAREN, RPAREN=RPAREN)
-    elif pattern == 1:
-        return sexp2tree_pattern_1(sexp, LPAREN=LPAREN, RPAREN=RPAREN)
-    elif pattern == 2:
-        return sexp2tree_pattern_2(sexp, LPAREN=LPAREN, RPAREN=RPAREN)
+def sexp2tree(sexp, with_nonterminal_labels=False, with_terminal_labels=False, LPAREN="(", RPAREN=")"):
+    """
+    :type sexp: list of str
+    :type with_nonterminal_labels: bool
+    :type with_terminal_labels: bool
+    :type LPAREN: str
+    :type RPAREN: str
+    :rtype: NonTerminal
+    """
+    if with_nonterminal_labels and with_terminal_labels:
+        import full
+        tree = full.sexp2tree(sexp, LPAREN=LPAREN, RPAREN=RPAREN)
+    elif with_nonterminal_labels and not with_terminal_labels:
+        import partial
+        tree = partial.sexp2tree(sexp, LPAREN=LPAREN, RPAREN=RPAREN)
+    elif not with_nonterminal_labels and not with_terminal_labels:
+        import leavesonly
+        tree = leavesonly.sexp2tree(sexp, LPAREN=LPAREN, RPAREN=RPAREN)
     else:
-        import sys
+        print("Unsupported argument pairs: with_nonterminal_labels=%s, with_terminal_labels=%s" % \
+                (with_nonterminal_labels, with_terminal_labels))
         sys.exit(-1)
+    return tree
 
-def sexp2tree_pattern_0(sexp, LPAREN, RPAREN):
+################
+# 前処理
+def preprocess(x, LPAREN="(", RPAREN=")"):
     """
-    IN: tokenized bracket string, e.g., "( ( a cat ) ( bites ( a mouse ) ) )".split()
-    OUT: NonTerminal 
-    NOTE: prepare_ptb_wsj.pyのsexp2tree()とは入力に想定しているS式の仕様が異なることに注意
+    :type x: str or list of str
+    :rtype: list of str
     """
-    from nodes_pattern_0 import Terminal, NonTerminal
-    tokens = sexp
-    n_tokens = len(tokens)
-    i = 0
-    pos_count = 0
-    ROOT = NonTerminal()
-    stack = [ROOT]
-    while i < n_tokens:
-        if tokens[i] == LPAREN:
-            node = NonTerminal()
-            stack.append(node)
-            i += 1
-        elif tokens[i] == RPAREN:
-            node = stack.pop()
-            stack[-1].add_child(node)
-            i += 1
-        else:
-            node = Terminal(token=tokens[i], index=pos_count)
-            pos_count += 1
-            stack[-1].add_child(node)
-            i += 1
-    assert len(stack) == 1
-    ROOT = stack.pop()
-    assert len(ROOT.children) == 1
-    return ROOT.children[0]
-
-def sexp2tree_pattern_1(sexp, LPAREN, RPAREN):
-    """
-    IN: tokenized bracket string, e.g., "( S ( NP a cat ) ( VP bites ( NP a mouse ) ) )".split()
-    OUT: NonTerminal
-    """
-    from nodes_pattern_1 import Terminal, NonTerminal
-    tokens = sexp
-    n_tokens = len(tokens)
-    i = 0
-    pos_count = 0
-    ROOT = NonTerminal("ROOT")
-    stack = [ROOT]
-    while i < n_tokens:
-        if tokens[i] == LPAREN:
-            node = NonTerminal(label=tokens[i+1]) # XXX
-            stack.append(node)
-            i += 2
-        elif tokens[i] == RPAREN:
-            node = stack.pop()
-            stack[-1].add_child(node)
-            i += 1
-        else:
-            node = Terminal(token=tokens[i], index=pos_count)
-            pos_count += 1
-            stack[-1].add_child(node)
-            i += 1
-    assert len(stack) == 1
-    ROOT = stack.pop()
-    assert len(ROOT.children) == 1
-    return ROOT.children[0]
-
-def sexp2tree_pattern_2(sexp, LPAREN, RPAREN):
-    """
-    IN: tokenized bracket string, e.g., "( S ( NP ( DT a ) ( NN cat ) ) ( VP ( VBZ bites ) ( NP ( DT a ) ( NN mouse ) ) ) )".split()
-    OUT: NonTerminal
-    """
-    from nodes_pattern_2 import Terminal, NonTerminal
-    tokens = sexp
-    n_tokens = len(tokens)
-    i = 0
-    pos_count = 0
-    ROOT = NonTerminal("ROOT")
-    stack = [ROOT]
-    while i < n_tokens:
-        if tokens[i] == LPAREN:
-            assert tokens[i+1] not in [LPAREN, RPAREN]
-            node = NonTerminal(label=tokens[i+1]) # XXX
-            stack.append(node)
-            i += 2
-        elif tokens[i] == RPAREN:
-            node = stack.pop()
-            stack[-1].add_child(node)
-            i += 1
-        else:
-            # 終端ノードだと思ってプッシュしたけど非終端ノードだった
-            node = stack.pop()
-            node = Terminal(label=node.label, token=tokens[i], index=pos_count)
-            pos_count += 1
-            stack.append(node)
-            i += 1
-    assert len(stack) == 1
-    ROOT = stack.pop()
-    assert len(ROOT.children) == 1
-    return ROOT.children[0]
+    if isinstance(x, list):
+        x = " ".join(x)
+    sexp = x.replace(LPAREN, " %s " % LPAREN).replace(RPAREN, " %s " % RPAREN).split()
+    return sexp
 
 ################
 # rangesの収集 e.g., {(i, j)}, or {[(i,k), (k+1,j)]}
 def aggregate_ranges(node, acc=None, with_nonterminal_labels=False):
+    """
+    :type node: NonTerminal or Terminal
+    :type acc: list of (int,int), or list of (str,int,int), or None
+    :type with_nonterminal_labels: bool
+    :rtype: list of (int,int), or list of (str,int,int)
+    """
     if acc is None:
         acc = []
     if node.is_terminal():
@@ -126,6 +62,12 @@ def aggregate_ranges(node, acc=None, with_nonterminal_labels=False):
     return acc
 
 def aggregate_merging_ranges(node, acc=None, with_nonterminal_labels=False):
+    """
+    :type node: NonTerminal or Terminal
+    :type acc: list of [(int,int), (int,int)], or list of [str, (int,int), (int,int)], or None
+    :type with_nonterminal_labels: bool
+    :rtype: list of [(int,int), (int,int)], or list of [str, (int,int), (int,int)]
+    """
     if acc is None:
         acc = []
     if node.is_terminal():
@@ -142,6 +84,10 @@ def aggregate_merging_ranges(node, acc=None, with_nonterminal_labels=False):
 ################
 # チェック
 def check_whether_completely_binary(node):
+    """
+    :type node: NonTerminal or Terminal
+    :rtype: int (1 or 0)
+    """
     if node.is_terminal():
         return 1
     if len(node.children) != 2:
@@ -153,15 +99,28 @@ def check_whether_completely_binary(node):
 
 ################
 # 描画周り
-def pretty_print(tree, pattern, LPAREN="(", RPAREN=")"):
+def pretty_print(tree, LPAREN="(", RPAREN=")"):
+    """
+    :type tree: NonTerminal or Terminal
+    :type LPAREN: str
+    :type RPAREN: str
+    :rtype: None
+    """
     text = tree.__str__()
-    if pattern == 0:
+    if not tree.with_nonterminal_labels and not tree.with_terminal_labels:
         text = text.replace(LPAREN, "%s * " % LPAREN)
     nltk.tree.Tree.fromstring(text).pretty_print()
 
-def draw(tree, pattern, LPAREN="(", RPAREN=")"):
+def draw(tree, LPAREN="(", RPAREN=")"):
+    """
+    :type tree: NonTerminal or Terminal
+    :type LPAREN: str
+    :type RPAREN: str
+    :rtype: None
+    """
     text = tree.__str__()
-    if pattern == 0:
+    if not tree.with_nonterminal_labels and not tree.with_terminal_labels:
+        text = text.replace(LPAREN, "%s * " % LPAREN)
         text = text.replace(LPAREN, "%s * " % LPAREN)
     nltk.tree.Tree.fromstring(text).draw()
 
