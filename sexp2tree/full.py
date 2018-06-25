@@ -123,7 +123,7 @@ def sexp2tree(sexp, LPAREN, RPAREN):
     while i < n_tokens:
         if tokens[i] == LPAREN:
             assert tokens[i+1] not in [LPAREN, RPAREN]
-            node = NonTerminal(label=tokens[i+1]) # XXX
+            node = NonTerminal(label=tokens[i+1])
             stack.append(node)
             i += 2
         elif tokens[i] == RPAREN:
@@ -131,7 +131,7 @@ def sexp2tree(sexp, LPAREN, RPAREN):
             stack[-1].add_child(node)
             i += 1
         else:
-            # 終端ノードだと思ってプッシュしたけど非終端ノードだった
+            # 非終端ノードだと思ってプッシュしたけど終端ノードだった
             node = stack.pop()
             node = Terminal(label=node.label, token=tokens[i], index=pos_count)
             pos_count += 1

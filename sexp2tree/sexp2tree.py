@@ -19,6 +19,9 @@ def sexp2tree(sexp, with_nonterminal_labels=False, with_terminal_labels=False, L
     elif with_nonterminal_labels and not with_terminal_labels:
         import partial
         tree = partial.sexp2tree(sexp, LPAREN=LPAREN, RPAREN=RPAREN)
+    elif not with_nonterminal_labels and with_terminal_labels:
+        import partial2
+        tree = partial2.sexp2tree(sexp, LPAREN=LPAREN, RPAREN=RPAREN)
     elif not with_nonterminal_labels and not with_terminal_labels:
         import leavesonly
         tree = leavesonly.sexp2tree(sexp, LPAREN=LPAREN, RPAREN=RPAREN)
@@ -105,6 +108,23 @@ def check_whether_completely_binary(node):
 
 ################
 # 描画周り
+
+def insert_dummy_nonterminal_labels(text, with_terminal_labels, LPAREN="("):
+    """
+    :type text: str
+    :type with_terminal_labels: bool
+    :rtype: str
+    """
+    if not with_terminal_labels:
+        text = text.replace(LPAREN, "%s * " % LPAREN)
+    else:
+        sexp = preprocess(text)
+        for i in range(len(sexp)-1):
+            if (sexp[i] == LPAREN) and (sexp[i+1] == LPAREN):
+                sexp[i] = "%s * " % LPAREN
+        text = " ".join(sexp)
+    return text
+
 def pretty_print(tree, LPAREN="(", RPAREN=")"):
     """
     :type tree: NonTerminal or Terminal
@@ -113,8 +133,10 @@ def pretty_print(tree, LPAREN="(", RPAREN=")"):
     :rtype: None
     """
     text = tree.__str__()
-    if not tree.with_nonterminal_labels and not tree.with_terminal_labels:
-        text = text.replace(LPAREN, "%s * " % LPAREN)
+    if not tree.with_nonterminal_labels:
+        text = insert_dummy_nonterminal_labels(text,
+                with_terminal_labels=tree.with_terminal_labels,
+                LPAREN=LPAREN)
     nltk.tree.Tree.fromstring(text).pretty_print()
 
 def draw(tree, LPAREN="(", RPAREN=")"):
@@ -125,7 +147,9 @@ def draw(tree, LPAREN="(", RPAREN=")"):
     :rtype: None
     """
     text = tree.__str__()
-    if not tree.with_nonterminal_labels and not tree.with_terminal_labels:
-        text = text.replace(LPAREN, "%s * " % LPAREN)
+    if not tree.with_nonterminal_labels:
+        text = insert_dummy_nonterminal_labels(text,
+                with_terminal_labels=tree.with_terminal_labels,
+                LPAREN=LPAREN)
     nltk.tree.Tree.fromstring(text).draw()
 
