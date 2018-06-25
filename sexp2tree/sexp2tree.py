@@ -29,7 +29,7 @@ def sexp2tree(sexp, with_nonterminal_labels=False, with_terminal_labels=False, L
     return tree
 
 ################
-# 前処理
+# 前処理等
 def preprocess(x, LPAREN="(", RPAREN=")"):
     """
     :type x: str or list of str
@@ -40,32 +40,38 @@ def preprocess(x, LPAREN="(", RPAREN=")"):
     sexp = x.replace(LPAREN, " %s " % LPAREN).replace(RPAREN, " %s " % RPAREN).split()
     return sexp
 
+def filter_parens(sexp, PARENS):
+    """
+    :type sexp: list of str
+    :type PARENS: list of str, e.g., ["(", ")"]
+    :rtype: list of str
+    """
+    return [x for x in sexp if not x in PARENS]
+
 ################
 # rangesの収集 e.g., {(i, j)}, or {[(i,k), (k+1,j)]}
-def aggregate_ranges(node, acc=None, with_nonterminal_labels=False):
+def aggregate_ranges(node, acc=None):
     """
     :type node: NonTerminal or Terminal
     :type acc: list of (int,int), or list of (str,int,int), or None
-    :type with_nonterminal_labels: bool
     :rtype: list of (int,int), or list of (str,int,int)
     """
     if acc is None:
         acc = []
     if node.is_terminal():
         return acc
-    if with_nonterminal_labels:
+    if node.with_nonterminal_labels:
         acc.append(tuple([node.label] + list(node.index_range)))
     else:
         acc.append(node.index_range)
     for c in node.children:
-        acc = aggregate_ranges(c, acc=acc, with_nonterminal_labels=with_nonterminal_labels)
+        acc = aggregate_ranges(c, acc=acc)
     return acc
 
-def aggregate_merging_ranges(node, acc=None, with_nonterminal_labels=False):
+def aggregate_merging_ranges(node, acc=None):
     """
     :type node: NonTerminal or Terminal
     :type acc: list of [(int,int), (int,int)], or list of [str, (int,int), (int,int)], or None
-    :type with_nonterminal_labels: bool
     :rtype: list of [(int,int), (int,int)], or list of [str, (int,int), (int,int)]
     """
     if acc is None:
@@ -73,12 +79,12 @@ def aggregate_merging_ranges(node, acc=None, with_nonterminal_labels=False):
     if node.is_terminal():
         return acc
     assert len(node.children) == 2
-    if with_nonterminal_labels:
+    if node.with_nonterminal_labels:
         acc.append([node.label, node.children[0].index_range, node.children[1].index_range])
     else:
         acc.append([node.children[0].index_range, node.children[1].index_range])
     for c in node.children:
-        acc = aggregate_merging_ranges(c, acc=acc, with_nonterminal_labels=with_nonterminal_labels)
+        acc = aggregate_merging_ranges(c, acc=acc)
     return acc
 
 ################
