@@ -127,6 +127,5 @@ def draw(tree, LPAREN="(", RPAREN=")"):
     text = tree.__str__()
     if not tree.with_nonterminal_labels and not tree.with_terminal_labels:
         text = text.replace(LPAREN, "%s * " % LPAREN)
-        text = text.replace(LPAREN, "%s * " % LPAREN)
     nltk.tree.Tree.fromstring(text).draw()
 
