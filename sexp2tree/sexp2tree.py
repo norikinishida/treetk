@@ -32,7 +32,7 @@ def sexp2tree(sexp, with_nonterminal_labels=False, with_terminal_labels=False, L
     return tree
 
 ################
-# 前処理等
+# その他の処理
 def preprocess(x, LPAREN="(", RPAREN=")"):
     """
     :type x: str or list of str
@@ -50,6 +50,15 @@ def filter_parens(sexp, PARENS):
     :rtype: list of str
     """
     return [x for x in sexp if not x in PARENS]
+
+def tree2sexp(tree):
+    """
+    :type tree: NonTerminal or Terminal
+    :rtype: list of str
+    """
+    sexp = tree.__str__()
+    sexp = preprocess(sexp)
+    return sexp
 
 ################
 # rangesの収集 e.g., {(i, j)}, or {[(i,k), (k+1,j)]}
