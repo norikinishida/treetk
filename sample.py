@@ -143,7 +143,7 @@ print("tree2sexp(tree) = %s" % sexp2tree.tree2sexp(tree))
 if DRAW:
     sexp2tree.draw(tree)
 
-# Can handle uniry or nary labeled trees
+# Can handle unary or n-ary trees
 print("#############")
 sexp = sexp2tree.preprocess("(NP (NP (NP (N w0)) (NP (N w1))) (NP (N w2) (N w3) (N w4)))")
 print("sexp = %s" % sexp)
