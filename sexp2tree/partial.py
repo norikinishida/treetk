@@ -11,15 +11,15 @@ class Terminal(object):
         """
         self.token = token
         self.index = index
-        self.index_range = (index, index)
+        self.index_span = (index, index)
         self.with_nonterminal_labels = True
         self.with_terminal_labels = False
 
-    def calc_ranges(self):
+    def calc_spans(self):
         """
         :rtype: (int, int)
         """
-        return self.index_range
+        return self.index_span
 
     def is_terminal(self):
         """
@@ -53,7 +53,7 @@ class NonTerminal(object):
         """
         self.label = label
         self.children = []
-        self.index_range = (None, None)
+        self.index_span = (None, None)
         self.with_nonterminal_labels = True
         self.with_terminal_labels = False
 
@@ -64,19 +64,19 @@ class NonTerminal(object):
         """
         self.children.append(node)
 
-    def calc_ranges(self):
+    def calc_spans(self):
         """
         :rtype: (int, int)
         """
         min_index = np.inf
         max_index = -np.inf
-        for c_i in xrange(len(self.children)):
-            i, j = self.children[c_i].calc_ranges()
+        for c_i in range(len(self.children)):
+            i, j = self.children[c_i].calc_spans()
             if i < min_index:
                 min_index = i
             if max_index < j:
                 max_index = j
-        self.index_range = (min_index, max_index)
+        self.index_span = (min_index, max_index)
         return min_index, max_index
 
     def is_terminal(self):

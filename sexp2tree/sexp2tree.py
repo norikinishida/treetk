@@ -72,9 +72,9 @@ def rec_aggregate_production_rules(node, acc=None):
     return acc
 
 ################
-# rangesの収集 e.g., {(i, j)}, or {[(i,k), (k+1,j)]}
+# spansの収集
 
-def aggregate_ranges(node, acc=None):
+def aggregate_spans(node, acc=None):
     """
     :type node: NonTerminal or Terminal
     :type acc: list of (int,int), or list of (str,int,int), or None
@@ -87,15 +87,15 @@ def aggregate_ranges(node, acc=None):
         return acc
 
     if node.with_nonterminal_labels:
-        acc.append(tuple([node.label] + list(node.index_range)))
+        acc.append(tuple([node.label] + list(node.index_span)))
     else:
-        acc.append(node.index_range)
+        acc.append(node.index_span)
 
     for c in node.children:
-        acc = aggregate_ranges(c, acc=acc)
+        acc = aggregate_spans(c, acc=acc)
     return acc
 
-def aggregate_composition_ranges(node, acc=None, binary=True):
+def aggregate_composition_spans(node, acc=None, binary=True):
     """
     :type node: NonTerminal or Terminal
     :type acc: list of [(int,int,...), (int,int,...)], or list of [str, (int,int,...), (int,int,...)], or None
@@ -114,14 +114,14 @@ def aggregate_composition_ranges(node, acc=None, binary=True):
             raise ValueError("(A nonterminal node does NOT have two children. The node is %s" % node)
 
     if node.with_nonterminal_labels:
-        # acc.append([node.label, node.children[0].index_range, node.children[1].index_range])
-        acc.append([node.label] + [c.index_range for c in node.children])
+        # acc.append([node.label, node.children[0].index_span, node.children[1].index_span])
+        acc.append([node.label] + [c.index_span for c in node.children])
     else:
-        # acc.append([node.children[0].index_range, node.children[1].index_range])
-        acc.append([c.index_range for c in node.children])
+        # acc.append([node.children[0].index_span, node.children[1].index_span])
+        acc.append([c.index_span for c in node.children])
 
     for c in node.children:
-        acc = aggregate_composition_ranges(c, acc=acc, binary=binary)
+        acc = aggregate_composition_spans(c, acc=acc, binary=binary)
 
     return acc
 
