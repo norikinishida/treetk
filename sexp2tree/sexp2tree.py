@@ -33,6 +33,7 @@ def sexp2tree(sexp, with_nonterminal_labels=False, with_terminal_labels=False, L
 
 ################
 # その他の処理
+
 def preprocess(x, LPAREN="(", RPAREN=")"):
     """
     :type x: str or list of str
@@ -62,6 +63,7 @@ def tree2sexp(tree):
 
 ################
 # rangesの収集 e.g., {(i, j)}, or {[(i,k), (k+1,j)]}
+
 def aggregate_ranges(node, acc=None):
     """
     :type node: NonTerminal or Terminal
@@ -80,27 +82,34 @@ def aggregate_ranges(node, acc=None):
         acc = aggregate_ranges(c, acc=acc)
     return acc
 
-def aggregate_merging_ranges(node, acc=None):
+def aggregate_merging_ranges(node, acc=None, binary=True):
     """
     :type node: NonTerminal or Terminal
-    :type acc: list of [(int,int), (int,int)], or list of [str, (int,int), (int,int)], or None
-    :rtype: list of [(int,int), (int,int)], or list of [str, (int,int), (int,int)]
+    :type acc: list of [(int,int,...), (int,int,...)], or list of [str, (int,int,...), (int,int,...)], or None
+    :type binary: bool
+    :rtype: list of [(int,int,...), (int,int,...)], or list of [str, (int,int,...), (int,int,...)]
     """
     if acc is None:
         acc = []
     if node.is_terminal():
         return acc
-    assert len(node.children) == 2
+    if binary:
+        # Check
+        if len(node.children) != 2:
+            raise ValueError("(A nonterminal node does NOT have two children. The node is %s" % node)
     if node.with_nonterminal_labels:
-        acc.append([node.label, node.children[0].index_range, node.children[1].index_range])
+        # acc.append([node.label, node.children[0].index_range, node.children[1].index_range])
+        acc.append([node.label] + [c.index_range for c in node.children])
     else:
-        acc.append([node.children[0].index_range, node.children[1].index_range])
+        # acc.append([node.children[0].index_range, node.children[1].index_range])
+        acc.append([c.index_range for c in node.children])
     for c in node.children:
-        acc = aggregate_merging_ranges(c, acc=acc)
+        acc = aggregate_merging_ranges(c, acc=acc, binary=binary)
     return acc
 
 ################
 # チェック
+
 def check_whether_completely_binary(node):
     """
     :type node: NonTerminal or Terminal
@@ -117,22 +126,6 @@ def check_whether_completely_binary(node):
 
 ################
 # 描画周り
-
-def insert_dummy_nonterminal_labels(text, with_terminal_labels, LPAREN="("):
-    """
-    :type text: str
-    :type with_terminal_labels: bool
-    :rtype: str
-    """
-    if not with_terminal_labels:
-        text = text.replace(LPAREN, "%s * " % LPAREN)
-    else:
-        sexp = preprocess(text)
-        for i in range(len(sexp)-1):
-            if (sexp[i] == LPAREN) and (sexp[i+1] == LPAREN):
-                sexp[i] = "%s * " % LPAREN
-        text = " ".join(sexp)
-    return text
 
 def pretty_print(tree, LPAREN="(", RPAREN=")"):
     """
@@ -161,4 +154,21 @@ def draw(tree, LPAREN="(", RPAREN=")"):
                 with_terminal_labels=tree.with_terminal_labels,
                 LPAREN=LPAREN)
     nltk.tree.Tree.fromstring(text).draw()
+
+def insert_dummy_nonterminal_labels(text, with_terminal_labels, LPAREN="("):
+    """
+    :type text: str
+    :type with_terminal_labels: bool
+    :rtype: str
+    """
+    if not with_terminal_labels:
+        text = text.replace(LPAREN, "%s * " % LPAREN)
+    else:
+        sexp = preprocess(text)
+        for i in range(len(sexp)-1):
+            if (sexp[i] == LPAREN) and (sexp[i+1] == LPAREN):
+                sexp[i] = "%s * " % LPAREN
+        text = " ".join(sexp)
+    return text
+
 
