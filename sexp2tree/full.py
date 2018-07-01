@@ -17,12 +17,6 @@ class Terminal(object):
         self.with_nonterminal_labels = True
         self.with_terminal_labels = True
 
-    def leaves(self):
-        """
-        :rtype: list of str, i.e, [str]
-        """
-        return [self.token]
-
     def calc_ranges(self):
         """
         :rtype: (int, int)
@@ -35,17 +29,23 @@ class Terminal(object):
         """
         return True
 
+    def __str__(self):
+        """
+        :rtype: str
+        """
+        return "( %s %s )" % (self.label, self.token)
+
     def tolist(self):
         """
         :rtype: list of str, i.e., [str, str]
         """
         return [self.label, self.token]
 
-    def __str__(self):
+    def leaves(self):
         """
-        :rtype: str
+        :rtype: list of str, i.e, [str]
         """
-        return "( %s %s )" % (self.label, self.token)
+        return [self.token]
 
 class NonTerminal(object):
     def __init__(self, label):
@@ -66,15 +66,6 @@ class NonTerminal(object):
         """
         self.children.append(node)
 
-    def leaves(self):
-        """
-        :rtype: list of str
-        """
-        leaves = []
-        for c in self.children:
-            leaves.extend(c.leaves())
-        return leaves
-
     def calc_ranges(self):
         """
         :rtype: (int, int)
@@ -93,6 +84,13 @@ class NonTerminal(object):
     def is_terminal(self):
         return False
 
+    def __str__(self):
+        """
+        :rtype: str
+        """
+        inner = " ".join([c.__str__() for c in self.children])
+        return "( %s %s )" % (self.label, inner)
+
     def tolist(self):
         """
         :rtype: (list of)+ str
@@ -100,12 +98,16 @@ class NonTerminal(object):
         inner = [self.label] + [c.tolist() for c in self.children]
         return inner
 
-    def __str__(self):
+    def leaves(self):
         """
-        :rtype: str
+        :rtype: list of str
         """
-        inner = " ".join([c.__str__() for c in self.children])
-        return "( %s %s )" % (self.label, inner)
+        leaves = []
+        for c in self.children:
+            leaves.extend(c.leaves())
+        return leaves
+
+
 
 def sexp2tree(sexp, LPAREN, RPAREN):
     """

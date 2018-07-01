@@ -2,6 +2,8 @@
 
 import sexp2tree
 
+DRAW=False
+
 # No labels for non-terminals and terminals
 print("#############")
 sexp = sexp2tree.preprocess("((a cat) (bites (a mouse)))")
@@ -21,8 +23,11 @@ ranges = sexp2tree.aggregate_ranges(tree)
 print("ranges of constituents = %s" % ranges)
 mrg_ranges = sexp2tree.aggregate_merging_ranges(tree)
 print("merging ranges of constituents = %s" % mrg_ranges)
+subtree_strings = sexp2tree.get_subtrees(tree, string=True)
+print("subtrees = %s" % subtree_strings)
 sexp2tree.pretty_print(tree)
-sexp2tree.draw(tree)
+if DRAW:
+    sexp2tree.draw(tree)
 print("tree2sexp(tree) = %s" % sexp2tree.tree2sexp(tree))
 
 # Labels for non-terminals, but no labels for terminals
@@ -44,8 +49,11 @@ ranges = sexp2tree.aggregate_ranges(tree)
 print("ranges of constituents = %s" % ranges)
 mrg_ranges = sexp2tree.aggregate_merging_ranges(tree)
 print("merging ranges of constituents = %s" % mrg_ranges)
+subtree_strings = sexp2tree.get_subtrees(tree, string=True)
+print("subtrees = %s" % subtree_strings)
 sexp2tree.pretty_print(tree)
-sexp2tree.draw(tree)
+if DRAW:
+    sexp2tree.draw(tree)
 print("tree2sexp(tree) = %s" % sexp2tree.tree2sexp(tree))
 
 # No labels for non-terminals, but labels for terminals
@@ -67,8 +75,11 @@ ranges = sexp2tree.aggregate_ranges(tree)
 print("ranges of constituents = %s" % ranges)
 mrg_ranges = sexp2tree.aggregate_merging_ranges(tree)
 print("merging ranges of constituents = %s" % mrg_ranges)
+subtree_strings = sexp2tree.get_subtrees(tree, string=True)
+print("subtrees = %s" % subtree_strings)
 sexp2tree.pretty_print(tree)
-sexp2tree.draw(tree)
+if DRAW:
+    sexp2tree.draw(tree)
 print("tree2sexp(tree) = %s" % sexp2tree.tree2sexp(tree))
 
 # Labels for both non-terminals and terminals
@@ -90,8 +101,11 @@ ranges = sexp2tree.aggregate_ranges(tree)
 print("ranges of constituents = %s" % ranges)
 mrg_ranges = sexp2tree.aggregate_merging_ranges(tree)
 print("merging ranges of constituents = %s" % mrg_ranges)
+subtree_strings = sexp2tree.get_subtrees(tree, string=True)
+print("subtrees = %s" % subtree_strings)
 sexp2tree.pretty_print(tree)
-sexp2tree.draw(tree)
+if DRAW:
+    sexp2tree.draw(tree)
 print("tree2sexp(tree) = %s" % sexp2tree.tree2sexp(tree))
 
 # Can handle uniry or nary labeled trees
@@ -113,7 +127,10 @@ ranges = sexp2tree.aggregate_ranges(tree)
 print("ranges of constituents = %s" % ranges)
 mrg_ranges = sexp2tree.aggregate_merging_ranges(tree, binary=False)
 print("merging ranges of constituents = %s" % mrg_ranges)
+subtree_strings = sexp2tree.get_subtrees(tree, string=True)
+print("subtrees = %s" % subtree_strings)
 sexp2tree.pretty_print(tree)
-sexp2tree.draw(tree)
+if DRAW:
+    sexp2tree.draw(tree)
 print("tree2sexp(tree) = %s" % sexp2tree.tree2sexp(tree))
 

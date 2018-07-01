@@ -78,7 +78,41 @@ def aggregate_merging_ranges(node, acc=None, binary=True):
     return acc
 
 ################
-# tree shifting
+# Getting a set of subtree structures
+
+def get_subtrees(root, string):
+    """
+    :type root: NonTerminal
+    :type string: bool
+    :rtype: list of str
+    """
+    nodes = rec_get_subtrees(root, acc=[])
+    if string:
+        nodes = [n.__str__() for n in nodes]
+    return nodes
+
+def rec_get_subtrees(node, acc=None):
+    """
+    :type node: NonTerminal or Terminal
+    :type acc: list of (NonTerminal or Terminal), or None
+    :rtype: list of (NonTerminal or Terminal)
+    """
+    if acc is None:
+        acc = []
+
+    if node.is_terminal() and (not node.with_terminal_labels):
+        pass
+    else:
+        acc.append(node)
+
+    if not node.is_terminal():
+        for c in node.children:
+            acc = rec_get_subtrees(c, acc=acc)
+
+    return acc
+
+################
+# Tree shifting
 
 def left_shift(node):
     """
