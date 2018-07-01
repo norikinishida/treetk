@@ -32,36 +32,6 @@ def sexp2tree(sexp, with_nonterminal_labels=False, with_terminal_labels=False, L
     return tree
 
 ################
-# その他の処理
-
-def preprocess(x, LPAREN="(", RPAREN=")"):
-    """
-    :type x: str or list of str
-    :rtype: list of str
-    """
-    if isinstance(x, list):
-        x = " ".join(x)
-    sexp = x.replace(LPAREN, " %s " % LPAREN).replace(RPAREN, " %s " % RPAREN).split()
-    return sexp
-
-def filter_parens(sexp, PARENS):
-    """
-    :type sexp: list of str
-    :type PARENS: list of str, e.g., ["(", ")"]
-    :rtype: list of str
-    """
-    return [x for x in sexp if not x in PARENS]
-
-def tree2sexp(tree):
-    """
-    :type tree: NonTerminal or Terminal
-    :rtype: list of str
-    """
-    sexp = tree.__str__()
-    sexp = preprocess(sexp)
-    return sexp
-
-################
 # rangesの収集 e.g., {(i, j)}, or {[(i,k), (k+1,j)]}
 
 def aggregate_ranges(node, acc=None):
@@ -106,6 +76,75 @@ def aggregate_merging_ranges(node, acc=None, binary=True):
     for c in node.children:
         acc = aggregate_merging_ranges(c, acc=acc, binary=binary)
     return acc
+
+################
+# tree shifting
+
+def left_shift(node):
+    """
+    :type node: NonTerminal
+    :rtype: NonTerminal
+
+    e.g., (A (B C)) -> ((A B) C)
+    """
+    assert not node.is_terminal()
+    assert len(node.children) == 2
+    assert not node.children[1].is_terminal()
+    right = node.children[1]
+    node.children[1] = None
+    tmp = right.children[0]
+    right.children[0] = None
+    node.children[1] = tmp
+    right.children[0] = node
+    return right
+
+def  right_shift(node):
+    """
+    :type node: NonTerminal
+    :rtype: NonTerminal
+
+    e.g., ((A B) C) -> (A (B C))
+    """
+    assert not node.is_terminal()
+    assert len(node.children) == 2
+    assert not node.children[0].is_terminal()
+    left = node.children[0]
+    node.children[0] = None
+    tmp = left.children[1]
+    left.children[1] = None
+    node.children[0] = tmp
+    left.children[1] = node
+    return left
+
+################
+# その他の処理
+
+def preprocess(x, LPAREN="(", RPAREN=")"):
+    """
+    :type x: str or list of str
+    :rtype: list of str
+    """
+    if isinstance(x, list):
+        x = " ".join(x)
+    sexp = x.replace(LPAREN, " %s " % LPAREN).replace(RPAREN, " %s " % RPAREN).split()
+    return sexp
+
+def filter_parens(sexp, PARENS):
+    """
+    :type sexp: list of str
+    :type PARENS: list of str, e.g., ["(", ")"]
+    :rtype: list of str
+    """
+    return [x for x in sexp if not x in PARENS]
+
+def tree2sexp(tree):
+    """
+    :type tree: NonTerminal or Terminal
+    :rtype: list of str
+    """
+    sexp = tree.__str__()
+    sexp = preprocess(sexp)
+    return sexp
 
 ################
 # チェック
