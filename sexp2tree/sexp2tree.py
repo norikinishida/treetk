@@ -32,6 +32,46 @@ def sexp2tree(sexp, with_nonterminal_labels=False, with_terminal_labels=False, L
     return tree
 
 ################
+# 生成規則の収集
+
+def aggregate_production_rules(root):
+    """
+    :type root: NonTerminal
+    :rtype: list of tuple of str
+    """
+    assert root.with_nonterminal_labels
+    nodes = rec_aggregate_production_rules(root)
+    return nodes
+
+def rec_aggregate_production_rules(node, acc=None):
+    """
+    :type node: NonTerminal or Terminal
+    :type acc: list of tuple of str, or None
+    :rtype: list of tuple of str
+    """
+    if acc is None:
+        acc = []
+
+    if node.is_terminal():
+        if node.with_terminal_labels:
+            acc.append((node.label, node.token))
+    else:
+        if node.with_terminal_labels:
+            # e.g., NP -> DT NN
+            rhs = [c.label for c in node.children]
+        else:
+            # e.g., NP -> a mouse
+            rhs = [c.token if c.is_terminal() else c.label for c in node.children]
+        rule = [node.label] + list(rhs)
+        acc.append(tuple(rule))
+
+    if not node.is_terminal():
+        for c in node.children:
+            acc = rec_aggregate_production_rules(c, acc=acc)
+
+    return acc
+
+################
 # rangesの収集 e.g., {(i, j)}, or {[(i,k), (k+1,j)]}
 
 def aggregate_ranges(node, acc=None):
@@ -42,17 +82,20 @@ def aggregate_ranges(node, acc=None):
     """
     if acc is None:
         acc = []
+
     if node.is_terminal():
         return acc
+
     if node.with_nonterminal_labels:
         acc.append(tuple([node.label] + list(node.index_range)))
     else:
         acc.append(node.index_range)
+
     for c in node.children:
         acc = aggregate_ranges(c, acc=acc)
     return acc
 
-def aggregate_merging_ranges(node, acc=None, binary=True):
+def aggregate_composition_ranges(node, acc=None, binary=True):
     """
     :type node: NonTerminal or Terminal
     :type acc: list of [(int,int,...), (int,int,...)], or list of [str, (int,int,...), (int,int,...)], or None
@@ -61,37 +104,42 @@ def aggregate_merging_ranges(node, acc=None, binary=True):
     """
     if acc is None:
         acc = []
+
     if node.is_terminal():
         return acc
+
     if binary:
         # Check
         if len(node.children) != 2:
             raise ValueError("(A nonterminal node does NOT have two children. The node is %s" % node)
+
     if node.with_nonterminal_labels:
         # acc.append([node.label, node.children[0].index_range, node.children[1].index_range])
         acc.append([node.label] + [c.index_range for c in node.children])
     else:
         # acc.append([node.children[0].index_range, node.children[1].index_range])
         acc.append([c.index_range for c in node.children])
+
     for c in node.children:
-        acc = aggregate_merging_ranges(c, acc=acc, binary=binary)
+        acc = aggregate_composition_ranges(c, acc=acc, binary=binary)
+
     return acc
 
 ################
-# Getting a set of subtree structures
+# 部分木リストの収集 c.f., subtree kernel
 
-def get_subtrees(root, string):
+def aggregate_subtrees(root, string):
     """
     :type root: NonTerminal
     :type string: bool
     :rtype: list of str
     """
-    nodes = rec_get_subtrees(root, acc=[])
+    nodes = rec_aggregate_subtrees(root)
     if string:
         nodes = [n.__str__() for n in nodes]
     return nodes
 
-def rec_get_subtrees(node, acc=None):
+def rec_aggregate_subtrees(node, acc=None):
     """
     :type node: NonTerminal or Terminal
     :type acc: list of (NonTerminal or Terminal), or None
@@ -107,7 +155,7 @@ def rec_get_subtrees(node, acc=None):
 
     if not node.is_terminal():
         for c in node.children:
-            acc = rec_get_subtrees(c, acc=acc)
+            acc = rec_aggregate_subtrees(c, acc=acc)
 
     return acc
 
