@@ -1,0 +1,225 @@
+#############
+sexp = ['(', 'S', '(', 'NP', '(', 'DT', 'a', ')', '(', 'NN', 'cat', ')', ')', '(', 'VP', '(', 'VBZ', 'bites', ')', '(', 'NP', '(', 'DT', 'a', ')', '(', 'NN', 'mouse', ')', ')', ')', ')']
+tree.__str__() = ( S ( NP ( DT a ) ( NN cat ) ) ( VP ( VBZ bites ) ( NP ( DT a ) ( NN mouse ) ) ) )
+tree.tolist() = ['S', ['NP', ['DT', 'a'], ['NN', 'cat']], ['VP', ['VBZ', 'bites'], ['NP', ['DT', 'a'], ['NN', 'mouse']]]]
+tree.leaves() = ['a', 'cat', 'bites', 'a', 'mouse']
+tree.children[0].__str__() = ( NP ( DT a ) ( NN cat ) )
+tree.children[1].__str__() = ( VP ( VBZ bites ) ( NP ( DT a ) ( NN mouse ) ) )
+tree.children[0].tolist() = ['NP', ['DT', 'a'], ['NN', 'cat']]
+tree.children[1].tolist() = ['VP', ['VBZ', 'bites'], ['NP', ['DT', 'a'], ['NN', 'mouse']]]
+tree.children[0].leaves() = ['a', 'cat']
+tree.children[1].leaves() = ['bites', 'a', 'mouse']
+              S                
+      ________|____             
+     |             VP          
+     |         ____|___         
+     NP       |        NP      
+  ___|___     |     ___|____    
+ DT      NN  VBZ   DT       NN 
+ |       |    |    |        |   
+ a      cat bites  a      mouse
+
+production rules =
+	('S', 'NP', 'VP')
+	('NP', 'DT', 'NN')
+	('DT', 'a')
+	('NN', 'cat')
+	('VP', 'VBZ', 'NP')
+	('VBZ', 'bites')
+	('NP', 'DT', 'NN')
+	('DT', 'a')
+	('NN', 'mouse')
+spans =
+	('S', 0, 4)
+	('NP', 0, 1)
+	('VP', 2, 4)
+	('NP', 3, 4)
+composition spans =
+	['S', (0, 1), (2, 4)]
+	['NP', (0, 0), (1, 1)]
+	['VP', (2, 2), (3, 4)]
+	['NP', (3, 3), (4, 4)]
+subtrees =
+	( S ( NP ( DT a ) ( NN cat ) ) ( VP ( VBZ bites ) ( NP ( DT a ) ( NN mouse ) ) ) )
+	( NP ( DT a ) ( NN cat ) )
+	( DT a )
+	( NN cat )
+	( VP ( VBZ bites ) ( NP ( DT a ) ( NN mouse ) ) )
+	( VBZ bites )
+	( NP ( DT a ) ( NN mouse ) )
+	( DT a )
+	( NN mouse )
+tree2sexp(tree) = ['(', 'S', '(', 'NP', '(', 'DT', 'a', ')', '(', 'NN', 'cat', ')', ')', '(', 'VP', '(', 'VBZ', 'bites', ')', '(', 'NP', '(', 'DT', 'a', ')', '(', 'NN', 'mouse', ')', ')', ')', ')']
+#############
+sexp = ['(', 'S', '(', 'NP', 'a', 'cat', ')', '(', 'VP', 'bites', '(', 'NP', 'a', 'mouse', ')', ')', ')']
+tree.__str__() = ( S ( NP a cat ) ( VP bites ( NP a mouse ) ) )
+tree.tolist() = ['S', ['NP', 'a', 'cat'], ['VP', 'bites', ['NP', 'a', 'mouse']]]
+tree.leaves() = ['a', 'cat', 'bites', 'a', 'mouse']
+tree.children[0].__str__() = ( NP a cat )
+tree.children[1].__str__() = ( VP bites ( NP a mouse ) )
+tree.children[0].tolist() = ['NP', 'a', 'cat']
+tree.children[1].tolist() = ['VP', 'bites', ['NP', 'a', 'mouse']]
+tree.children[0].leaves() = ['a', 'cat']
+tree.children[1].leaves() = ['bites', 'a', 'mouse']
+              S                
+      ________|____             
+     |             VP          
+     |         ____|___         
+     NP       |        NP      
+  ___|___     |     ___|____    
+ a      cat bites  a      mouse
+
+production rules =
+	('S', 'NP', 'VP')
+	('NP', 'a', 'cat')
+	('VP', 'bites', 'NP')
+	('NP', 'a', 'mouse')
+spans =
+	('S', 0, 4)
+	('NP', 0, 1)
+	('VP', 2, 4)
+	('NP', 3, 4)
+composition spans =
+	['S', (0, 1), (2, 4)]
+	['NP', (0, 0), (1, 1)]
+	['VP', (2, 2), (3, 4)]
+	['NP', (3, 3), (4, 4)]
+subtrees =
+	( S ( NP a cat ) ( VP bites ( NP a mouse ) ) )
+	( NP a cat )
+	( VP bites ( NP a mouse ) )
+	( NP a mouse )
+tree2sexp(tree) = ['(', 'S', '(', 'NP', 'a', 'cat', ')', '(', 'VP', 'bites', '(', 'NP', 'a', 'mouse', ')', ')', ')']
+#############
+sexp = ['(', '(', '(', 'DT', 'a', ')', '(', 'NN', 'cat', ')', ')', '(', '(', 'VBZ', 'bites', ')', '(', '(', 'DT', 'a', ')', '(', 'NN', 'mouse', ')', ')', ')', ')']
+tree.__str__() = ( ( ( DT a ) ( NN cat ) ) ( ( VBZ bites ) ( ( DT a ) ( NN mouse ) ) ) )
+tree.tolist() = [[['DT', 'a'], ['NN', 'cat']], [['VBZ', 'bites'], [['DT', 'a'], ['NN', 'mouse']]]]
+tree.leaves() = ['a', 'cat', 'bites', 'a', 'mouse']
+tree.children[0].__str__() = ( ( DT a ) ( NN cat ) )
+tree.children[1].__str__() = ( ( VBZ bites ) ( ( DT a ) ( NN mouse ) ) )
+tree.children[0].tolist() = [['DT', 'a'], ['NN', 'cat']]
+tree.children[1].tolist() = [['VBZ', 'bites'], [['DT', 'a'], ['NN', 'mouse']]]
+tree.children[0].leaves() = ['a', 'cat']
+tree.children[1].leaves() = ['bites', 'a', 'mouse']
+              *                
+      ________|____             
+     |             *           
+     |         ____|___         
+     *        |        *       
+  ___|___     |     ___|____    
+ DT      NN  VBZ   DT       NN 
+ |       |    |    |        |   
+ a      cat bites  a      mouse
+
+spans =
+	(0, 4)
+	(0, 1)
+	(2, 4)
+	(3, 4)
+composition spans =
+	[(0, 1), (2, 4)]
+	[(0, 0), (1, 1)]
+	[(2, 2), (3, 4)]
+	[(3, 3), (4, 4)]
+subtrees =
+	( ( ( DT a ) ( NN cat ) ) ( ( VBZ bites ) ( ( DT a ) ( NN mouse ) ) ) )
+	( ( DT a ) ( NN cat ) )
+	( DT a )
+	( NN cat )
+	( ( VBZ bites ) ( ( DT a ) ( NN mouse ) ) )
+	( VBZ bites )
+	( ( DT a ) ( NN mouse ) )
+	( DT a )
+	( NN mouse )
+tree2sexp(tree) = ['(', '(', '(', 'DT', 'a', ')', '(', 'NN', 'cat', ')', ')', '(', '(', 'VBZ', 'bites', ')', '(', '(', 'DT', 'a', ')', '(', 'NN', 'mouse', ')', ')', ')', ')']
+#############
+sexp = ['(', '(', 'a', 'cat', ')', '(', 'bites', '(', 'a', 'mouse', ')', ')', ')']
+tree.__str__() = ( ( a cat ) ( bites ( a mouse ) ) )
+tree.tolist() = [['a', 'cat'], ['bites', ['a', 'mouse']]]
+tree.leaves() = ['a', 'cat', 'bites', 'a', 'mouse']
+tree.children[0].__str__() = ( a cat )
+tree.children[1].__str__() = ( bites ( a mouse ) )
+tree.children[0].tolist() = ['a', 'cat']
+tree.children[1].tolist() = ['bites', ['a', 'mouse']]
+tree.children[0].leaves() = ['a', 'cat']
+tree.children[1].leaves() = ['bites', 'a', 'mouse']
+              *                
+      ________|____             
+     |             *           
+     |         ____|___         
+     *        |        *       
+  ___|___     |     ___|____    
+ a      cat bites  a      mouse
+
+spans =
+	(0, 4)
+	(0, 1)
+	(2, 4)
+	(3, 4)
+composition spans =
+	[(0, 1), (2, 4)]
+	[(0, 0), (1, 1)]
+	[(2, 2), (3, 4)]
+	[(3, 3), (4, 4)]
+subtrees =
+	( ( a cat ) ( bites ( a mouse ) ) )
+	( a cat )
+	( bites ( a mouse ) )
+	( a mouse )
+tree2sexp(tree) = ['(', '(', 'a', 'cat', ')', '(', 'bites', '(', 'a', 'mouse', ')', ')', ')']
+#############
+sexp = ['(', 'NP', '(', 'NP', '(', 'NP', '(', 'N', 'w0', ')', ')', '(', 'NP', '(', 'N', 'w1', ')', ')', ')', '(', 'NP', '(', 'N', 'w2', ')', '(', 'N', 'w3', ')', '(', 'N', 'w4', ')', ')', ')']
+tree.__str__() = ( NP ( NP ( NP ( N w0 ) ) ( NP ( N w1 ) ) ) ( NP ( N w2 ) ( N w3 ) ( N w4 ) ) )
+tree.tolist() = ['NP', ['NP', ['NP', ['N', 'w0']], ['NP', ['N', 'w1']]], ['NP', ['N', 'w2'], ['N', 'w3'], ['N', 'w4']]]
+tree.leaves() = ['w0', 'w1', 'w2', 'w3', 'w4']
+tree.children[0].__str__() = ( NP ( NP ( N w0 ) ) ( NP ( N w1 ) ) )
+tree.children[1].__str__() = ( NP ( N w2 ) ( N w3 ) ( N w4 ) )
+tree.children[0].tolist() = ['NP', ['NP', ['N', 'w0']], ['NP', ['N', 'w1']]]
+tree.children[1].tolist() = ['NP', ['N', 'w2'], ['N', 'w3'], ['N', 'w4']]
+tree.children[0].leaves() = ['w0', 'w1']
+tree.children[1].leaves() = ['w2', 'w3', 'w4']
+             NP        
+      _______|___       
+     NP          |     
+  ___|___        |      
+ NP      NP      NP    
+ |       |    ___|___   
+ N       N   N   N   N 
+ |       |   |   |   |  
+ w0      w1  w2  w3  w4
+
+production rules =
+	('NP', 'NP', 'NP')
+	('NP', 'NP', 'NP')
+	('NP', 'N')
+	('N', 'w0')
+	('NP', 'N')
+	('N', 'w1')
+	('NP', 'N', 'N', 'N')
+	('N', 'w2')
+	('N', 'w3')
+	('N', 'w4')
+spans =
+	('NP', 0, 4)
+	('NP', 0, 1)
+	('NP', 0, 0)
+	('NP', 1, 1)
+	('NP', 2, 4)
+composition spans =
+	['NP', (0, 1), (2, 4)]
+	['NP', (0, 0), (1, 1)]
+	['NP', (0, 0)]
+	['NP', (1, 1)]
+	['NP', (2, 2), (3, 3), (4, 4)]
+subtrees =
+	( NP ( NP ( NP ( N w0 ) ) ( NP ( N w1 ) ) ) ( NP ( N w2 ) ( N w3 ) ( N w4 ) ) )
+	( NP ( NP ( N w0 ) ) ( NP ( N w1 ) ) )
+	( NP ( N w0 ) )
+	( N w0 )
+	( NP ( N w1 ) )
+	( N w1 )
+	( NP ( N w2 ) ( N w3 ) ( N w4 ) )
+	( N w2 )
+	( N w3 )
+	( N w4 )
+tree2sexp(tree) = ['(', 'NP', '(', 'NP', '(', 'NP', '(', 'N', 'w0', ')', ')', '(', 'NP', '(', 'N', 'w1', ')', ')', ')', '(', 'NP', '(', 'N', 'w2', ')', '(', 'N', 'w3', ')', '(', 'N', 'w4', ')', ')', ')']
