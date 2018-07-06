@@ -262,6 +262,17 @@ def pretty_print(tree, LPAREN="(", RPAREN=")"):
                 with_terminal_labels=tree.with_terminal_labels,
                 LPAREN=LPAREN)
     nltk.tree.Tree.fromstring(text).pretty_print()
+    # tree.set_depth()
+    # _rec_pretty_print(tree, LPAREN, RPAREN, SPACE="  ")
+
+# def _rec_pretty_print(node, LPAREN, RPAREN, SPACE):
+#     if node.is_terminal():
+#         print("%s%s" % (SPACE * node.depth, node.__str__()))
+#         return
+#     print("%s%s" % (SPACE * node.depth, LPAREN))
+#     for c in node.children:
+#         _rec_pretty_print(c, LPAREN, RPAREN, SPACE)
+#     print("%s%s" % (SPACE * node.depth, RPAREN))
 
 def draw(tree, LPAREN="(", RPAREN=")"):
     """

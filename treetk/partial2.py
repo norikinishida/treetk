@@ -14,20 +14,9 @@ class Terminal(object):
         self.token = token
         self.index = index
         self.index_span = (index, index)
+        self.depth = None
         self.with_nonterminal_labels = False
         self.with_terminal_labels = True
-
-    def calc_spans(self):
-        """
-        :rtype: (int, int)
-        """
-        return self.index_span
-
-    def is_terminal(self):
-        """
-        :rtype: bool
-        """
-        return True
 
     def __str__(self):
         """
@@ -47,6 +36,26 @@ class Terminal(object):
         """
         return [self.token]
 
+    def is_terminal(self):
+        """
+        :rtype: bool
+        """
+        return True
+
+    def calc_spans(self):
+        """
+        :rtype: (int, int)
+        """
+        return self.index_span
+
+    def set_depth(self, depth=0):
+        """
+        :type depth: int
+        :rtype: int
+        """
+        self.depth = depth
+        return self.depth
+
 class NonTerminal(object):
     def __init__(self):
         """
@@ -55,6 +64,7 @@ class NonTerminal(object):
         """
         self.children = []
         self.index_span = (None, None)
+        self.depth = None
         self.with_nonterminal_labels = False
         self.with_terminal_labels = True
 
@@ -64,24 +74,6 @@ class NonTerminal(object):
         :rtype: None
         """
         self.children.append(node)
-
-    def calc_spans(self):
-        """
-        :rtype: (int, int)
-        """
-        min_index = np.inf
-        max_index = -np.inf
-        for c_i in range(len(self.children)):
-            i, j = self.children[c_i].calc_spans()
-            if i < min_index:
-                min_index = i
-            if max_index < j:
-                max_index = j
-        self.index_span = (min_index, max_index)
-        return min_index, max_index
-
-    def is_terminal(self):
-        return False
 
     def __str__(self):
         """
@@ -105,6 +97,40 @@ class NonTerminal(object):
         for c in self.children:
             leaves.extend(c.leaves())
         return leaves
+
+    def is_terminal(self):
+        """
+        :rtype: bool
+        """
+        return False
+
+    def calc_spans(self):
+        """
+        :rtype: (int, int)
+        """
+        min_index = np.inf
+        max_index = -np.inf
+        for c_i in range(len(self.children)):
+            i, j = self.children[c_i].calc_spans()
+            if i < min_index:
+                min_index = i
+            if max_index < j:
+                max_index = j
+        self.index_span = (min_index, max_index)
+        return min_index, max_index
+
+    def set_depth(self, depth=0):
+        """
+        :type depth: int
+        :rtype: int
+        """
+        self.depth = depth
+        max_cdepth = -1
+        for c_i in range(len(self.children)):
+            cdepth = self.children[c_i].set_depth(depth=depth+1)
+            if cdepth > max_cdepth:
+                max_cdepth = cdepth
+        return max_cdepth
 
 def sexp2tree(sexp, LPAREN, RPAREN):
     """
