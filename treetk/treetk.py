@@ -4,6 +4,9 @@ import sys
 
 import nltk.tree
 
+################
+# 変換 (sexp -> tree, or tree -> sexp)
+
 def sexp2tree(sexp, with_nonterminal_labels=False, with_terminal_labels=False, LPAREN="(", RPAREN=")"):
     """
     :type sexp: list of str
@@ -31,8 +34,36 @@ def sexp2tree(sexp, with_nonterminal_labels=False, with_terminal_labels=False, L
         sys.exit(-1)
     return tree
 
+def tree2sexp(tree):
+    """
+    :type tree: NonTerminal or Terminal
+    :rtype: list of str
+    """
+    sexp = tree.__str__()
+    sexp = preprocess(sexp)
+    return sexp
+
+def preprocess(x, LPAREN="(", RPAREN=")"):
+    """
+    :type x: str or list of str
+    :rtype: list of str
+    """
+    if isinstance(x, list):
+        x = " ".join(x)
+    sexp = x.replace(LPAREN, " %s " % LPAREN).replace(RPAREN, " %s " % RPAREN).split()
+    return sexp
+
+def filter_parens(sexp, PARENS):
+    """
+    :type sexp: list of str
+    :type PARENS: list of str, e.g., ["(", ")"]
+    :rtype: list of str
+    """
+    return [x for x in sexp if not x in PARENS]
+
 ################
-# 生成規則の収集
+# Production rulesの収集
+# NOTE: only for trees with nonterminal labels
 
 def aggregate_production_rules(root):
     """
@@ -126,7 +157,7 @@ def aggregate_composition_spans(node, acc=None, binary=True):
     return acc
 
 ################
-# 部分木リストの収集 c.f., subtree kernel
+# 部分木リストの収集
 
 def aggregate_subtrees(root, string):
     """
@@ -180,7 +211,7 @@ def left_shift(node):
     right.children[0] = node
     return right
 
-def  right_shift(node):
+def right_shift(node):
     """
     :type node: NonTerminal
     :rtype: NonTerminal
@@ -197,36 +228,6 @@ def  right_shift(node):
     node.children[0] = tmp
     left.children[1] = node
     return left
-
-################
-# その他の処理
-
-def preprocess(x, LPAREN="(", RPAREN=")"):
-    """
-    :type x: str or list of str
-    :rtype: list of str
-    """
-    if isinstance(x, list):
-        x = " ".join(x)
-    sexp = x.replace(LPAREN, " %s " % LPAREN).replace(RPAREN, " %s " % RPAREN).split()
-    return sexp
-
-def filter_parens(sexp, PARENS):
-    """
-    :type sexp: list of str
-    :type PARENS: list of str, e.g., ["(", ")"]
-    :rtype: list of str
-    """
-    return [x for x in sexp if not x in PARENS]
-
-def tree2sexp(tree):
-    """
-    :type tree: NonTerminal or Terminal
-    :rtype: list of str
-    """
-    sexp = tree.__str__()
-    sexp = preprocess(sexp)
-    return sexp
 
 ################
 # チェック
