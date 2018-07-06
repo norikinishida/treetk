@@ -71,10 +71,10 @@ def aggregate_production_rules(root):
     :rtype: list of tuple of str
     """
     assert root.with_nonterminal_labels
-    nodes = rec_aggregate_production_rules(root)
+    nodes = _rec_aggregate_production_rules(root)
     return nodes
 
-def rec_aggregate_production_rules(node, acc=None):
+def _rec_aggregate_production_rules(node, acc=None):
     """
     :type node: NonTerminal or Terminal
     :type acc: list of tuple of str, or None
@@ -98,7 +98,7 @@ def rec_aggregate_production_rules(node, acc=None):
 
     if not node.is_terminal():
         for c in node.children:
-            acc = rec_aggregate_production_rules(c, acc=acc)
+            acc = _rec_aggregate_production_rules(c, acc=acc)
 
     return acc
 
@@ -165,12 +165,12 @@ def aggregate_subtrees(root, string):
     :type string: bool
     :rtype: list of str
     """
-    nodes = rec_aggregate_subtrees(root)
+    nodes = _rec_aggregate_subtrees(root)
     if string:
         nodes = [n.__str__() for n in nodes]
     return nodes
 
-def rec_aggregate_subtrees(node, acc=None):
+def _rec_aggregate_subtrees(node, acc=None):
     """
     :type node: NonTerminal or Terminal
     :type acc: list of (NonTerminal or Terminal), or None
@@ -186,7 +186,7 @@ def rec_aggregate_subtrees(node, acc=None):
 
     if not node.is_terminal():
         for c in node.children:
-            acc = rec_aggregate_subtrees(c, acc=acc)
+            acc = _rec_aggregate_subtrees(c, acc=acc)
 
     return acc
 
@@ -232,19 +232,19 @@ def right_shift(node):
 ################
 # チェック
 
-def check_whether_completely_binary(node):
+def is_completely_binary(node):
     """
     :type node: NonTerminal or Terminal
-    :rtype: int (1 or 0)
+    :rtype: bool
     """
     if node.is_terminal():
-        return 1
+        return True
     if len(node.children) != 2:
-        return 0
-    acc = 1
+        return False
+    acc = True
     for c in node.children:
-        acc *= check_whether_completely_binary(c)
-    return acc
+        acc *= is_completely_binary(c)
+    return bool(acc)
 
 ################
 # 描画周り
@@ -258,7 +258,7 @@ def pretty_print(tree, LPAREN="(", RPAREN=")"):
     """
     text = tree.__str__()
     if not tree.with_nonterminal_labels:
-        text = insert_dummy_nonterminal_labels(text,
+        text = _insert_dummy_nonterminal_labels(text,
                 with_terminal_labels=tree.with_terminal_labels,
                 LPAREN=LPAREN)
     nltk.tree.Tree.fromstring(text).pretty_print()
@@ -272,12 +272,12 @@ def draw(tree, LPAREN="(", RPAREN=")"):
     """
     text = tree.__str__()
     if not tree.with_nonterminal_labels:
-        text = insert_dummy_nonterminal_labels(text,
+        text = _insert_dummy_nonterminal_labels(text,
                 with_terminal_labels=tree.with_terminal_labels,
                 LPAREN=LPAREN)
     nltk.tree.Tree.fromstring(text).draw()
 
-def insert_dummy_nonterminal_labels(text, with_terminal_labels, LPAREN="("):
+def _insert_dummy_nonterminal_labels(text, with_terminal_labels, LPAREN="("):
     """
     :type text: str
     :type with_terminal_labels: bool
