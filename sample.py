@@ -200,4 +200,21 @@ ctree = treetk.dtree2ctree(dtree)
 print("ctree.__str__() = %s" % ctree)
 treetk.pretty_print(ctree)
 
+rules = treetk.aggregate_production_rules(ctree)
+print_list("production rules =", rules)
+
+ctree.calc_spans()
+spans = treetk.aggregate_spans(ctree)
+print_list("spans =", spans)
+mrg_spans = treetk.aggregate_composition_spans(ctree, binary=False)
+print_list("composition spans =", mrg_spans)
+
+subtree_strings = treetk.aggregate_subtrees(ctree, string=True)
+print_list("subtrees =", subtree_strings)
+
+print("tree2sexp(ctree) = %s" % treetk.tree2sexp(ctree))
+
+if DRAW:
+    treetk.draw(ctree)
+
 
