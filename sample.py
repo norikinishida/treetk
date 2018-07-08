@@ -225,18 +225,20 @@ ctree = treetk.sexp2tree(sexp, with_nonterminal_labels=True, with_terminal_label
 print("ctree.__str__() = %s" % ctree)
 def func_head_rule(node):
     # a simple example of the head-selection rules that specify a head subtree among the children nodes
-    if node.label == "S":
+    if node.label == "S" and node.children[0].label == "NP" and node.children[1].label == "VP":
         return 1 # the second child
-    elif node.label == "NP":
+    elif node.label == "NP" and node.children[0].label == "DT" and node.children[1].label == "NN":
         return 1
-    elif node.label == "VP":
+    elif node.label == "VP" and node.children[0].label == "VP" and node.children[1].label == "PP":
         return 0 # the first child
-    elif node.label == "PP":
+    elif node.label == "VP" and node.children[0].label == "VBD" and node.children[1].label == "NP":
+        return 0
+    elif node.label == "PP" and node.children[0].label == "IN" and node.children[1].label == "NP":
         return 0
     else:
         return 0
 def func_label_rule(node, i, j):
     # a simple example of the rules that specify an arc label given parent and head/dependent nodes
-    return "%s/%s/%s" % (node.label, node.children[i].label, node.children[j].label)
+    return "%s:%s->%s" % (node.label, node.children[i].label, node.children[j].label)
 dtree = treetk.ctree2dtree(ctree, func_head_rule, func_label_rule)
 print("dtree.__str__() = %s" % dtree)
