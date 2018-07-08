@@ -17,7 +17,7 @@ class DependencyTree:
         self.arcs = arcs
         self.labels = labels
 
-        self.dictionary = self.create_head2dependents()
+        self.head2dependents = self.create_head2dependents()
 
     def create_head2dependents(self):
         """
@@ -33,7 +33,8 @@ class DependencyTree:
         """
         :rtype: str
         """
-        return str([(str(h) + "_" + self.tokens[h], str(d) + "_" + self.tokens[d],l) for (h,d),l in zip(self.arcs, self.labels)])
+        return str([(str(h) + "_" + self.tokens[h], str(d) + "_" + self.tokens[d], l)
+                    for (h,d),l in zip(self.arcs, self.labels)])
 
     def tolist(self, labeled=True, replace_with_tokens=False):
         """
@@ -55,11 +56,12 @@ class DependencyTree:
         :rtype: dictionary of {T: list of (T, str)}, or dictionary of {T: list of T} where T \in {int, str}
         """
         if labeled:
-            result = dict(self.dictionary)
+            result = dict(self.head2dependents)
             if replace_with_tokens:
-                result = {self.tokens[h]: [(self.tokens[d], l) for d,l in values] for h,values in result.items()}
+                result = {self.tokens[h]: [(self.tokens[d], l) for d,l in values]
+                          for h,values in result.items()}
         else:
-            result = {h: [d for d,l in values] for h,values in self.dictionary.items()}
+            result = {h: [d for d,l in values] for h,values in self.head2dependents.items()}
             if replace_with_tokens:
                 result = {self.tokens[h]: [self.tokens[d] for d in ds] for h,ds in result.items()}
         return result
