@@ -9,8 +9,8 @@ def print_list(msg, xs):
     for x in xs:
         print("\t%s" % str(x))
 
-# Labels for both non-terminals and terminals
-print("#############")
+###################################
+print("\n############### Sample for labeled trees with POS tags ####################\n")
 sexp = treetk.preprocess("(S (NP (DT a) (NN cat)) (VP (VBZ bites) (NP (DT a) (NN mouse))))")
 print("sexp = %s" % sexp)
 
@@ -44,8 +44,8 @@ print("tree2sexp(tree) = %s" % treetk.tree2sexp(tree))
 if DRAW:
     treetk.draw(tree)
 
-# Labels only for non-terminals, but no labels for terminals
-print("#############")
+###################################
+print("\n############### Sample for labeled trees without POS tags ####################\n")
 sexp = treetk.preprocess("(S (NP a cat) (VP bites (NP a mouse)))")
 print("sexp = %s" % sexp)
 
@@ -79,8 +79,8 @@ print("tree2sexp(tree) = %s" % treetk.tree2sexp(tree))
 if DRAW:
     treetk.draw(tree)
 
-# No labels for non-terminals, but only labels for terminals
-print("#############")
+###################################
+print("\n############### Sample for unlabeled trees with POS tags ####################\n")
 sexp = treetk.preprocess("(((DT a) (NN cat)) ((VBZ bites) ((DT a) (NN mouse))))")
 print("sexp = %s" % sexp)
 
@@ -111,8 +111,8 @@ print("tree2sexp(tree) = %s" % treetk.tree2sexp(tree))
 if DRAW:
     treetk.draw(tree)
 
-# No labels for non-terminals and terminals
-print("#############")
+###################################
+print("\n############### Sample for unlabeled trees without POS tags ####################\n")
 sexp = treetk.preprocess("((a cat) (bites (a mouse)))")
 print("sexp = %s" % sexp)
 
@@ -143,8 +143,8 @@ print("tree2sexp(tree) = %s" % treetk.tree2sexp(tree))
 if DRAW:
     treetk.draw(tree)
 
-# Can handle unary or n-ary trees
-print("#############")
+###################################
+print("\n############### Sample for unary or n-ary trees ####################\n")
 sexp = treetk.preprocess("(NP (NP (NP (N w0)) (NP (N w1))) (NP (N w2) (N w3) (N w4)))")
 print("sexp = %s" % sexp)
 
@@ -178,8 +178,8 @@ print("tree2sexp(tree) = %s" % treetk.tree2sexp(tree))
 if DRAW:
     treetk.draw(tree)
 
-# Dependency trees can also be processed
-print("#############")
+###################################
+print("\n############### Sample for dependency trees ####################\n")
 tokens = ["a", "boy", "saw", "a", "girl", "with", "a", "telescope", "<$>"]
 arcs = [(1, 0), (2, 1), (2, 4), (4, 3), (2, 5), (5, 7), (7, 6), (8, 2)]
 labels = ["det", "nsubj", "dobj", "det", "prep", "pobj", "det", "root"]
@@ -190,13 +190,13 @@ dtree = treetk.produce_dependencytree(tokens=tokens, arcs=arcs, labels=labels)
 print("dtree.__str__() = %s" % dtree)
 print("dtree.tolist(labeled=True) = %s" % dtree.tolist(labeled=True))
 print("dtree.tolist(labeled=False) = %s" % dtree.tolist(labeled=False))
-# print("dtree.todict(labeled=True) = %s" % dtree.todict(labeled=True))
-# print("dtree.todict(labeled=False) = %s" % dtree.todict(labeled=False))
-
 for index in range(len(tokens)):
     print("dtree.get_dependents(%d) = %s" % (index, dtree.get_dependents(index)))
     print("dtree.get_head(%d) = %s" % (index, dtree.get_head(index)))
 
+###################################
+print("\n############### Sample for conversion of dependency tree -> constituency tree ####################\n")
+print("dtree.__str__() = %s" % dtree)
 ctree = treetk.dtree2ctree(dtree)
 print("ctree.__str__() = %s" % ctree)
 treetk.pretty_print(ctree)
@@ -218,4 +218,22 @@ print("tree2sexp(ctree) = %s" % treetk.tree2sexp(ctree))
 if DRAW:
     treetk.draw(ctree)
 
-
+###################################
+print("\n############### Sample for conversion of constituency tree -> dependency tree ####################\n")
+sexp = treetk.preprocess("(S (NP (DT a) (NN boy)) (VP (VP (VBD saw) (NP (DT a) (NN girl))) (PP (IN with) (NP (DT a) (NN telescope)))))".split())
+ctree = treetk.sexp2tree(sexp, with_nonterminal_labels=True, with_terminal_labels=True)
+print("ctree.__str__() = %s" % ctree)
+def func_head_rule(node):
+    # a simple example of the head-selection rules that specify a head subtree among the children nodes
+    if node.label == "S":
+        return 1 # the second child
+    elif node.label == "NP":
+        return 1
+    elif node.label == "VP":
+        return 0 # the first child
+    elif node.label == "PP":
+        return 0
+    else:
+        return 0
+dtree = treetk.ctree2dtree(ctree, func_head_rule)
+print("dtree.__str__() = %s" % dtree)
