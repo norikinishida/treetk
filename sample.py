@@ -180,9 +180,9 @@ if DRAW:
 
 # Dependency trees can also be processed
 print("#############")
-tokens = ["a", "boy", "saw", "a", "girl", "with", "a", "telescope"]
-arcs = [(1, 0), (2, 1), (2, 4), (4, 3), (2, 5), (5, 7), (7, 6)]
-labels = ["det", "nsubj", "dobj", "det", "prep", "pobj", "det"]
+tokens = ["a", "boy", "saw", "a", "girl", "with", "a", "telescope", "<$>"]
+arcs = [(1, 0), (2, 1), (2, 4), (4, 3), (2, 5), (5, 7), (7, 6), (8, 2)]
+labels = ["det", "nsubj", "dobj", "det", "prep", "pobj", "det", "root"]
 print("tokens = %s" % tokens)
 print("arcs = %s" % arcs)
 print("labels = %s" % labels)
@@ -190,12 +190,13 @@ dtree = treetk.produce_dependencytree(tokens=tokens, arcs=arcs, labels=labels)
 print("dtree.__str__() = %s" % dtree)
 print("dtree.tolist(labeled=True) = %s" % dtree.tolist(labeled=True))
 print("dtree.tolist(labeled=False) = %s" % dtree.tolist(labeled=False))
-print("dtree.tolist(labeled=True, replace_with_tokens=True) = %s" % dtree.tolist(labeled=True, replace_with_tokens=True))
-print("dtree.tolist(labeled=False, replace_with_tokens=True) = %s" % dtree.tolist(labeled=False, replace_with_tokens=True))
-print("dtree.todict(labeled=True) = %s" % dtree.todict(labeled=True))
-print("dtree.todict(labeled=False) = %s" % dtree.todict(labeled=False))
-print("dtree.todict(labeled=True, replace_with_tokens=True) = %s" % dtree.todict(labeled=True, replace_with_tokens=True))
-print("dtree.todict(labeled=False, replace_with_tokens=True) = %s" % dtree.todict(labeled=False, replace_with_tokens=True))
+# print("dtree.todict(labeled=True) = %s" % dtree.todict(labeled=True))
+# print("dtree.todict(labeled=False) = %s" % dtree.todict(labeled=False))
+
+for index in range(len(tokens)):
+    print("dtree.get_dependents(%d) = %s" % (index, dtree.get_dependents(index)))
+    print("dtree.get_head(%d) = %s" % (index, dtree.get_head(index)))
+
 ctree = treetk.dtree2ctree(dtree)
 print("ctree.__str__() = %s" % ctree)
 treetk.pretty_print(ctree)

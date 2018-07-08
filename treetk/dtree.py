@@ -13,11 +13,13 @@ class DependencyTree:
         :type arcs: list of (int, int)
         :type labels: list of str
         """
+        # NOTE: arcs中のintegerは辞書中のword IDではなく，tokens中のindexであることに注意
         self.tokens = tokens
         self.arcs = arcs
         self.labels = labels
 
         self.head2dependents = self.create_head2dependents()
+        self.dependent2head = self.create_dependent2head()
 
     def create_head2dependents(self):
         """
@@ -27,6 +29,21 @@ class DependencyTree:
         dictionary = defaultdict(list)
         for (head, dependent), label in zip(self.arcs, self.labels):
             dictionary[head].append((dependent, label))
+        return dictionary
+
+    def create_dependent2head(self):
+        """
+        :rtype: dictionary of {int: (int, str) or None}
+        """
+        dictionary = {}
+        # headをもたないトークン(i.e., ROOT)に関してはNoneを返す
+        for dependent in range(len(self.tokens)):
+            dictionary[dependent] = None
+        for (head, dependent), label in zip(self.arcs, self.labels):
+            # 複数のheadをもつのはおかしい
+            if dictionary[dependent] is not None:
+                raise ValueError("The dependent=%d has multiple heads!" % dependent)
+            dictionary[dependent] = (head, label)
         return dictionary
 
     def __str__(self):
@@ -49,22 +66,19 @@ class DependencyTree:
             result = [(h,d,l) for (h,d),l in zip(result, self.labels)]
         return result
 
-    def todict(self, labeled=True, replace_with_tokens=False):
+    def get_dependents(self, index):
         """
-        :type labeled: bool
-        :type replace_with_tokens: bool
-        :rtype: dictionary of {T: list of (T, str)}, or dictionary of {T: list of T} where T \in {int, str}
+        :type index: int
+        :rtype: list of int
         """
-        if labeled:
-            result = dict(self.head2dependents)
-            if replace_with_tokens:
-                result = {self.tokens[h]: [(self.tokens[d], l) for d,l in values]
-                          for h,values in result.items()}
-        else:
-            result = {h: [d for d,l in values] for h,values in self.head2dependents.items()}
-            if replace_with_tokens:
-                result = {self.tokens[h]: [self.tokens[d] for d in ds] for h,ds in result.items()}
-        return result
+        return self.head2dependents[index]
+
+    def get_head(self, index):
+        """
+        :rtype index: int
+        :rtype: int
+        """
+        return self.dependent2head[index]
 
 def produce_dependencytree(tokens, arcs, labels=None):
     """
