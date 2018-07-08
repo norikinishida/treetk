@@ -235,5 +235,8 @@ def func_head_rule(node):
         return 0
     else:
         return 0
-dtree = treetk.ctree2dtree(ctree, func_head_rule)
+def func_label_rule(node, i, j):
+    # a simple example of the rules that specify an arc label given parent and head/dependent nodes
+    return "%s/%s/%s" % (node.label, node.children[i].label, node.children[j].label)
+dtree = treetk.ctree2dtree(ctree, func_head_rule, func_label_rule)
 print("dtree.__str__() = %s" % dtree)

@@ -94,25 +94,27 @@ def produce_dependencytree(tokens, arcs, labels=None):
     dtree = DependencyTree(tokens=tokens, arcs=arcs, labels=labels)
     return dtree
 
-def ctree2dtree(tree, func_head_rule):
+def ctree2dtree(tree, func_head_rule, func_label_rule):
     """
     :type NonTerminal or Terminal
     :type func_head_rule: function of NonTerminal -> int
+    :type func_label_rule: function of (NonTerminal, int, int) -> str
     :rtype: DependencyTree
     """
     if tree.is_terminal():
         raise ValueError("The type of the argument ``tree'' must be NonTerminal")
-    arcs_with_labels, _ = _rec_ctree2dtree(tree, func_head_rule)
+    arcs_with_labels, _ = _rec_ctree2dtree(tree, func_head_rule, func_label_rule)
     arcs = [(h,d) for h,d,l in arcs_with_labels]
     labels = [l for h,d,l in arcs_with_labels]
     tokens = tree.leaves()
     dtree = produce_dependencytree(tokens=tokens, arcs=arcs, labels=labels)
     return dtree
 
-def _rec_ctree2dtree(node, func_head_rule):
+def _rec_ctree2dtree(node, func_head_rule, func_label_rule):
     """
     :type node: NonTerminal or Terminal
     :type func_head_rule: function of NonTerminal -> int
+    :type func_label_rule: function of (NonTerminal, int, int) -> str
     :rtype: list of (int, int, str)
     """
     if node.is_terminal():
@@ -124,16 +126,17 @@ def _rec_ctree2dtree(node, func_head_rule):
     head_token_indices = []
     arcs = []
     for c in node.children:
-        sub_arcs, head_token_index = _rec_ctree2dtree(c, func_head_rule)
+        sub_arcs, head_token_index = _rec_ctree2dtree(c, func_head_rule, func_label_rule)
         head_token_indices.append(head_token_index)
         arcs.extend(sub_arcs)
     # HEADとなる子部分木(のHEAD token)から，DEPENDENTSとなる他の子部分木(のHEAD token)へargを張る
     head_token_index = head_token_indices[head_c_i]
-    arc_label = node.label # TODO
+    # arc_label = node.label # TODO
     for c_i in range(len(node.children)):
         if c_i == head_c_i:
             continue
         dependent_token_index = head_token_indices[c_i]
+        arc_label = func_label_rule(node, head_c_i, c_i)
         arcs.append((head_token_index, dependent_token_index, arc_label))
     return arcs, head_token_index
 
