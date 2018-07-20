@@ -159,7 +159,7 @@ def aggregate_composition_spans(node, acc=None, binary=True):
 ################
 # 部分木リストの収集
 
-def aggregate_subtrees(root, string):
+def aggregate_subtrees(root, string=True):
     """
     :type root: NonTerminal
     :type string: bool
