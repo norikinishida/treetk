@@ -7,16 +7,14 @@ import treetk
 
 class DependencyTree:
 
-    def __init__(self, tokens, arcs, labels):
+    def __init__(self, arcs, tokens):
         """
+        :type arcs: list of (int, int, str)
         :type tokens: list of str
-        :type arcs: list of (int, int)
-        :type labels: list of str
         """
         # NOTE: arcs中のintegerは辞書中のword IDではなく，tokens中のindexであることに注意
-        self.tokens = tokens
         self.arcs = arcs
-        self.labels = labels
+        self.tokens = tokens
 
         self.head2dependents = self.create_head2dependents()
         self.dependent2head = self.create_dependent2head()
@@ -27,21 +25,21 @@ class DependencyTree:
         """
         # NOTE: 再帰的にまではdependentsを辿らないことに注意
         dictionary = defaultdict(list)
-        for (head, dependent), label in zip(self.arcs, self.labels):
+        for head, dependent, label in self.arcs:
             dictionary[head].append((dependent, label))
         return dictionary
 
     def create_dependent2head(self):
         """
-        :rtype: dictionary of {int: (int, str) or None}
+        :rtype: dictionary of {int: (int, str) or (None, None)}
         """
         dictionary = {}
-        # headをもたないトークン(i.e., ROOT)に関してはNoneを返す
+        # headをもたないトークン(i.e., ROOT)に関しては(None, None)を返す
         for dependent in range(len(self.tokens)):
-            dictionary[dependent] = None
-        for (head, dependent), label in zip(self.arcs, self.labels):
+            dictionary[dependent] = (None, None)
+        for head, dependent, label in self.arcs:
             # 複数のheadをもつのはおかしい
-            if dictionary[dependent] is not None:
+            if dictionary[dependent] != (None, None):
                 raise ValueError("The dependent=%d has multiple heads!" % dependent)
             dictionary[dependent] = (head, label)
         return dictionary
@@ -51,7 +49,7 @@ class DependencyTree:
         :rtype: str
         """
         return str([(str(h) + "_" + self.tokens[h], str(d) + "_" + self.tokens[d], l)
-                    for (h,d),l in zip(self.arcs, self.labels)])
+                    for h,d,l in self.arcs])
 
     def tolist(self, labeled=True, replace_with_tokens=False):
         """
@@ -61,9 +59,9 @@ class DependencyTree:
         """
         result = self.arcs
         if replace_with_tokens:
-            result = [(self.tokens[h], self.tokens[d]) for h,d in result]
-        if labeled:
-            result = [(h,d,l) for (h,d),l in zip(result, self.labels)]
+            result = [(self.tokens[h], self.tokens[d], l) for h,d,l in result]
+        if not labeled:
+            result = [(h,d) for h,d,l in result]
         return result
 
     def get_dependents(self, index):
@@ -80,18 +78,16 @@ class DependencyTree:
         """
         return self.dependent2head[index]
 
-def produce_dependencytree(tokens, arcs, labels=None):
+def produce_dependencytree(arcs, tokens=None):
     """
-    :type tokens: list of str
-    :type arcs: list of (int, int)
-    :type labels: None, or list of str
+    :type arcs: list of (int, int, str), or list of (int, int)
+    :type tokens: list of str, or None
     :rtype DependencyTree
     """
-    if labels is None:
-        labels = ["*" for _ in range(len(arcs))]
-    else:
-        assert len(labels) == len(arcs)
-    dtree = DependencyTree(tokens=tokens, arcs=arcs, labels=labels)
+    arcs_checked = [x if len(x) == 3 else (x[0],x[1],"*") for x in arcs]
+    if tokens is None:
+        tokens = ["%s" % tok_i for tok_i in range(len(arcs_checked)+1)]
+    dtree = DependencyTree(arcs=arcs_checked, tokens=tokens)
     return dtree
 
 def ctree2dtree(tree, func_head_rule, func_label_rule):
@@ -103,11 +99,9 @@ def ctree2dtree(tree, func_head_rule, func_label_rule):
     """
     if tree.is_terminal():
         raise ValueError("The type of the argument ``tree'' must be NonTerminal")
-    arcs_with_labels, _ = _rec_ctree2dtree(tree, func_head_rule, func_label_rule)
-    arcs = [(h,d) for h,d,l in arcs_with_labels]
-    labels = [l for h,d,l in arcs_with_labels]
+    arcs, _ = _rec_ctree2dtree(tree, func_head_rule, func_label_rule)
     tokens = tree.leaves()
-    dtree = produce_dependencytree(tokens=tokens, arcs=arcs, labels=labels)
+    dtree = produce_dependencytree(arcs=arcs, tokens=tokens)
     return dtree
 
 def _rec_ctree2dtree(node, func_head_rule, func_label_rule):
@@ -212,7 +206,7 @@ def _get_head2dependents_map(dtree):
         head2dependents[token_index].append(token_index)
 
     # 1次のdependentsを登録
-    for head, dependent in dtree.arcs:
+    for head, dependent, label in dtree.arcs:
         head2dependents[head].append(dependent)
 
     # 再帰的にdependentsを登録

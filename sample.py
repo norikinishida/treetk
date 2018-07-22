@@ -180,16 +180,17 @@ if DRAW:
 
 ###################################
 print("\n############### Sample for dependency trees ####################\n")
-tokens = ["a", "boy", "saw", "a", "girl", "with", "a", "telescope", "<$>"]
-arcs = [(1, 0), (2, 1), (2, 4), (4, 3), (2, 5), (5, 7), (7, 6), (8, 2)]
-labels = ["det", "nsubj", "dobj", "det", "prep", "pobj", "det", "root"]
+tokens = ["<root>", "a", "boy", "saw", "a", "girl", "with", "a", "telescope"]
+arcs = [(2, 1, "det"), (3, 2, "nsubj"), (3, 5, "dobj"), (5, 4, "det"), (3, 6, "prep"), (6, 8, "pobj"), (8, 7, "det"), (0, 3, "root")]
 print("tokens = %s" % tokens)
 print("arcs = %s" % arcs)
-print("labels = %s" % labels)
-dtree = treetk.produce_dependencytree(tokens=tokens, arcs=arcs, labels=labels)
+# dtree = treetk.produce_dependencytree(arcs=arcs) # this is allowable
+dtree = treetk.produce_dependencytree(arcs=arcs, tokens=tokens)
 print("dtree.__str__() = %s" % dtree)
 print("dtree.tolist(labeled=True) = %s" % dtree.tolist(labeled=True))
 print("dtree.tolist(labeled=False) = %s" % dtree.tolist(labeled=False))
+print("dtree.head2dependents=%s" % dtree.head2dependents)
+print("dtree.dependent2head=%s" % dtree.dependent2head)
 for index in range(len(tokens)):
     print("dtree.get_dependents(%d) = %s" % (index, dtree.get_dependents(index)))
     print("dtree.get_head(%d) = %s" % (index, dtree.get_head(index)))
@@ -239,6 +240,6 @@ def func_head_rule(node):
         return 0
 def func_label_rule(node, i, j):
     # a simple example of the rules that specify an arc label given parent and head/dependent nodes
-    return "%s:%s->%s" % (node.label, node.children[i].label, node.children[j].label)
+    return "%s -> %s %s" % (node.label, node.children[i].label, node.children[j].label)
 dtree = treetk.ctree2dtree(ctree, func_head_rule, func_label_rule)
 print("dtree.__str__() = %s" % dtree)
