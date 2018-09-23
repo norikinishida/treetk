@@ -86,7 +86,7 @@ def produce_dependencytree(arcs, tokens=None):
     """
     arcs_checked = [x if len(x) == 3 else (x[0],x[1],"*") for x in arcs]
     if tokens is None:
-        tokens = ["%s" % tok_i for tok_i in range(len(arcs_checked)+1)]
+        tokens = ["x%s" % tok_i for tok_i in range(len(arcs_checked)+1)]
     dtree = DependencyTree(arcs=arcs_checked, tokens=tokens)
     return dtree
 
