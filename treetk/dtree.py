@@ -67,14 +67,14 @@ class DependencyTree:
     def get_dependents(self, index):
         """
         :type index: int
-        :rtype: list of int
+        :rtype: list of (int, str)
         """
         return self.head2dependents[index]
 
     def get_head(self, index):
         """
         :rtype index: int
-        :rtype: int
+        :rtype: (int, str)
         """
         return self.dependent2head[index]
 
