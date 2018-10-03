@@ -252,10 +252,13 @@ def _get_dependents_recursively(head, head2dependents):
 LEAF_WINDOW = 8
 SPACE_SIZE = 1
 SPACE = " " * SPACE_SIZE
+
 EMPTY = 0
 ARROW = 1
 VERTICAL = 2
 HORIZONTAL = 3
+LABEL_BEGIN = 4
+LABEL_END = 5
 
 def pretty_print_dtree(dtree, return_str=False):
     """
@@ -263,17 +266,19 @@ def pretty_print_dtree(dtree, return_str=False):
     :type return_str: bool
     :rtype: None or str
     """
-    arcs = dtree.tolist(labeled=False)
+    arcs_labeled = dtree.tolist(labeled=True)
+    arcs_unlabeled = {(b,e) for b,e,_ in arcs_labeled}
+    arc2label = {(b,e): l for b,e,l in arcs_labeled}
     tokens = dtree.tokens
 
     # 各トークンへのpadding
     tokens_padded = [_pad_token(token) for token in tokens]
     # 各arcを描く高さを求める
-    arc2height = _get_arc2height(arcs)
+    arc2height = _get_arc2height(arcs_unlabeled)
     # テキストマップを生成する
     textmap = _init_textmap(tokens_padded, arc2height)
     # テキストマップを編集する
-    textmap = _edit_textmap(textmap, tokens_padded, arc2height)
+    textmap = _edit_textmap(textmap, tokens_padded, arc2height, arc2label)
     # テキストの生成
     text = _generate_text(textmap, tokens_padded)
     if return_str:
@@ -313,7 +318,7 @@ def _init_textmap(tokens_padded, arc2height):
     """
     :type tokens_padded: list of str
     :type arc2height: dictionary of {(int, int): int}
-    :rtype: numpy.ndarray of matrix(dtype=np.int32)
+    :rtype: numpy.ndarray of matrix
     """
     max_height = -1
     for arc in arc2height.keys():
@@ -322,14 +327,15 @@ def _init_textmap(tokens_padded, arc2height):
             max_height = height
     textmap = np.zeros((1 + max_height * 2,
                         sum([len(token) for token in tokens_padded]) + (len(tokens_padded)-1) * SPACE_SIZE),
-                       dtype=np.int32)
+                       dtype="O")
     return textmap
 
-def _edit_textmap(textmap, tokens_padded, arc2height):
+def _edit_textmap(textmap, tokens_padded, arc2height, arc2label):
     """
-    :type textmap: numpy.ndarray of matrix(dtype=np.int32)
+    :type textmap: numpy.ndarray of matrix
     :type tokens_padded: list of str
     :type arc2height: dictionary of {(int, int): int}
+    :type arc2label: dictionary of {(int, int): str}
     :rtype: numpy.ndarray of matrix
     """
     # Token index -> center position (i.e., column index in textmap)
@@ -345,6 +351,7 @@ def _edit_textmap(textmap, tokens_padded, arc2height):
         b_pos = index2position[b]
         e_pos = index2position[e]
         height = arc2height[arc]
+        label = arc2label[arc]
         # End point
         textmap[-1, e_pos] = ARROW
         textmap[-2:-1-height*2:-1, e_pos] = VERTICAL
@@ -358,6 +365,11 @@ def _edit_textmap(textmap, tokens_padded, arc2height):
             textmap[-1-height*2, b_pos+2:e_pos+1] = HORIZONTAL
         else:
             textmap[-1-height*2, e_pos:b_pos-2+1] = HORIZONTAL
+        # Label
+        if b < e:
+            textmap[-1-height*2+1, e_pos-1-len(label):e_pos-1] = list(label)
+        else:
+            textmap[-1-height*2+1, e_pos+1:e_pos+1+len(label)] = list(label)
 
     for arc in arc2height.keys():
         b, e = arc
@@ -374,7 +386,7 @@ def _edit_textmap(textmap, tokens_padded, arc2height):
 
 def _generate_text(textmap, tokens_padded):
     """
-    :type textmap: numpy.ndarray of matrix(dtype=np.int32)
+    :type textmap: numpy.ndarray of matrix
     :type tokens_padded: list of str
     """
     text = ""
@@ -390,7 +402,7 @@ def _generate_text(textmap, tokens_padded):
             elif textmap[row_i, col_i] == HORIZONTAL:
                 row_text = row_text + "_"
             else:
-                raise ValueError
+                row_text = row_text + str(textmap[row_i, col_i])
         row_text = row_text.rstrip() + "\n"
         text = text + row_text
     for token in tokens_padded:
