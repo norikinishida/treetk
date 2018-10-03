@@ -391,7 +391,7 @@ def _generate_text(textmap, tokens_padded):
                 row_text = row_text + "_"
             else:
                 raise ValueError
-        row_text = row_text + "\n"
+        row_text = row_text.rstrip() + "\n"
         text = text + row_text
     for token in tokens_padded:
         text = text + token
