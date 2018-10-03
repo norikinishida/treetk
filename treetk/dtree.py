@@ -291,6 +291,7 @@ def _pad_token(token):
     :type token: str
     :rtype: str
     """
+    token = " " + token + " "
     while len(token) <= LEAF_WINDOW:
         token = " " + token + " "
     token = "[" + token[1:-1] + "]"
