@@ -3,6 +3,8 @@
 from collections import defaultdict
 import copy
 
+import numpy as np
+
 import treetk
 
 class DependencyTree:
@@ -90,6 +92,7 @@ def produce_dependencytree(arcs, tokens=None):
     dtree = DependencyTree(arcs=arcs_checked, tokens=tokens)
     return dtree
 
+#####################################
 def ctree2dtree(tree, func_head_rule, func_label_rule):
     """
     :type NonTerminal or Terminal
@@ -134,6 +137,7 @@ def _rec_ctree2dtree(node, func_head_rule, func_label_rule):
         arcs.append((head_token_index, dependent_token_index, arc_label))
     return arcs, head_token_index
 
+#####################################
 def dtree2ctree(dtree, binarize=None, LPAREN="(", RPAREN=")"):
     """
     :type dtree: DependencyTree
@@ -142,7 +146,7 @@ def dtree2ctree(dtree, binarize=None, LPAREN="(", RPAREN=")"):
     :type RPAREN: str
     :rtype: NonTerminal
     """
-    # (1) dependency spansの取得
+    # (1) Dependency spansの取得
     dependency_spans = _get_dependency_spans(dtree)
     assert len(dependency_spans) == len(dtree.tokens)
     # (2) ソート, length=1のspanの除去
@@ -162,16 +166,16 @@ def dtree2ctree(dtree, binarize=None, LPAREN="(", RPAREN=")"):
         left_sides[begin_i].append(LPAREN) # from left to right
         left_sides[begin_i].append(head)
         right_sides[end_i] = [RPAREN] + right_sides[end_i] # from right to left
-    # (4) left_sides, tokens, right_sidesに従ってS式を作成
+    # (4) Left_sides, tokens, right_sidesに従ってS式を作成
     sexp = []
     for index in range(len(dtree.tokens)):
         sexp.extend(left_sides[index])
         sexp.append(dtree.tokens[index])
         sexp.extend(right_sides[index])
-    # (5) treeの作成
+    # (5) Constituency treeの作成
     sexp = treetk.preprocess(sexp)
     ctree = treetk.sexp2tree(sexp, with_nonterminal_labels=True, with_terminal_labels=False)
-    # (6) binarization?
+    # (6) Binarization?
     if binarize is not None:
         # TODO
         pass
@@ -242,4 +246,157 @@ def _get_dependents_recursively(head, head2dependents):
         if prev_length == new_length:
             break
     return list(dependents)
+
+#####################################
+
+LEAF_WINDOW = 8
+SPACE_SIZE = 1
+SPACE = " " * SPACE_SIZE
+EMPTY = 0
+ARROW = 1
+VERTICAL = 2
+HORIZONTAL = 3
+
+def pretty_print_dtree(dtree, return_str=False):
+    """
+    :type dtree: DependencyTree
+    :type return_str: bool
+    :rtype: None or str
+    """
+    arcs = dtree.tolist(labeled=False)
+    tokens = dtree.tokens
+
+    # 各トークンへのpadding
+    tokens_padded = [_pad_token(token) for token in tokens]
+    # 各arcを描く高さを求める
+    arc2height = _get_arc2height(arcs)
+    # テキストマップを生成する
+    textmap = _init_textmap(tokens_padded, arc2height)
+    # テキストマップを編集する
+    textmap = _edit_textmap(textmap, tokens_padded, arc2height)
+    # テキストの生成
+    text = _generate_text(textmap, tokens_padded)
+    if return_str:
+        return text
+    else:
+        print(text)
+
+def _pad_token(token):
+    """
+    :type token: str
+    :rtype: str
+    """
+    while len(token) <= LEAF_WINDOW:
+        token = " " + token + " "
+    token = "[" + token[1:-1] + "]"
+    return token
+
+def _get_arc2height(arcs):
+    """
+    :type arcs: list of (int, int)
+    :rtype: dictionary of {(int, int): int}
+    """
+    n_arcs = len(arcs)
+    arcs_sorted = sorted(arcs, key=lambda x: np.abs(x[0] - x[1]))
+    arc2height = {arc: 1 for arc in arcs}
+    for arc_i in range(n_arcs):
+        bi, ei = sorted(arcs_sorted[arc_i])
+        for arc_j in range(n_arcs):
+            if arc_i == arc_j:
+                continue
+            bj, ej = sorted(arcs_sorted[arc_j])
+            if bi <= bj <= ej <= ei:
+                arc2height[arcs_sorted[arc_i]] = max(arc2height[arcs_sorted[arc_j]] + 1, arc2height[arcs_sorted[arc_i]])
+    return arc2height
+
+def _init_textmap(tokens_padded, arc2height):
+    """
+    :type tokens_padded: list of str
+    :type arc2height: dictionary of {(int, int): int}
+    :rtype: numpy.ndarray of matrix(dtype=np.int32)
+    """
+    max_height = -1
+    for arc in arc2height.keys():
+        height = arc2height[arc]
+        if height > max_height:
+            max_height = height
+    textmap = np.zeros((1 + max_height * 2,
+                        sum([len(token) for token in tokens_padded]) + (len(tokens_padded)-1) * SPACE_SIZE),
+                       dtype=np.int32)
+    return textmap
+
+def _edit_textmap(textmap, tokens_padded, arc2height):
+    """
+    :type textmap: numpy.ndarray of matrix(dtype=np.int32)
+    :type tokens_padded: list of str
+    :type arc2height: dictionary of {(int, int): int}
+    :rtype: numpy.ndarray of matrix
+    """
+    # Token index -> center position (i.e., column index in textmap)
+    index2position = {}
+    for token_i in range(len(tokens_padded)):
+        center = int(len(tokens_padded[token_i]) / 2) \
+                    + sum([len(token) for token in tokens_padded[:token_i]]) \
+                    + SPACE_SIZE * token_i
+        index2position[token_i] = center
+
+    for arc in arc2height.keys():
+        b, e = arc
+        b_pos = index2position[b]
+        e_pos = index2position[e]
+        height = arc2height[arc]
+        # End point
+        textmap[-1, e_pos] = ARROW
+        textmap[-2:-1-height*2:-1, e_pos] = VERTICAL
+        # Beginning point
+        if b < e:
+            textmap[-1, b_pos+2] = VERTICAL
+        else:
+            textmap[-1, b_pos-2] = VERTICAL
+        # Horizontal lines
+        if b < e:
+            textmap[-1-height*2, b_pos+2:e_pos+1] = HORIZONTAL
+        else:
+            textmap[-1-height*2, e_pos:b_pos-2+1] = HORIZONTAL
+
+    for arc in arc2height.keys():
+        b, e = arc
+        b_pos = index2position[b]
+        e_pos = index2position[e]
+        height = arc2height[arc]
+        # Vertical lines
+        if b < e:
+            textmap[-2:-1-height*2:-1, b_pos+2] = VERTICAL
+        else:
+            textmap[-2:-1-height*2:-1, b_pos-2] = VERTICAL
+
+    return textmap
+
+def _generate_text(textmap, tokens_padded):
+    """
+    :type textmap: numpy.ndarray of matrix(dtype=np.int32)
+    :type tokens_padded: list of str
+    """
+    text = ""
+    for row_i in range(textmap.shape[0]):
+        row_text = ""
+        for col_i in range(textmap.shape[1]):
+            if textmap[row_i, col_i] == EMPTY:
+                row_text = row_text + " "
+            elif textmap[row_i, col_i] == ARROW:
+                row_text = row_text + "V"
+            elif textmap[row_i, col_i] == VERTICAL:
+                row_text = row_text + "|"
+            elif textmap[row_i, col_i] == HORIZONTAL:
+                row_text = row_text + "_"
+            else:
+                raise ValueError
+        row_text = row_text + "\n"
+        text = text + row_text
+    for token in tokens_padded:
+        text = text + token
+        text = text + SPACE
+    text = text[:-SPACE_SIZE]
+    return text
+
 

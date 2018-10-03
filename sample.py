@@ -194,6 +194,7 @@ print("dtree.dependent2head=%s" % dtree.dependent2head)
 for index in range(len(tokens)):
     print("dtree.get_dependents(%d) = %s" % (index, dtree.get_dependents(index)))
     print("dtree.get_head(%d) = %s" % (index, dtree.get_head(index)))
+treetk.pretty_print_dtree(dtree)
 
 ###################################
 print("\n############### Sample for conversion of dependency tree -> constituency tree ####################\n")

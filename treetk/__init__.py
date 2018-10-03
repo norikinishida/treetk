@@ -19,3 +19,4 @@ from treetk import draw
 from dtree import produce_dependencytree
 from dtree import ctree2dtree
 from dtree import dtree2ctree
+from dtree import pretty_print_dtree
