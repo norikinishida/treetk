@@ -309,11 +309,14 @@ def _get_arc2height(arcs):
     arc2height = {arc: 1 for arc in arcs}
     for arc_i in range(n_arcs):
         bi, ei = sorted(arcs_sorted[arc_i])
-        for arc_j in range(n_arcs):
+        for arc_j in range(0, n_arcs):
             if arc_i == arc_j:
                 continue
             bj, ej = sorted(arcs_sorted[arc_j])
             if bi <= bj <= ej <= ei:
+                arc2height[arcs_sorted[arc_i]] = max(arc2height[arcs_sorted[arc_j]] + 1, arc2height[arcs_sorted[arc_i]])
+            elif (bi < bj < ei < ej) or (bj < bi < ej < ei):
+                # NOTE: We do not have to consider the case of bi == bj because we iterate arcs_sorted
                 arc2height[arcs_sorted[arc_i]] = max(arc2height[arcs_sorted[arc_j]] + 1, arc2height[arcs_sorted[arc_i]])
     return arc2height
 
