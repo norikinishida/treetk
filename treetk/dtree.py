@@ -347,7 +347,8 @@ def _edit_textmap(textmap, tokens_padded, arc2height, arc2label):
                     + SPACE_SIZE * token_i
         index2position[token_i] = center
 
-    for arc in arc2height.keys():
+    arcs_sorted = sorted(arc2height.keys(), key=lambda x: arc2height[x])
+    for arc in arcs_sorted:
         b, e = arc
         b_pos = index2position[b]
         e_pos = index2position[e]
@@ -366,22 +367,16 @@ def _edit_textmap(textmap, tokens_padded, arc2height, arc2label):
             textmap[-1-height*2, b_pos+2:e_pos+1] = HORIZONTAL
         else:
             textmap[-1-height*2, e_pos:b_pos-2+1] = HORIZONTAL
-        # Label
-        if b < e:
-            textmap[-1-height*2+1, e_pos-1-len(label):e_pos-1] = list(label)
-        else:
-            textmap[-1-height*2+1, e_pos+1:e_pos+1+len(label)] = list(label)
-
-    for arc in arc2height.keys():
-        b, e = arc
-        b_pos = index2position[b]
-        e_pos = index2position[e]
-        height = arc2height[arc]
         # Vertical lines
         if b < e:
             textmap[-2:-1-height*2:-1, b_pos+2] = VERTICAL
         else:
             textmap[-2:-1-height*2:-1, b_pos-2] = VERTICAL
+        # Label
+        if b < e:
+            textmap[-1-height*2+1, e_pos-len(label):e_pos] = list(label)
+        else:
+            textmap[-1-height*2+1, e_pos+1:e_pos+1+len(label)] = list(label)
 
     return textmap
 
