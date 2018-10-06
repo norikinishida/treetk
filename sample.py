@@ -198,33 +198,15 @@ treetk.pretty_print_dtree(dtree)
 
 ###################################
 print("\n############### Sample for conversion of dependency tree -> constituency tree ####################\n")
-print("dtree.__str__() = %s" % dtree)
+treetk.pretty_print_dtree(dtree)
 ctree = treetk.dtree2ctree(dtree)
-print("ctree.__str__() = %s" % ctree)
 treetk.pretty_print(ctree)
-
-rules = treetk.aggregate_production_rules(ctree)
-print_list("production rules =", rules)
-
-ctree.calc_spans()
-spans = treetk.aggregate_spans(ctree)
-print_list("spans =", spans)
-mrg_spans = treetk.aggregate_composition_spans(ctree, binary=False)
-print_list("composition spans =", mrg_spans)
-
-subtree_strings = treetk.aggregate_subtrees(ctree, string=True)
-print_list("subtrees =", subtree_strings)
-
-print("tree2sexp(ctree) = %s" % treetk.tree2sexp(ctree))
-
-if DRAW:
-    treetk.draw(ctree)
 
 ###################################
 print("\n############### Sample for conversion of constituency tree -> dependency tree ####################\n")
 sexp = treetk.preprocess("(S (NP (DT a) (NN boy)) (VP (VP (VBD saw) (NP (DT a) (NN girl))) (PP (IN with) (NP (DT a) (NN telescope)))))".split())
 ctree = treetk.sexp2tree(sexp, with_nonterminal_labels=True, with_terminal_labels=True)
-print("ctree.__str__() = %s" % ctree)
+treetk.pretty_print(ctree)
 def func_head_rule(node):
     # a simple example of the head-selection rules that specify a head subtree among the children nodes
     if node.label == "S" and node.children[0].label == "NP" and node.children[1].label == "VP":
@@ -241,6 +223,8 @@ def func_head_rule(node):
         return 0
 def func_label_rule(node, i, j):
     # a simple example of the rules that specify an arc label given parent and head/dependent nodes
-    return "%s -> %s %s" % (node.label, node.children[i].label, node.children[j].label)
+    return node.label
+    # return "%s,%s,%s" % (node.label, node.children[i].label, node.children[j].label)
 dtree = treetk.ctree2dtree(ctree, func_head_rule, func_label_rule)
-print("dtree.__str__() = %s" % dtree)
+treetk.pretty_print_dtree(dtree)
+

@@ -42,7 +42,7 @@ class DependencyTree:
         for head, dependent, label in self.arcs:
             # 複数のheadをもつのはおかしい
             if dictionary[dependent] != (None, None):
-                raise ValueError("The dependent=%d has multiple heads!" % dependent)
+                raise ValueError("The dependent=%d has multiple heads! Given arcs=%s" % (dependent, self.arcs))
             dictionary[dependent] = (head, label)
         return dictionary
 
@@ -162,7 +162,7 @@ def dtree2ctree(dtree, binarize=None, LPAREN="(", RPAREN=")"):
         right_sides.append([])
     for span in dependency_spans_sorted_filtered:
         begin_i, end_i = span
-        head = "<" + span2token[span] + ">" # NOTE
+        head = span2token[span] # NOTE
         left_sides[begin_i].append(LPAREN) # from left to right
         left_sides[begin_i].append(head)
         right_sides[end_i] = [RPAREN] + right_sides[end_i] # from right to left
