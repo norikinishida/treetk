@@ -36,6 +36,12 @@ class Terminal(object):
         """
         return [self.token]
 
+    def labelleaves(self):
+        """
+        :rtype: list of str, i.e, [str]
+        """
+        return [self.label]
+
     def is_terminal(self):
         """
         :rtype: bool
@@ -96,6 +102,15 @@ class NonTerminal(object):
         leaves = []
         for c in self.children:
             leaves.extend(c.leaves())
+        return leaves
+
+    def labelleaves(self):
+        """
+        :rtype: list of str
+        """
+        leaves = []
+        for c in self.children:
+            leaves.extend(c.labelleaves())
         return leaves
 
     def is_terminal(self):
