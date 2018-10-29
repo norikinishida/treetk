@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*-
 
-from full import NonTerminal, Terminal
+from full import NonTerminal
+# from full import Terminal
 
 ############################
 # 読み込み
@@ -33,6 +34,10 @@ def read_sexps(path, LPAREN="(", RPAREN=")"):
 # トークンの前処理
 
 def lowercasing(node):
+    """
+    :type node: NonTerminal or Terminal
+    :rtype: NonTerminal or Terminal
+    """
     if node.is_terminal():
         node.token = node.token.lower()
         return node
@@ -40,12 +45,20 @@ def lowercasing(node):
         node.children[c_i] = lowercasing(node.children[c_i])
     return node
 
-def remove_empties_and_punctuations(node):
-    node = _remove_empties_and_punctuations_1(node)
-    node = _remove_empties_and_punctuations_2(node)
+def remove_punctuations_and_empties(node):
+    """
+    :type node: NonTerminal or Terminal
+    :rtype: NonTerminal or Terminal
+    """
+    node = _remove_punctuations(node)
+    node = _remove_empties(node)
     return node
 
 def _remove_punctuations(node):
+    """
+    :type node: NonTerminal or Terminal
+    :rtype: NonTerminal or Terminal
+    """
     if node.is_terminal():
         return node
     new_children = []
@@ -61,6 +74,10 @@ def _remove_punctuations(node):
     return node
 
 def _remove_empties(node):
+    """
+    :type node: NonTerminal or Terminal
+    :rtype: NonTerminal or Terminal
+    """
     if node.is_terminal():
         return node
     new_children = []
@@ -74,6 +91,10 @@ def _remove_empties(node):
     return node
 
 def _count_terminals(node):
+    """
+    :type node: NonTerminal or Terminal
+    :rtype: int
+    """
     if node.is_terminal():
         return 1
     count = 0
@@ -85,6 +106,10 @@ def _count_terminals(node):
 # 非終端ノードラベルの前処理
 
 def remove_function_tags(node):
+    """
+    :type node: NonTerminal or Terminal
+    :rtype: NonTerminal or Terminal
+    """
     if node.is_terminal():
         return node
     node.label = _remove_function_tags(node.label)
@@ -93,6 +118,10 @@ def remove_function_tags(node):
     return node
 
 def _remove_function_tags(label):
+    """
+    :type label: str
+    :rtype: str
+    """
     if "-" in label and not label in ["-NONE-", "-LRB-", "-RRB-"]:
         lst = label.split("-")
         return lst[0]
@@ -103,6 +132,10 @@ def _remove_function_tags(label):
 # 二分木化
 
 def binarize(node):
+    """
+    :type node: NonTerminal or Terminal
+    :rtype: NonTerminal or Terminal
+    """
     if node.is_terminal():
         return node
     if len(node.children) > 2:
@@ -112,6 +145,10 @@ def binarize(node):
     return node
 
 def _right_branching(nodes):
+    """
+    :type node: NonTerminal or Terminal
+    :rtype: [NonTerminal/Terminal, NonTerminal/Terminal]
+    """
     if len(nodes) == 2:
         return nodes
     else:
@@ -124,6 +161,10 @@ def _right_branching(nodes):
 # その他
 
 # def add_dummy_node(node):
+#     """
+#     :type node: NonTerminal or Terminal
+#     :rtype: NonTerminal or Terminal
+#     """
 #     if node.is_terminal():
 #         return node
 #     if len(node.children) == 1:
