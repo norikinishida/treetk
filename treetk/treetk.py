@@ -7,7 +7,7 @@ import nltk.tree
 ################
 # 変換 (sexp -> tree, or tree -> sexp)
 
-def sexp2tree(sexp, with_nonterminal_labels=False, with_terminal_labels=False, LPAREN="(", RPAREN=")"):
+def sexp2tree(sexp, with_nonterminal_labels, with_terminal_labels, LPAREN="(", RPAREN=")"):
     """
     :type sexp: list of str
     :type with_nonterminal_labels: bool
