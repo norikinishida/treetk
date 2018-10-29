@@ -131,15 +131,19 @@ def _remove_function_tags(label):
 ############################
 # 二分木化
 
-def binarize(node):
+def binarize(node, right_branching=True):
     """
     :type node: NonTerminal or Terminal
+    :type right_branching: bool
     :rtype: NonTerminal or Terminal
     """
     if node.is_terminal():
         return node
     if len(node.children) > 2:
-        node.children = _right_branching(node.children)
+        if right_branching:
+            node.children = _right_branching(node.children)
+        else:
+            node.children = _left_branching(node.children)
     for c_i in range(len(node.children)):
         node.children[c_i] = binarize(node.children[c_i])
     return node
@@ -155,6 +159,19 @@ def _right_branching(nodes):
         lhs = nodes[0]
         rhs = NonTerminal("+".join([n.label for n in nodes[1:]]))
         rhs.children = _right_branching(nodes[1:])
+        return [lhs, rhs]
+
+def _left_branching(nodes):
+    """
+    :type node: NonTerminal or Terminal
+    :rtype: [NonTerminal/Terminal, NonTerminal/Terminal]
+    """
+    if len(nodes) == 2:
+        return nodes
+    else:
+        lhs = NonTerminal("+".join([n.label for n in nodes[:-1]]))
+        lhs.children = _left_branching(nodes[:-1])
+        rhs = nodes[-1]
         return [lhs, rhs]
 
 ############################
