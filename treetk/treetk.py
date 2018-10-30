@@ -53,13 +53,14 @@ def preprocess(x, LPAREN="(", RPAREN=")"):
     sexp = x.replace(LPAREN, " %s " % LPAREN).replace(RPAREN, " %s " % RPAREN).split()
     return sexp
 
-def filter_parens(sexp, PARENS):
+def filter_parens(sexp, LPAREN="(", RPAREN=")"):
     """
     :type sexp: list of str
-    :type PARENS: list of str, e.g., ["(", ")"]
+    :type LPAREN: str
+    :type RPAREN: str
     :rtype: list of str
     """
-    return [x for x in sexp if not x in PARENS]
+    return [x for x in sexp if not x in [LPAREN, RPAREN]]
 
 ################
 # Production rulesの収集
