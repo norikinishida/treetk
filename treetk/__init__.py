@@ -22,3 +22,4 @@ from dtree import ctree2dtree
 from dtree import dtree2ctree
 from dtree import pretty_print_dtree
 
+import ptbwsj
