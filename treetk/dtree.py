@@ -80,7 +80,7 @@ class DependencyTree:
         """
         return self.dependent2head[index]
 
-def produce_dependencytree(arcs, tokens=None):
+def arcs2dtree(arcs, tokens=None):
     """
     :type arcs: list of (int, int, str), or list of (int, int)
     :type tokens: list of str, or None
@@ -92,7 +92,17 @@ def produce_dependencytree(arcs, tokens=None):
     dtree = DependencyTree(arcs=arcs_checked, tokens=tokens)
     return dtree
 
+def hyphens2arcs(hyphens):
+    """
+    :type hyphens: list of str
+    :rtype: list of (int, int, str)
+    """
+    arcs = [x.split("-") for x in hyphens]
+    arcs = [(int(arc[0]), int(arc[1]), str(arc[2])) for arc in arcs]
+    return arcs
+
 #####################################
+
 def ctree2dtree(tree, func_head_rule, func_label_rule):
     """
     :type NonTerminal or Terminal
@@ -104,7 +114,7 @@ def ctree2dtree(tree, func_head_rule, func_label_rule):
         raise ValueError("The type of the argument ``tree'' must be NonTerminal")
     arcs, _ = _rec_ctree2dtree(tree, func_head_rule, func_label_rule)
     tokens = tree.leaves()
-    dtree = produce_dependencytree(arcs=arcs, tokens=tokens)
+    dtree = arcs2dtree(arcs=arcs, tokens=tokens)
     return dtree
 
 def _rec_ctree2dtree(node, func_head_rule, func_label_rule):
@@ -138,6 +148,7 @@ def _rec_ctree2dtree(node, func_head_rule, func_label_rule):
     return arcs, head_token_index
 
 #####################################
+
 def dtree2ctree(dtree, binarize=None, LPAREN="(", RPAREN=")"):
     """
     :type dtree: DependencyTree

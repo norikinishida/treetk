@@ -186,8 +186,8 @@ tokens = ["<root>", "a", "boy", "saw", "a", "girl", "with", "a", "telescope"]
 arcs = [(2, 1, "det"), (3, 2, "nsubj"), (3, 5, "dobj"), (5, 4, "det"), (3, 6, "prep"), (6, 8, "pobj"), (8, 7, "det"), (0, 3, "root")]
 print("tokens = %s" % tokens)
 print("arcs = %s" % arcs)
-# dtree = treetk.produce_dependencytree(arcs=arcs) # this is allowable
-dtree = treetk.produce_dependencytree(arcs=arcs, tokens=tokens)
+# dtree = treetk.arcs2dtree(arcs=arcs) # this is allowable
+dtree = treetk.arcs2dtree(arcs=arcs, tokens=tokens)
 print("dtree.__str__() = %s" % dtree)
 print("dtree.tolist(labeled=True) = %s" % dtree.tolist(labeled=True))
 print("dtree.tolist(labeled=False) = %s" % dtree.tolist(labeled=False))

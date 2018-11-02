@@ -16,7 +16,8 @@ from treetk import is_completely_binary
 from treetk import pretty_print
 from treetk import draw
 
-from dtree import produce_dependencytree
+from dtree import hyphens2arcs
+from dtree import arcs2dtree
 from dtree import ctree2dtree
 from dtree import dtree2ctree
 from dtree import pretty_print_dtree
