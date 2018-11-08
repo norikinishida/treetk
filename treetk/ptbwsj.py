@@ -65,7 +65,14 @@ def _remove_punctuations(node):
     for c_i in range(len(node.children)):
         # 子ノードで, 終端ノードかつpunctuationであるものは除去
         if node.children[c_i].is_terminal() and \
-                node.children[c_i].label in ["-NONE-", ",", ".", ":", "``", "''", "-LRB-", "-RRB-", "$", "#"]:
+                node.children[c_i].label in ["-NONE-",
+                                             ",", ".", "?", "!", "...",
+                                             ":", ";",
+                                             "``", "''",
+                                             "--", "-",
+                                             "-LRB-", "-RRB-",
+                                             "-LCB-", "-RCB-",
+                                             "$", "#"]:
             continue
         new_children.append(node.children[c_i])
     node.children = new_children
@@ -122,7 +129,7 @@ def _remove_function_tags(label):
     :type label: str
     :rtype: str
     """
-    if "-" in label and not label in ["-NONE-", "-LRB-", "-RRB-"]:
+    if "-" in label and not label in ["-NONE-", "-LRB-", "-RRB-", "-LCB-", "-RCB-"]:
         lst = label.split("-")
         return lst[0]
     else:
