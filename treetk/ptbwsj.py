@@ -33,6 +33,16 @@ def read_sexps(path, LPAREN="(", RPAREN=")"):
 ############################
 # トークンの前処理
 
+PUNCTUATIONS = ["-NONE-",
+                ",", ".", "?", "!",
+                "...",
+                ":", ";",
+                "``", "''",
+                "--", "-",
+                "-LRB-", "-RRB-",
+                "-LCB-", "-RCB-",
+                "$", "#"]
+
 def lowercasing(node):
     """
     :type node: NonTerminal or Terminal
@@ -65,14 +75,7 @@ def _remove_punctuations(node):
     for c_i in range(len(node.children)):
         # 子ノードで, 終端ノードかつpunctuationであるものは除去
         if node.children[c_i].is_terminal() and \
-                node.children[c_i].label in ["-NONE-",
-                                             ",", ".", "?", "!", "...",
-                                             ":", ";",
-                                             "``", "''",
-                                             "--", "-",
-                                             "-LRB-", "-RRB-",
-                                             "-LCB-", "-RCB-",
-                                             "$", "#"]:
+                node.children[c_i].label in PUNCTUATIONS:
             continue
         new_children.append(node.children[c_i])
     node.children = new_children
