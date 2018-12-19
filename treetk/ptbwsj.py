@@ -1,7 +1,6 @@
 # -*- coding: utf-8 -*-
 
 from .full import NonTerminal
-# from full import Terminal
 
 ############################
 # 読み込み
@@ -15,7 +14,7 @@ def read_sexps(path, LPAREN="(", RPAREN=")"):
     buf = []
     depth = 0
     for line in open(path):
-        tokens = line.decode("utf-8").strip().replace("(", " ( ").replace(")", " ) ").split()
+        tokens = line.strip().replace("(", " ( ").replace(")", " ) ").split()
         if len(tokens) == 0:
             continue
         for token in tokens:
