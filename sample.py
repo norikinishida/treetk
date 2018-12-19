@@ -1,5 +1,13 @@
 # -*- coding: utf-8 -*-
 
+# import os
+# import sys
+# print(sys.path)
+# print(__file__)
+# print(os.path.dirname(__file__))
+# sys.path.append(os.path.join(os.path.dirname(__file__), "./treetk"))
+# print(sys.path)
+
 import treetk
 
 DRAW=False

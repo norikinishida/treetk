@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 
-from full import NonTerminal
+from .full import NonTerminal
 # from full import Terminal
 
 ############################

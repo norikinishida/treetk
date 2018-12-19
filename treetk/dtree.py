@@ -1,6 +1,5 @@
 # -*- coding: utf-8 -*-
 
-from collections import defaultdict
 import copy
 
 import numpy as np
@@ -26,8 +25,10 @@ class DependencyTree:
         :rtype: dictionary of {int: list of (int,str)}
         """
         # NOTE: 再帰的にまではdependentsを辿らないことに注意
-        dictionary = defaultdict(list)
+        dictionary = {}
         for head, dependent, label in self.arcs:
+            if not head in dictionary:
+                dictionary[head] = []
             dictionary[head].append((dependent, label))
         return dictionary
 
@@ -71,7 +72,7 @@ class DependencyTree:
         :type index: int
         :rtype: list of (int, str)
         """
-        return self.head2dependents[index]
+        return self.head2dependents.get(index, [])
 
     def get_head(self, index):
         """
@@ -216,10 +217,11 @@ def _get_head2dependents_map(dtree):
     :type dtree: DependencyTree
     :rtype: dictionary of {int: list of int}
     """
-    head2dependents = defaultdict(list)
+    head2dependents = {}
 
     # 自分自身も含む (dependentsを持たない単語も登録する)
     for token_index in range(len(dtree.tokens)):
+        head2dependents[token_index] = []
         head2dependents[token_index].append(token_index)
 
     # 1次のdependentsを登録
