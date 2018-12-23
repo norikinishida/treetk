@@ -1,5 +1,3 @@
-# -*- coding: utf-8 -*-
-
 import numpy as np
 
 class Terminal(object):
@@ -135,7 +133,6 @@ def sexp2tree(sexp, LPAREN, RPAREN):
     :type LPAREN: str
     :type RPAREN: str
     :rtype: NonTerminal
-    NOTE: prepare_ptb_wsj.pyのsexp2tree()とは入力に想定しているS式の仕様が異なることに注意
     """
     tokens = sexp
     n_tokens = len(tokens)

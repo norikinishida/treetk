@@ -1,19 +1,17 @@
-# -*- coding: utf-8 -*-
-
 import copy
 
 import numpy as np
 
 import treetk
 
-class DependencyTree:
+class DependencyTree(object):
 
     def __init__(self, arcs, tokens):
         """
         :type arcs: list of (int, int, str)
         :type tokens: list of str
         """
-        # NOTE: arcs中のintegerは辞書中のword IDではなく，tokens中のindexであることに注意
+        # NOTE that integers in arcs are not word IDs but indices in the sentence.
         self.arcs = arcs
         self.tokens = tokens
 
@@ -24,7 +22,7 @@ class DependencyTree:
         """
         :rtype: dictionary of {int: list of (int,str)}
         """
-        # NOTE: 再帰的にまではdependentsを辿らないことに注意
+        # NOTE that we do not recursively collect the dependents.
         dictionary = {}
         for head, dependent, label in self.arcs:
             if not head in dictionary:
@@ -37,11 +35,11 @@ class DependencyTree:
         :rtype: dictionary of {int: (int, str) or (None, None)}
         """
         dictionary = {}
-        # headをもたないトークン(i.e., ROOT)に関しては(None, None)を返す
+        # Return (None, None) if the token (i.e., ROOT) does not have a head.
         for dependent in range(len(self.tokens)):
             dictionary[dependent] = (None, None)
         for head, dependent, label in self.arcs:
-            # 複数のheadをもつのはおかしい
+            # Tokens should not have multiple heads.
             if dictionary[dependent] != (None, None):
                 raise ValueError("The dependent=%d has multiple heads! Given arcs=%s" % (dependent, self.arcs))
             dictionary[dependent] = (head, label)
@@ -129,17 +127,17 @@ def _rec_ctree2dtree(node, func_head_rule, func_label_rule):
     """
     if node.is_terminal():
         return [], node.index
-    # まず，どの子部分木がHEADなのかだけ確かめる
+    # First, identify the head subtree among the children.
     head_c_i = func_head_rule(node)
-    # 各子部分木について，そのHEADとなる具体的なtoken indexを求める
-    # ついでに，各子部分木についても再帰的にarcsを取得する
+    # Second, identify the token-level head index of each subtree.
+    # Collect arcs for each subtree recursively.
     head_token_indices = []
     arcs = []
     for c in node.children:
         sub_arcs, head_token_index = _rec_ctree2dtree(c, func_head_rule, func_label_rule)
         head_token_indices.append(head_token_index)
         arcs.extend(sub_arcs)
-    # HEADとなる子部分木(のHEAD token)から，DEPENDENTSとなる他の子部分木(のHEAD token)へargを張る
+    # Third, add arcs from [the head token of the head subtree] to [the head tokens of the dependent subtrees]j
     head_token_index = head_token_indices[head_c_i]
     # arc_label = node.label # TODO
     for c_i in range(len(node.children)):
@@ -160,16 +158,16 @@ def dtree2ctree(dtree, binarize=None, LPAREN="(", RPAREN=")"):
     :type RPAREN: str
     :rtype: NonTerminal
     """
-    # (1) Dependency spansの取得
+    # (1) Get dependency spans.
     dependency_spans = _get_dependency_spans(dtree)
     assert len(dependency_spans) == len(dtree.tokens)
-    # (2) ソート, length=1のspanの除去
+    # (2) Sort. Remove spans of length 1.
     span2token = {}
     for span, token in zip(dependency_spans, dtree.tokens):
         span2token[span] = token
     dependency_spans_sorted = sorted(dependency_spans, key=lambda x: (x[0], -x[1]))
     dependency_spans_sorted_filtered = [span for span in dependency_spans_sorted if span[0] != span[1]]
-    # (3) 各トークンについて，Left/Right sidesを計算
+    # (3) Compute left/right sides for each token.
     left_sides, right_sides = [], []
     for _ in range(len(dtree.tokens)):
         left_sides.append([])
@@ -180,16 +178,16 @@ def dtree2ctree(dtree, binarize=None, LPAREN="(", RPAREN=")"):
         left_sides[begin_i].append(LPAREN) # from left to right
         left_sides[begin_i].append(head)
         right_sides[end_i] = [RPAREN] + right_sides[end_i] # from right to left
-    # (4) Left_sides, tokens, right_sidesに従ってS式を作成
+    # (4) Create a S-expression according to the left_sides, tokens, and right_sides.
     sexp = []
     for index in range(len(dtree.tokens)):
         sexp.extend(left_sides[index])
         sexp.append(dtree.tokens[index])
         sexp.extend(right_sides[index])
-    # (5) Constituency treeの作成
+    # (5) Convert the S-expression to a constituency tree instance.
     sexp = treetk.preprocess(sexp)
     ctree = treetk.sexp2tree(sexp, with_nonterminal_labels=True, with_terminal_labels=False)
-    # (6) Binarization?
+    # (6) Binarize the tree.
     if binarize is not None:
         # TODO
         pass
@@ -200,9 +198,9 @@ def _get_dependency_spans(dtree):
     :type dtree: DependencyTree
     :rtype: list of (int, int)
     """
-    # 各トークンからlinkで辿れるすべてのdependentsへのマップ
+    # Create a map from each token to its dependents that can be traced via the arcs.
     head2dependents = _get_head2dependents_map(dtree)
-    # spanへの変換
+    # Convert to spans.
     dependency_spans = []
     for token_index in range(len(dtree.tokens)):
         dependents = head2dependents[token_index]
@@ -219,16 +217,16 @@ def _get_head2dependents_map(dtree):
     """
     head2dependents = {}
 
-    # 自分自身も含む (dependentsを持たない単語も登録する)
+    # Add all tokens even if a token does not have any dependents.
     for token_index in range(len(dtree.tokens)):
         head2dependents[token_index] = []
         head2dependents[token_index].append(token_index)
 
-    # 1次のdependentsを登録
+    # Add first-order dependents.
     for head, dependent, label in dtree.arcs:
         head2dependents[head].append(dependent)
 
-    # 再帰的にdependentsを登録
+    # Add dependents recursively.
     for token_index in range(len(dtree.tokens)):
         dependents = _get_dependents_recursively(token_index, head2dependents)
         head2dependents[token_index] = dependents
@@ -249,14 +247,13 @@ def _get_dependents_recursively(head, head2dependents):
         for dependent in copy.deepcopy(dependents):
             if dependent == head:
                 continue
-            # 一度見たものはもう見ない
             if dependent in history:
                 continue
             history.add(dependent)
-            # dependentのdependentsを登録
+            # Add dependents of the dependent.
             for dd in head2dependents[dependent]:
                 dependents.add(dd)
-        # 新しいdependentが登録されてなければ終了
+        # Finish if new tokens were not added.
         new_length = len(dependents)
         if prev_length == new_length:
             break
@@ -286,15 +283,15 @@ def pretty_print_dtree(dtree, return_str=False):
     arc2label = {(b,e): l for b,e,l in arcs_labeled}
     tokens = dtree.tokens
 
-    # 各トークンへのpadding
+    # Padding for each token.
     tokens_padded = [_pad_token(token) for token in tokens]
-    # 各arcを描く高さを求める
+    # Compute heights of the arcs.
     arc2height = _get_arc2height(arcs_unlabeled)
-    # テキストマップを生成する
+    # Create a textmap.
     textmap = _init_textmap(tokens_padded, arc2height)
-    # テキストマップを編集する
+    # Edit the textmap.
     textmap = _edit_textmap(textmap, tokens_padded, arc2height, arc2label)
-    # テキストの生成
+    # Create a text based on the textmap.
     text = _generate_text(textmap, tokens_padded)
     if return_str:
         return text

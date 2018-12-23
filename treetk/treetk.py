@@ -1,11 +1,9 @@
-# -*- coding: utf-8 -*-
-
 import sys
 
 import nltk.tree
 
 ################
-# 変換 (sexp -> tree, or tree -> sexp)
+# Conversion (sexp -> tree, or tree -> sexp)
 
 def sexp2tree(sexp, with_nonterminal_labels, with_terminal_labels, LPAREN="(", RPAREN=")"):
     """
@@ -63,7 +61,7 @@ def filter_parens(sexp, LPAREN="(", RPAREN=")"):
     return [x for x in sexp if not x in [LPAREN, RPAREN]]
 
 ################
-# Production rulesの収集
+# Aggregation of production rules
 # NOTE: only for trees with nonterminal labels
 
 def aggregate_production_rules(root):
@@ -104,7 +102,7 @@ def _rec_aggregate_production_rules(node, acc=None):
     return acc
 
 ################
-# spansの収集
+# Aggregation of spans
 
 def aggregate_spans(node, acc=None):
     """
@@ -158,7 +156,7 @@ def aggregate_composition_spans(node, acc=None, binary=True):
     return acc
 
 ################
-# 部分木リストの収集
+# Aggregation of subtrees.
 
 def aggregate_subtrees(root, string=True):
     """
@@ -231,7 +229,7 @@ def right_shift(node):
     return left
 
 ################
-# チェック
+# Checking
 
 def is_completely_binary(node):
     """
@@ -248,7 +246,7 @@ def is_completely_binary(node):
     return bool(acc)
 
 ################
-# 描画周り
+# Visualization
 
 def pretty_print(tree, LPAREN="(", RPAREN=")"):
     """

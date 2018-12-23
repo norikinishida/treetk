@@ -1,9 +1,7 @@
-# -*- coding: utf-8 -*-
-
 from .full import NonTerminal
 
 ############################
-# 読み込み
+# IO
 
 def read_sexps(path, LPAREN="(", RPAREN=")"):
     """
@@ -30,7 +28,7 @@ def read_sexps(path, LPAREN="(", RPAREN=")"):
     return sexps
 
 ############################
-# トークンの前処理
+# Preprocessing
 
 PUNCTUATIONS = ["-NONE-",
                 ",", ".", "?", "!",
@@ -72,7 +70,7 @@ def _remove_punctuations(node):
         return node
     new_children = []
     for c_i in range(len(node.children)):
-        # 子ノードで, 終端ノードかつpunctuationであるものは除去
+        # Remove child nodes that are terminals and punctuations.
         if node.children[c_i].is_terminal() and \
                 node.children[c_i].label in PUNCTUATIONS:
             continue
@@ -91,7 +89,7 @@ def _remove_empties(node):
         return node
     new_children = []
     for c_i in range(len(node.children)):
-        # 終端ノードを一つも子に持っていない非終端ノードを除去
+        # Remove non-terminal nodes without any child terminals.
         if _count_terminals(node.children[c_i]) > 0:
             new_children.append(node.children[c_i])
     node.children = new_children
@@ -112,7 +110,7 @@ def _count_terminals(node):
     return count
 
 ############################
-# 非終端ノードラベルの前処理
+# Preprocessing of non-terminal node labels.
 
 def remove_function_tags(node):
     """
@@ -138,7 +136,7 @@ def _remove_function_tags(label):
         return label
 
 ############################
-# 二分木化
+# Binarization
 
 def binarize(node, right_branching=True):
     """
@@ -184,7 +182,7 @@ def _left_branching(nodes):
         return [lhs, rhs]
 
 ############################
-# その他
+# Others
 
 # def add_dummy_node(node):
 #     """
