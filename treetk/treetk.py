@@ -1,6 +1,6 @@
 import sys
 
-import nltk.tree
+import numpy as np
 
 ################
 # Conversion (sexp -> tree, or tree -> sexp)
@@ -248,38 +248,233 @@ def is_completely_binary(node):
 ################
 # Visualization
 
-def pretty_print(tree, LPAREN="(", RPAREN=")"):
+LEAF_WINDOW = 8
+SPACE_SIZE = 1
+SPACE = " " * SPACE_SIZE
+
+EMPTY = 0
+VERTICAL = 1
+HORIZONTAL = 2
+
+def pretty_print(tree, return_str=False, LPAREN="(", RPAREN=")"):
+    """
+    :type tree: NonTerminal or Terminal
+    :type LPAREN: str
+    :type RPAREN: str
+    :rtype: None or str
+    """
+    # Tokens with padding
+    tokens = tree.leaves()
+    tokens_padded = [_pad_token(token) for token in tokens]
+    # Create a textmap.
+    textmap = _init_textmap(tokens_padded, tree)
+    # Edit the textmap.
+    textmap = _edit_textmap(textmap, tokens_padded, tree)
+    # Create a text based on the textmap.
+    text = _generate_text(textmap, tokens_padded)
+
+    if return_str:
+        return text
+    else:
+        print(text)
+
+def _pad_token(token):
+    """
+    :type token: str
+    :rtype: str
+    """
+    token = " " + token + " "
+    while len(token) <= LEAF_WINDOW:
+        token = " " + token + " "
+    token = "[" + token[1:-1] + "]"
+    return token
+
+def _init_textmap(tokens_padded, tree):
+    """
+    :type tokens_padded: list of str
+    :type tree: NonTerminal or Terminal
+    :rtype: numpy.ndarray(shape=(R,C), dtype="O")
+    """
+    max_height = tree.set_height()
+    max_height += 1 # include POS nodes
+    textmap = np.zeros((max_height * 3,
+                        sum([len(token) for token in tokens_padded]) + (len(tokens_padded)-1) * SPACE_SIZE),
+                       dtype="O")
+    return textmap
+
+def _edit_textmap(textmap, tokens_padded, tree):
+    """
+    :type textmap: numpy.ndarray(shape=(R,C), dtype="O")
+    :type tokens_padded: list of str
+    :type tree: NonTerminal or Terminal
+    :rtype: numpy.ndarray(shape=(R,C), dtype="O")
+    """
+    # Token index -> center position (i.e., column index in textmap)
+    index2position = {} # {int: int}
+    for token_i in range(len(tokens_padded)):
+        center = int(len(tokens_padded[token_i]) / 2) \
+                    + sum([len(token) for token in tokens_padded[:token_i]]) \
+                    + SPACE_SIZE * token_i
+        index2position[token_i] = center
+
+    # Edit
+    tree = _set_position_for_each_node(tree, index2position)
+    textmap = _edit_horizontal_lines(tree, textmap)
+    textmap = _edit_vertical_lines(tree, textmap)
+
+    # Reverse and post-processing
+    textmap = textmap[::-1, :]
+    textmap = textmap[1:, :]
+    return textmap
+
+def _set_position_for_each_node(node, index2position):
+    """
+    :type node: NonTerminal or Terminal
+    :type index2position: {int: int}
+    :rtype: numpy.ndarray(shape=(R,C), dtype=int)
+    """
+    if node.is_terminal():
+        position = index2position[node.index]
+        node.position = position
+        return node
+
+    min_position = np.inf
+    max_position = -np.inf
+    for c in node.children:
+        c = _set_position_for_each_node(c, index2position)
+        if c.position < min_position:
+            min_position = c.position
+        if c.position > max_position:
+            max_position = c.position
+
+    position = (min_position + max_position) // 2
+    node.position = position
+
+    return node
+
+def _edit_vertical_lines(node, textmap):
+    """
+    :type node: NonTerminal or Terminal
+    :type textmap: numpy.ndarray(shape=(R,C), dtype=int)
+    :rtype: numpy.ndarray(shape=(R,C), dtype=int)
+    """
+    row_i = node.height * 3 + 1
+    col_i = node.position
+
+    textmap[row_i-1, col_i] = VERTICAL
+    textmap[row_i+1, col_i] = VERTICAL
+
+    if node.with_nonterminal_labels and not node.is_terminal():
+        label = list(node.label)
+    elif node.with_terminal_labels and node.is_terminal():
+        label = list(node.label)
+    else:
+        label = "*"
+
+    if len(label) % 2 == 0:
+        half = len(label) // 2 - 1
+    else:
+        half = len(label) // 2
+    former_label = label[0:half]
+    latter_label = label[half:]
+
+    if (col_i - len(former_label) < 0) or (textmap.shape[1] < col_i + len(latter_label)):
+        raise Exception("Node label='%s' is too long. Please use treetk.nltk_pretty_print() instead." % node.label)
+
+    textmap[row_i, col_i-len(former_label):col_i] = former_label
+    textmap[row_i, col_i:col_i+len(latter_label)] = latter_label
+
+    if node.is_terminal():
+        return textmap
+
+    max_height = -1
+    for c in node.children:
+        if c.height > max_height:
+            max_height = c.height
+    for c in node.children:
+        textmap[(c.height * 3 + 1) + 2: (max_height * 3 + 1) + 2, c.position] = VERTICAL
+
+    for c in node.children:
+        textmap = _edit_vertical_lines(c, textmap)
+
+    return textmap
+
+def _edit_horizontal_lines(node, textmap):
+    """
+    :type node: NonTerminal or Terminal
+    :type textmap: numpy.ndarray(shape=(R,C), dtype="O")
+    :rtype: numpy.ndarray(shape=(R,C), dtype="O")
+    """
+    if node.is_terminal():
+        return textmap
+
+    min_position = np.inf
+    max_position = -np.inf
+    for c in node.children:
+        if c.position < min_position:
+            min_position = c.position
+        if c.position > max_position:
+            max_position = c.position
+
+    row_i = node.height * 3 + 1 - 1
+    left_col_i = min_position
+    right_col_i = max_position
+
+    textmap[row_i, left_col_i:right_col_i + 1] = HORIZONTAL
+
+    for c in node.children:
+        textmap = _edit_horizontal_lines(c, textmap)
+
+    return textmap
+
+def _generate_text(textmap, tokens_padded):
+    """
+    :type textmap: numpy.ndarray(shape=(R,C), dtype="O")
+    :type tokens_padded: list of str
+    """
+    text = ""
+    for row_i in range(textmap.shape[0]):
+        row_text = ""
+        for col_i in range(textmap.shape[1]):
+            if textmap[row_i, col_i] == EMPTY:
+                row_text = row_text + " "
+            elif textmap[row_i, col_i] == VERTICAL:
+                row_text = row_text + "|"
+            elif textmap[row_i, col_i] == HORIZONTAL:
+                row_text = row_text + "_"
+            else:
+                row_text = row_text + str(textmap[row_i, col_i])
+        row_text = row_text.rstrip() + "\n"
+        text = text + row_text
+    for token in tokens_padded:
+        text = text + token
+        text = text + SPACE
+    text = text[:-SPACE_SIZE]
+    return text
+
+def nltk_pretty_print(tree, LPAREN="(", RPAREN=")"):
     """
     :type tree: NonTerminal or Terminal
     :type LPAREN: str
     :type RPAREN: str
     :rtype: None
     """
+    import nltk.tree
     text = tree.__str__()
     if not tree.with_nonterminal_labels:
         text = _insert_dummy_nonterminal_labels(text,
                 with_terminal_labels=tree.with_terminal_labels,
                 LPAREN=LPAREN)
     nltk.tree.Tree.fromstring(text).pretty_print()
-    # tree.set_depth()
-    # _rec_pretty_print(tree, LPAREN, RPAREN, SPACE="  ")
 
-# def _rec_pretty_print(node, LPAREN, RPAREN, SPACE):
-#     if node.is_terminal():
-#         print("%s%s" % (SPACE * node.depth, node.__str__()))
-#         return
-#     print("%s%s" % (SPACE * node.depth, LPAREN))
-#     for c in node.children:
-#         _rec_pretty_print(c, LPAREN, RPAREN, SPACE)
-#     print("%s%s" % (SPACE * node.depth, RPAREN))
-
-def draw(tree, LPAREN="(", RPAREN=")"):
+def nltk_draw(tree, LPAREN="(", RPAREN=")"):
     """
     :type tree: NonTerminal or Terminal
     :type LPAREN: str
     :type RPAREN: str
     :rtype: None
     """
+    import nltk.tree
     text = tree.__str__()
     if not tree.with_nonterminal_labels:
         text = _insert_dummy_nonterminal_labels(text,

@@ -11,6 +11,7 @@ class Terminal(object):
         self.index = index
         self.index_span = (index, index)
         self.depth = None
+        self.height = None
         self.with_terminal_labels = False
         self.with_nonterminal_labels = False
 
@@ -52,6 +53,13 @@ class Terminal(object):
         self.depth = depth
         return self.depth
 
+    def set_height(self):
+        """
+        :rtype: int
+        """
+        self.height = 0
+        return self.height
+
 class NonTerminal(object):
     def __init__(self):
         """
@@ -60,6 +68,7 @@ class NonTerminal(object):
         self.children = []
         self.index_span = (None, None)
         self.depth = None
+        self.height = None
         self.with_terminal_labels = False
         self.with_nonterminal_labels = False
 
@@ -126,6 +135,18 @@ class NonTerminal(object):
             if cdepth > max_cdepth:
                 max_cdepth = cdepth
         return max_cdepth
+
+    def set_height(self):
+        """
+        :rtype: int
+        """
+        max_height = -1
+        for c_i in range(len(self.children)):
+            cheight = self.children[c_i].set_height()
+            if cheight > max_height:
+                max_height = cheight
+        self.height = max_height + 1
+        return self.height
 
 def sexp2tree(sexp, LPAREN, RPAREN):
     """

@@ -14,7 +14,8 @@ from .treetk import right_shift
 from .treetk import is_completely_binary
 
 from .treetk import pretty_print
-from .treetk import draw
+from .treetk import nltk_pretty_print
+from .treetk import nltk_draw
 
 from .dtree import hyphens2arcs
 from .dtree import arcs2dtree

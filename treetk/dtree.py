@@ -269,8 +269,8 @@ EMPTY = 0
 ARROW = 1
 VERTICAL = 2
 HORIZONTAL = 3
-LABEL_BEGIN = 4
-LABEL_END = 5
+# LABEL_BEGIN = 4
+# LABEL_END = 5
 
 def pretty_print_dtree(dtree, return_str=False):
     """
@@ -281,9 +281,9 @@ def pretty_print_dtree(dtree, return_str=False):
     arcs_labeled = dtree.tolist(labeled=True)
     arcs_unlabeled = {(b,e) for b,e,_ in arcs_labeled}
     arc2label = {(b,e): l for b,e,l in arcs_labeled}
-    tokens = dtree.tokens
 
-    # Padding for each token.
+    # Tokens with padding
+    tokens = dtree.tokens
     tokens_padded = [_pad_token(token) for token in tokens]
     # Compute heights of the arcs.
     arc2height = _get_arc2height(arcs_unlabeled)
@@ -333,7 +333,7 @@ def _init_textmap(tokens_padded, arc2height):
     """
     :type tokens_padded: list of str
     :type arc2height: dictionary of {(int, int): int}
-    :rtype: numpy.ndarray of matrix
+    :rtype: numpy.ndarray(shape=(R,C), dtype="O")
     """
     max_height = -1
     for arc in arc2height.keys():
@@ -347,14 +347,14 @@ def _init_textmap(tokens_padded, arc2height):
 
 def _edit_textmap(textmap, tokens_padded, arc2height, arc2label):
     """
-    :type textmap: numpy.ndarray of matrix
+    :type textmap: numpy.ndarray(shape=(R,C), dtype="O")
     :type tokens_padded: list of str
     :type arc2height: dictionary of {(int, int): int}
     :type arc2label: dictionary of {(int, int): str}
-    :rtype: numpy.ndarray of matrix
+    :rtype: numpy.ndarray(shape=(R,C), dtype="O")
     """
     # Token index -> center position (i.e., column index in textmap)
-    index2position = {}
+    index2position = {} # {int: int}
     for token_i in range(len(tokens_padded)):
         center = int(len(tokens_padded[token_i]) / 2) \
                     + sum([len(token) for token in tokens_padded[:token_i]]) \
@@ -396,7 +396,7 @@ def _edit_textmap(textmap, tokens_padded, arc2height, arc2label):
 
 def _generate_text(textmap, tokens_padded):
     """
-    :type textmap: numpy.ndarray of matrix
+    :type textmap: numpy.ndarray(shape=(R,C), dtype="O")
     :type tokens_padded: list of str
     """
     text = ""

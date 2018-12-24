@@ -12,16 +12,18 @@ tree.children[0].tolist() = ['NP', ['DT', 'a'], ['NN', 'cat']]
 tree.children[1].tolist() = ['VP', ['VBZ', 'bites'], ['NP', ['DT', 'a'], ['NN', 'mouse']]]
 tree.children[0].leaves() = ['a', 'cat']
 tree.children[1].leaves() = ['bites', 'a', 'mouse']
-              S                
-      ________|____             
-     |             VP          
-     |         ____|___         
-     NP       |        NP      
-  ___|___     |     ___|____    
- DT      NN  VBZ   DT       NN 
- |       |    |    |        |   
- a      cat bites  a      mouse
-
+                    S
+         ___________|___________
+         |                     |
+         |                     VP
+         |              _______|________
+         |              |              |
+         NP             |              NP
+    _____|_____         |         _____|_____
+    |         |         |         |         |
+    DT        NN       VBZ        DT        NN
+    |         |         |         |         |
+[   a   ] [  cat  ] [ bites ] [   a   ] [ mouse ]
 production rules =
 	('S', 'NP', 'VP')
 	('NP', 'DT', 'NN')
@@ -66,14 +68,18 @@ tree.children[0].tolist() = ['NP', 'a', 'cat']
 tree.children[1].tolist() = ['VP', 'bites', ['NP', 'a', 'mouse']]
 tree.children[0].leaves() = ['a', 'cat']
 tree.children[1].leaves() = ['bites', 'a', 'mouse']
-              S                
-      ________|____             
-     |             VP          
-     |         ____|___         
-     NP       |        NP      
-  ___|___     |     ___|____    
- a      cat bites  a      mouse
-
+                    S
+         ___________|___________
+         |                     |
+         |                     VP
+         |              _______|________
+         |              |              |
+         NP             |              NP
+    _____|_____         |         _____|_____
+    |         |         |         |         |
+    *         *         *         *         *
+    |         |         |         |         |
+[   a   ] [  cat  ] [ bites ] [   a   ] [ mouse ]
 production rules =
 	('S', 'NP', 'VP')
 	('NP', 'a', 'cat')
@@ -109,16 +115,18 @@ tree.children[0].tolist() = [['DT', 'a'], ['NN', 'cat']]
 tree.children[1].tolist() = [['VBZ', 'bites'], [['DT', 'a'], ['NN', 'mouse']]]
 tree.children[0].leaves() = ['a', 'cat']
 tree.children[1].leaves() = ['bites', 'a', 'mouse']
-              *                
-      ________|____             
-     |             *           
-     |         ____|___         
-     *        |        *       
-  ___|___     |     ___|____    
- DT      NN  VBZ   DT       NN 
- |       |    |    |        |   
- a      cat bites  a      mouse
-
+                    *
+         ___________|___________
+         |                     |
+         |                     *
+         |              _______|________
+         |              |              |
+         *              |              *
+    _____|_____         |         _____|_____
+    |         |         |         |         |
+    DT        NN       VBZ        DT        NN
+    |         |         |         |         |
+[   a   ] [  cat  ] [ bites ] [   a   ] [ mouse ]
 spans =
 	(0, 4)
 	(0, 1)
@@ -153,14 +161,18 @@ tree.children[0].tolist() = ['a', 'cat']
 tree.children[1].tolist() = ['bites', ['a', 'mouse']]
 tree.children[0].leaves() = ['a', 'cat']
 tree.children[1].leaves() = ['bites', 'a', 'mouse']
-              *                
-      ________|____             
-     |             *           
-     |         ____|___         
-     *        |        *       
-  ___|___     |     ___|____    
- a      cat bites  a      mouse
-
+                    *
+         ___________|___________
+         |                     |
+         |                     *
+         |              _______|________
+         |              |              |
+         *              |              *
+    _____|_____         |         _____|_____
+    |         |         |         |         |
+    *         *         *         *         *
+    |         |         |         |         |
+[   a   ] [  cat  ] [ bites ] [   a   ] [ mouse ]
 spans =
 	(0, 4)
 	(0, 1)
@@ -190,16 +202,18 @@ tree.children[0].tolist() = ['NP', ['NP', ['N', 'w0']], ['NP', ['N', 'w1']]]
 tree.children[1].tolist() = ['NP', ['N', 'w2'], ['N', 'w3'], ['N', 'w4']]
 tree.children[0].leaves() = ['w0', 'w1']
 tree.children[1].leaves() = ['w2', 'w3', 'w4']
-             NP        
-      _______|___       
-     NP          |     
-  ___|___        |      
- NP      NP      NP    
- |       |    ___|___   
- N       N   N   N   N 
- |       |   |   |   |  
- w0      w1  w2  w3  w4
-
+                        NP
+          ______________|______________
+          |                           |
+          NP                          |
+     _____|______                     |
+     |          |                     |
+     NP         NP                    NP
+     |          |          ___________|___________
+     |          |          |          |          |
+     N          N          N          N          N
+     |          |          |          |          |
+[   w0   ] [   w1   ] [   w2   ] [   w3   ] [   w4   ]
 production rules =
 	('NP', 'NP', 'NP')
 	('NP', 'NP', 'NP')
@@ -282,31 +296,39 @@ dtree.get_head(8) = (6, 'pobj')
        |       |det    | |nsubj  | | |       |det     | |          | |       |det     | |
        |       V       | V       | V |       V        | V          V |       V        | V
 [ <root> ] [   a   ] [  boy  ] [  saw  ] [   a   ] [  girl  ] [  with  ] [   a   ] [telescope]
-           <root>                                                    
-   __________|_____________                                           
-  |                       saw                                        
-  |      __________________|__________________                        
-  |     |          |           |             with                    
-  |     |          |           |          ____|_______                
-  |     |         boy         girl       |        telescope          
-  |     |     _____|___     ___|____     |     _______|_________      
-<root> saw   a        boy  a       girl with  a             telescope
-
+                        <root>
+     _____________________|_____________________
+     |                                         |
+     |                                        saw
+     |              ___________________________|___________________________
+     |              |              |              |                       |
+     |              |              |              |                      with
+     |              |              |              |                _______|________
+     |              |              |              |                |              |
+     |             boy             |             girl              |          telescope
+     |         _____|_____         |         _____|______          |         _____|______
+     |         |         |         |         |          |          |         |          |
+     *         *         *         *         *          *          *         *          *
+     |         |         |         |         |          |          |         |          |
+[ <root> ] [   a   ] [  boy  ] [  saw  ] [   a   ] [  girl  ] [  with  ] [   a   ] [telescope]
 
 ############### Sample for conversion of constituency tree -> dependency tree ####################
 
-                 S                                 
-      ___________|_______                           
-     |                   VP                        
-     |            _______|_________                 
-     |           VP                PP              
-     |        ___|___          ____|___             
-     NP      |       NP       |        NP          
-  ___|___    |    ___|___     |     ___|______      
- DT      NN VBD  DT      NN   IN   DT         NN   
- |       |   |   |       |    |    |          |     
- a      boy saw  a      girl with  a      telescope
-
+                            S
+         ___________________|___________________
+         |                                     |
+         |                                     VP
+         |                     ________________|________________
+         |                     |                               |
+         |                     VP                              PP
+         |              _______|________                _______|________
+         |              |              |                |              |
+         NP             |              NP               |              NP
+    _____|_____         |         _____|______          |         _____|______
+    |         |         |         |          |          |         |          |
+    DT        NN       VBD        DT         NN         IN        DT         NN
+    |         |         |         |          |          |         |          |
+[   a   ] [  boy  ] [  saw  ] [   a   ] [  girl  ] [  with  ] [   a   ] [telescope]
                           _______________________________
                           |                           VP|
                           |___________________          | ____________________
