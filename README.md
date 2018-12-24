@@ -1,4 +1,6 @@
-# Tree Toolkit
+# treetk
+
+A python library for processing S-expressions and constituency/dependency tree structures.
 
 ## Required packages ##
 
