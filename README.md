@@ -1,6 +1,6 @@
 # treetk
 
-A python library for processing S-expressions and constituency/dependency tree structures.
+A Python library for processing S-expressions and constituency/dependency tree structures.
 
 ## Required packages ##
 
