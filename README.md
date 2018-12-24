@@ -2,7 +2,7 @@
 
 ## Required packages ##
 
-- nltk (optional)
+- NLTK (optional)
 
 ## Setting ##
 

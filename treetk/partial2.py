@@ -1,4 +1,4 @@
-import numpy as np
+import math
 
 class Terminal(object):
     def __init__(self, label, token, index):
@@ -130,8 +130,8 @@ class NonTerminal(object):
         """
         :rtype: (int, int)
         """
-        min_index = np.inf
-        max_index = -np.inf
+        min_index = math.inf
+        max_index = -math.inf
         for c_i in range(len(self.children)):
             i, j = self.children[c_i].calc_spans()
             if i < min_index:
