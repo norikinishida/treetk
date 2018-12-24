@@ -1,13 +1,10 @@
 import treetk
 
-DRAW=False
-
 def print_list(msg, xs):
     print(msg)
     for x in xs:
         print("\t%s" % str(x))
 
-###################################
 print("\n############### Sample for labeled trees with POS tags ####################\n")
 sexp = treetk.preprocess("(S (NP (DT a) (NN cat)) (VP (VBZ bites) (NP (DT a) (NN mouse))))")
 print("sexp = %s" % sexp)
@@ -40,10 +37,6 @@ print_list("subtrees =", subtree_strings)
 
 print("tree2sexp(tree) = %s" % treetk.tree2sexp(tree))
 
-if DRAW:
-    treetk.draw(tree)
-
-###################################
 print("\n############### Sample for labeled trees without POS tags ####################\n")
 sexp = treetk.preprocess("(S (NP a cat) (VP bites (NP a mouse)))")
 print("sexp = %s" % sexp)
@@ -75,10 +68,6 @@ print_list("subtrees =", subtree_strings)
 
 print("tree2sexp(tree) = %s" % treetk.tree2sexp(tree))
 
-if DRAW:
-    treetk.draw(tree)
-
-###################################
 print("\n############### Sample for unlabeled trees with POS tags ####################\n")
 sexp = treetk.preprocess("(((DT a) (NN cat)) ((VBZ bites) ((DT a) (NN mouse))))")
 print("sexp = %s" % sexp)
@@ -108,10 +97,6 @@ print_list("subtrees =", subtree_strings)
 
 print("tree2sexp(tree) = %s" % treetk.tree2sexp(tree))
 
-if DRAW:
-    treetk.draw(tree)
-
-###################################
 print("\n############### Sample for unlabeled trees without POS tags ####################\n")
 sexp = treetk.preprocess("((a cat) (bites (a mouse)))")
 print("sexp = %s" % sexp)
@@ -140,10 +125,6 @@ print_list("subtrees =", subtree_strings)
 
 print("tree2sexp(tree) = %s" % treetk.tree2sexp(tree))
 
-if DRAW:
-    treetk.draw(tree)
-
-###################################
 print("\n############### Sample for unary or n-ary trees ####################\n")
 sexp = treetk.preprocess("(NP (NP (NP (N w0)) (NP (N w1))) (NP (N w2) (N w3) (N w4)))")
 print("sexp = %s" % sexp)
@@ -175,10 +156,6 @@ print_list("subtrees =", subtree_strings)
 
 print("tree2sexp(tree) = %s" % treetk.tree2sexp(tree))
 
-if DRAW:
-    treetk.draw(tree)
-
-###################################
 print("\n############### Sample for dependency trees ####################\n")
 tokens = ["<root>", "a", "boy", "saw", "a", "girl", "with", "a", "telescope"]
 arcs = [(2, 1, "det"), (3, 2, "nsubj"), (3, 5, "dobj"), (5, 4, "det"), (3, 6, "prep"), (6, 8, "pobj"), (8, 7, "det"), (0, 3, "root")]
@@ -196,13 +173,11 @@ for index in range(len(tokens)):
     print("dtree.get_head(%d) = %s" % (index, dtree.get_head(index)))
 treetk.pretty_print_dtree(dtree)
 
-###################################
 print("\n############### Sample for conversion of dependency tree -> constituency tree ####################\n")
 treetk.pretty_print_dtree(dtree)
 ctree = treetk.dtree2ctree(dtree)
 treetk.pretty_print(ctree)
 
-###################################
 print("\n############### Sample for conversion of constituency tree -> dependency tree ####################\n")
 sexp = treetk.preprocess("(S (NP (DT a) (NN boy)) (VP (VP (VBD saw) (NP (DT a) (NN girl))) (PP (IN with) (NP (DT a) (NN telescope)))))".split())
 ctree = treetk.sexp2tree(sexp, with_nonterminal_labels=True, with_terminal_labels=True)
