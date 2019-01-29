@@ -23,16 +23,16 @@ print("tree.children[1].leaves() = %s" % tree.children[1].leaves())
 
 treetk.pretty_print(tree)
 
-rules = treetk.aggregate_production_rules(tree)
+rules = treetk.aggregate_production_rules(tree, order="pre-order")
 print_list("production rules =", rules)
 
 tree.calc_spans()
-spans = treetk.aggregate_spans(tree)
+spans = treetk.aggregate_spans(tree, order="pre-order")
 print_list("spans =", spans)
-mrg_spans = treetk.aggregate_composition_spans(tree)
+mrg_spans = treetk.aggregate_composition_spans(tree, order="pre-order")
 print_list("composition spans =", mrg_spans)
 
-subtree_strings = treetk.aggregate_subtrees(tree, string=True)
+subtree_strings = treetk.aggregate_subtrees(tree, string=True, order="pre-order")
 print_list("subtrees =", subtree_strings)
 
 print("tree2sexp(tree) = %s" % treetk.tree2sexp(tree))
@@ -54,16 +54,16 @@ print("tree.children[1].leaves() = %s" % tree.children[1].leaves())
 
 treetk.pretty_print(tree)
 
-rules = treetk.aggregate_production_rules(tree)
+rules = treetk.aggregate_production_rules(tree, order="pre-order")
 print_list("production rules =", rules)
 
 tree.calc_spans()
-spans = treetk.aggregate_spans(tree)
+spans = treetk.aggregate_spans(tree, order="pre-order")
 print_list("spans =", spans)
-mrg_spans = treetk.aggregate_composition_spans(tree)
+mrg_spans = treetk.aggregate_composition_spans(tree, order="pre-order")
 print_list("composition spans =", mrg_spans)
 
-subtree_strings = treetk.aggregate_subtrees(tree, string=True)
+subtree_strings = treetk.aggregate_subtrees(tree, string=True, order="pre-order")
 print_list("subtrees =", subtree_strings)
 
 print("tree2sexp(tree) = %s" % treetk.tree2sexp(tree))
@@ -87,12 +87,12 @@ print("tree.children[1].leaves() = %s" % tree.children[1].leaves())
 treetk.pretty_print(tree)
 
 tree.calc_spans()
-spans = treetk.aggregate_spans(tree)
+spans = treetk.aggregate_spans(tree, order="pre-order")
 print_list("spans =", spans)
-mrg_spans = treetk.aggregate_composition_spans(tree)
+mrg_spans = treetk.aggregate_composition_spans(tree, order="pre-order")
 print_list("composition spans =", mrg_spans)
 
-subtree_strings = treetk.aggregate_subtrees(tree, string=True)
+subtree_strings = treetk.aggregate_subtrees(tree, string=True, order="pre-order")
 print_list("subtrees =", subtree_strings)
 
 print("tree2sexp(tree) = %s" % treetk.tree2sexp(tree))
@@ -115,12 +115,12 @@ print("tree.children[1].leaves() = %s" % tree.children[1].leaves())
 treetk.pretty_print(tree)
 
 tree.calc_spans()
-spans = treetk.aggregate_spans(tree)
+spans = treetk.aggregate_spans(tree, order="pre-order")
 print_list("spans =", spans)
-mrg_spans = treetk.aggregate_composition_spans(tree)
+mrg_spans = treetk.aggregate_composition_spans(tree, order="pre-order")
 print_list("composition spans =", mrg_spans)
 
-subtree_strings = treetk.aggregate_subtrees(tree, string=True)
+subtree_strings = treetk.aggregate_subtrees(tree, string=True, order="pre-order")
 print_list("subtrees =", subtree_strings)
 
 print("tree2sexp(tree) = %s" % treetk.tree2sexp(tree))
@@ -142,16 +142,16 @@ print("tree.children[1].leaves() = %s" % tree.children[1].leaves())
 
 treetk.pretty_print(tree)
 
-rules = treetk.aggregate_production_rules(tree)
+rules = treetk.aggregate_production_rules(tree, order="pre-order")
 print_list("production rules =", rules)
 
 tree.calc_spans()
-spans = treetk.aggregate_spans(tree)
+spans = treetk.aggregate_spans(tree, order="pre-order")
 print_list("spans =", spans)
-mrg_spans = treetk.aggregate_composition_spans(tree, binary=False)
+mrg_spans = treetk.aggregate_composition_spans(tree, binary=False, order="pre-order")
 print_list("composition spans =", mrg_spans)
 
-subtree_strings = treetk.aggregate_subtrees(tree, string=True)
+subtree_strings = treetk.aggregate_subtrees(tree, string=True, order="pre-order")
 print_list("subtrees =", subtree_strings)
 
 print("tree2sexp(tree) = %s" % treetk.tree2sexp(tree))
