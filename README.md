@@ -2,10 +2,6 @@
 
 A Python library for processing S-expressions and constituency/dependency tree structures.
 
-## Required packages ##
-
-- NLTK (optional)
-
 ## Setting ##
 
 ```
