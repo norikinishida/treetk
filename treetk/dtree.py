@@ -1,3 +1,4 @@
+from collections import defaultdict
 import copy
 
 import numpy as np
@@ -15,35 +16,21 @@ class DependencyTree(object):
         self.arcs = arcs
         self.tokens = tokens
 
-        self.head2dependents = self.create_head2dependents()
-        self.dependent2head = self.create_dependent2head()
+        self.head2dependents = defaultdict(list) # {int: list of (int, str)}
+        self.dependent2head = {} # {int: (int/None, str/None)}
 
-    def create_head2dependents(self):
-        """
-        :rtype: dictionary of {int: list of (int,str)}
-        """
-        # NOTE that we do not recursively collect the dependents.
-        dictionary = {}
+        # Create a mapping of head -> dependents
         for head, dependent, label in self.arcs:
-            if not head in dictionary:
-                dictionary[head] = []
-            dictionary[head].append((dependent, label))
-        return dictionary
+            self.head2dependents[head].append((dependent, label))
 
-    def create_dependent2head(self):
-        """
-        :rtype: dictionary of {int: (int, str) or (None, None)}
-        """
-        dictionary = {}
-        # Return (None, None) if the token (i.e., ROOT) does not have a head.
+        # Create a mapping of dependent -> head
         for dependent in range(len(self.tokens)):
-            dictionary[dependent] = (None, None)
+            self.dependent2head[dependent] = (None, None)
         for head, dependent, label in self.arcs:
             # Tokens should not have multiple heads.
-            if dictionary[dependent] != (None, None):
-                raise ValueError("The dependent=%d has multiple heads! Given arcs=%s" % (dependent, self.arcs))
-            dictionary[dependent] = (head, label)
-        return dictionary
+            if self.dependent2head[dependent] != (None, None):
+                raise ValueError("The %d-th token has multiple heads! Arcs=%s" % (dependent, self.arcs))
+            self.dependent2head[dependent] = (head, label)
 
     def __str__(self):
         """
