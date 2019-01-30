@@ -1,4 +1,4 @@
-from .full import NonTerminal
+from .ll import NonTerminal
 
 ############################
 # IO

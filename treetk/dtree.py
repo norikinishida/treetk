@@ -91,49 +91,52 @@ def hyphens2arcs(hyphens):
 
 #####################################
 
-def ctree2dtree(tree, func_head_rule, func_label_rule):
+def ctree2dtree(tree, func_label_rule):
     """
     :type NonTerminal or Terminal
-    :type func_head_rule: function of NonTerminal -> int
     :type func_label_rule: function of (NonTerminal, int, int) -> str
     :rtype: DependencyTree
     """
+    if (tree.head_token_index is None) or (tree.head_child_index is None):
+        raise ValueError("Please call ``tree.calc_heads(func_head_child_rule)'' before conversion.")
     if tree.is_terminal():
-        raise ValueError("The type of the argument ``tree'' must be NonTerminal")
-    arcs, _ = _rec_ctree2dtree(tree, func_head_rule, func_label_rule)
+        raise ValueError("``tree'' must be NonTerminal.")
+
+    arcs = _rec_ctree2dtree(tree, func_label_rule)
+
     tokens = tree.leaves()
     dtree = arcs2dtree(arcs=arcs, tokens=tokens)
     return dtree
 
-def _rec_ctree2dtree(node, func_head_rule, func_label_rule):
+def _rec_ctree2dtree(node, func_label_rule=None):
     """
     :type node: NonTerminal or Terminal
-    :type func_head_rule: function of NonTerminal -> int
     :type func_label_rule: function of (NonTerminal, int, int) -> str
     :rtype: list of (int, int, str)
     """
     if node.is_terminal():
-        return [], node.index
-    # First, identify the head subtree among the children.
-    head_c_i = func_head_rule(node)
-    # Second, identify the token-level head index of each subtree.
-    # Collect arcs for each subtree recursively.
-    head_token_indices = []
+        return []
+
     arcs = []
-    for c in node.children:
-        sub_arcs, head_token_index = _rec_ctree2dtree(c, func_head_rule, func_label_rule)
-        head_token_indices.append(head_token_index)
-        arcs.extend(sub_arcs)
-    # Third, add arcs from [the head token of the head subtree] to [the head tokens of the dependent subtrees]j
-    head_token_index = head_token_indices[head_c_i]
-    # arc_label = node.label # TODO
+
+    # Process the child nodes
     for c_i in range(len(node.children)):
-        if c_i == head_c_i:
+        sub_arcs = _rec_ctree2dtree(node.children[c_i], func_label_rule=func_label_rule)
+        arcs.extend(sub_arcs)
+
+    # Process the current node
+    head_token_index = node.head_token_index
+    for c_i in range(len(node.children)):
+        dep_token_index = node.children[c_i].head_token_index
+        if head_token_index == dep_token_index:
             continue
-        dependent_token_index = head_token_indices[c_i]
-        arc_label = func_label_rule(node, head_c_i, c_i)
-        arcs.append((head_token_index, dependent_token_index, arc_label))
-    return arcs, head_token_index
+        if func_label_rule is None:
+            label = "*"
+        else:
+            label = func_label_rule(node, node.head_child_index, c_i)
+        arcs.append((head_token_index, dep_token_index, label))
+
+    return arcs
 
 #####################################
 

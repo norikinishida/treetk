@@ -182,12 +182,12 @@ print("\n############### Sample for conversion of constituency tree -> dependenc
 sexp = treetk.preprocess("(S (NP (DT a) (NN boy)) (VP (VP (VBD saw) (NP (DT a) (NN girl))) (PP (IN with) (NP (DT a) (NN telescope)))))".split())
 ctree = treetk.sexp2tree(sexp, with_nonterminal_labels=True, with_terminal_labels=True)
 treetk.pretty_print(ctree)
-def func_head_rule(node):
+def func_head_child_rule(node):
     """
     :type node: NonTerminal
     :rtype: int
     """
-    # Please write rules that specify a head-subtree among the child nodes
+    # Please write your rules for specifying the head-child node among the child nodes
     if node.label == "S" and node.children[0].label == "NP" and node.children[1].label == "VP":
         return 1 # the second child
     elif node.label == "NP" and node.children[0].label == "DT" and node.children[1].label == "NN":
@@ -200,6 +200,7 @@ def func_head_rule(node):
         return 0
     else:
         return 0
+ctree.calc_heads(func_head_child_rule=func_head_child_rule)
 def func_label_rule(node, i, j):
     """
     :type node: NonTerminal
@@ -210,6 +211,6 @@ def func_label_rule(node, i, j):
     # Please write a function that specifies the relation label (string) between the head (i.e., node.children[i]) and the dependent (i.e., node.children[j]).
     return node.label
     # return "%s,%s,%s" % (node.label, node.children[i].label, node.children[j].label)
-dtree = treetk.ctree2dtree(ctree, func_head_rule, func_label_rule)
+dtree = treetk.ctree2dtree(ctree, func_label_rule=func_label_rule)
 treetk.pretty_print_dtree(dtree)
 

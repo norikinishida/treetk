@@ -1,6 +1,7 @@
 import math
 
 class Terminal(object):
+
     def __init__(self, token, index):
         """
         :type token: str
@@ -9,12 +10,18 @@ class Terminal(object):
         """
         self.token = token
         self.index = index
+
         self.index_span = (index, index)
+        self.head_token_index = index
+        self.head_child_index = index
+
         self.depth = None
         self.height = None
+
         self.with_nonterminal_labels = True
         self.with_terminal_labels = False
 
+    ###########
     def __str__(self):
         """
         :rtype: str
@@ -33,18 +40,28 @@ class Terminal(object):
         """
         return [self.token]
 
+    ###########
     def is_terminal(self):
         """
         :rtype: bool
         """
         return True
 
+    ###########
     def calc_spans(self):
         """
         :rtype: (int, int)
         """
         return self.index_span
 
+    def calc_heads(self, func_head_child_rule):
+        """
+        :type func_head_child_rule: function of NonTerminal -> int
+        :rtype: int
+        """
+        return self.head_token_index
+
+    ###########
     def set_depth(self, depth=0):
         """
         :type depth: int
@@ -61,6 +78,7 @@ class Terminal(object):
         return self.height
 
 class NonTerminal(object):
+
     def __init__(self, label):
         """
         :type label: str
@@ -68,9 +86,14 @@ class NonTerminal(object):
         """
         self.label = label
         self.children = []
+
         self.index_span = (None, None)
+        self.head_token_index = None
+        self.head_child_index = None
+
         self.depth = None
         self.height = None
+
         self.with_nonterminal_labels = True
         self.with_terminal_labels = False
 
@@ -81,6 +104,7 @@ class NonTerminal(object):
         """
         self.children.append(node)
 
+    ###########
     def __str__(self):
         """
         :rtype: str
@@ -104,12 +128,14 @@ class NonTerminal(object):
             leaves.extend(c.leaves())
         return leaves
 
+    ###########
     def is_terminal(self):
         """
         :rtype: bool
         """
         return False
 
+    ###########
     def calc_spans(self):
         """
         :rtype: (int, int)
@@ -125,6 +151,21 @@ class NonTerminal(object):
         self.index_span = (min_index, max_index)
         return min_index, max_index
 
+    def calc_heads(self, func_head_child_rule):
+        """
+        :type func_head_child_rule: function of NonTerminal -> int
+        :rtype: int
+        """
+        head_token_indices = []
+        for c_i in range(len(self.children)):
+            head_token_index = self.children[c_i].calc_heads(func_head_child_rule)
+            head_token_indices.append(head_token_index)
+
+        self.head_child_index = func_head_child_rule(self)
+        self.head_token_index = head_token_indices[self.head_child_index]
+        return self.head_token_index
+
+    ###########
     def set_depth(self, depth=0):
         """
         :type depth: int

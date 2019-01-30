@@ -15,17 +15,17 @@ def sexp2tree(sexp, with_nonterminal_labels, with_terminal_labels, LPAREN="(", R
     :rtype: NonTerminal
     """
     if with_nonterminal_labels and with_terminal_labels:
-        from . import full
-        tree = full.sexp2tree(sexp, LPAREN=LPAREN, RPAREN=RPAREN)
+        from . import ll
+        tree = ll.sexp2tree(sexp, LPAREN=LPAREN, RPAREN=RPAREN)
     elif with_nonterminal_labels and not with_terminal_labels:
-        from . import partial
-        tree = partial.sexp2tree(sexp, LPAREN=LPAREN, RPAREN=RPAREN)
+        from . import lu
+        tree = lu.sexp2tree(sexp, LPAREN=LPAREN, RPAREN=RPAREN)
     elif not with_nonterminal_labels and with_terminal_labels:
-        from . import partial2
-        tree = partial2.sexp2tree(sexp, LPAREN=LPAREN, RPAREN=RPAREN)
+        from . import ul
+        tree = ul.sexp2tree(sexp, LPAREN=LPAREN, RPAREN=RPAREN)
     elif not with_nonterminal_labels and not with_terminal_labels:
-        from . import leavesonly
-        tree = leavesonly.sexp2tree(sexp, LPAREN=LPAREN, RPAREN=RPAREN)
+        from . import uu
+        tree = uu.sexp2tree(sexp, LPAREN=LPAREN, RPAREN=RPAREN)
     else:
         print("Unsupported argument pairs: with_nonterminal_labels=%s, with_terminal_labels=%s" % \
                 (with_nonterminal_labels, with_terminal_labels))
