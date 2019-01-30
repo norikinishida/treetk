@@ -158,7 +158,7 @@ print("tree2sexp(tree) = %s" % treetk.tree2sexp(tree))
 
 print("\n############### Sample for dependency trees ####################\n")
 tokens = ["<root>", "a", "boy", "saw", "a", "girl", "with", "a", "telescope"]
-arcs = [(2, 1, "det"), (3, 2, "nsubj"), (3, 5, "dobj"), (5, 4, "det"), (3, 6, "prep"), (6, 8, "pobj"), (8, 7, "det"), (0, 3, "root")]
+arcs = [(2, 1, "det"), (3, 2, "nsubj"), (3, 5, "dobj"), (5, 4, "det"), (3, 6, "prep"), (6, 8, "pobj"), (8, 7, "det"), (0, 3, "<root>")]
 print("tokens = %s" % tokens)
 print("arcs = %s" % arcs)
 # dtree = treetk.arcs2dtree(arcs=arcs) # this is allowable

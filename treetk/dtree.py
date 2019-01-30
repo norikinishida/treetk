@@ -103,8 +103,13 @@ def ctree2dtree(tree, func_label_rule):
         raise ValueError("``tree'' must be NonTerminal.")
 
     arcs = _rec_ctree2dtree(tree, func_label_rule)
-
     tokens = tree.leaves()
+
+    # Add a ROOT symbol to the dependency tree
+    arcs = [(h+1, d+1, l) for h,d,l in arcs]
+    arcs.append((0, tree.head_token_index+1, "<root>"))
+    tokens = ["<root>"] + tokens
+
     dtree = arcs2dtree(arcs=arcs, tokens=tokens)
     return dtree
 
