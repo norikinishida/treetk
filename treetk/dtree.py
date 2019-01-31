@@ -71,6 +71,7 @@ def arcs2dtree(arcs, tokens=None):
     :type tokens: list of str, or None
     :rtype DependencyTree
     """
+    arcs = sorted(arcs, key=lambda x: x[1])
     arcs_checked = [x if len(x) == 3 else (x[0],x[1],"*") for x in arcs]
     if tokens is None:
         tokens = ["x%s" % tok_i for tok_i in range(len(arcs_checked)+1)]

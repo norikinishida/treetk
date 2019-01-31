@@ -254,10 +254,10 @@ tree2sexp(tree) = ['(', 'NP', '(', 'NP', '(', 'NP', '(', 'N', 'w0', ')', ')', '(
 
 tokens = ['<root>', 'a', 'boy', 'saw', 'a', 'girl', 'with', 'a', 'telescope']
 arcs = [(2, 1, 'det'), (3, 2, 'nsubj'), (3, 5, 'dobj'), (5, 4, 'det'), (3, 6, 'prep'), (6, 8, 'pobj'), (8, 7, 'det'), (0, 3, '<root>')]
-dtree.__str__() = [('2_boy', '1_a', 'det'), ('3_saw', '2_boy', 'nsubj'), ('3_saw', '5_girl', 'dobj'), ('5_girl', '4_a', 'det'), ('3_saw', '6_with', 'prep'), ('6_with', '8_telescope', 'pobj'), ('8_telescope', '7_a', 'det'), ('0_<root>', '3_saw', '<root>')]
-dtree.tolist(labeled=True) = [(2, 1, 'det'), (3, 2, 'nsubj'), (3, 5, 'dobj'), (5, 4, 'det'), (3, 6, 'prep'), (6, 8, 'pobj'), (8, 7, 'det'), (0, 3, '<root>')]
-dtree.tolist(labeled=False) = [(2, 1), (3, 2), (3, 5), (5, 4), (3, 6), (6, 8), (8, 7), (0, 3)]
-dtree.head2dependents=defaultdict(<class 'list'>, {2: [(1, 'det')], 3: [(2, 'nsubj'), (5, 'dobj'), (6, 'prep')], 5: [(4, 'det')], 6: [(8, 'pobj')], 8: [(7, 'det')], 0: [(3, '<root>')]})
+dtree.__str__() = [('2_boy', '1_a', 'det'), ('3_saw', '2_boy', 'nsubj'), ('0_<root>', '3_saw', '<root>'), ('5_girl', '4_a', 'det'), ('3_saw', '5_girl', 'dobj'), ('3_saw', '6_with', 'prep'), ('8_telescope', '7_a', 'det'), ('6_with', '8_telescope', 'pobj')]
+dtree.tolist(labeled=True) = [(2, 1, 'det'), (3, 2, 'nsubj'), (0, 3, '<root>'), (5, 4, 'det'), (3, 5, 'dobj'), (3, 6, 'prep'), (8, 7, 'det'), (6, 8, 'pobj')]
+dtree.tolist(labeled=False) = [(2, 1), (3, 2), (0, 3), (5, 4), (3, 5), (3, 6), (8, 7), (6, 8)]
+dtree.head2dependents=defaultdict(<class 'list'>, {2: [(1, 'det')], 3: [(2, 'nsubj'), (5, 'dobj'), (6, 'prep')], 0: [(3, '<root>')], 5: [(4, 'det')], 8: [(7, 'det')], 6: [(8, 'pobj')]})
 dtree.dependent2head={0: (None, None), 1: (2, 'det'), 2: (3, 'nsubj'), 3: (0, '<root>'), 4: (5, 'det'), 5: (3, 'dobj'), 6: (3, 'prep'), 7: (8, 'det'), 8: (6, 'pobj')}
 dtree.get_dependents(0) = [(3, '<root>')]
 dtree.get_head(0) = (None, None)
@@ -286,33 +286,7 @@ dtree.get_head(8) = (6, 'pobj')
        |       V       | V       | V |       V        | V          V |       V        | V
 [ <root> ] [   a   ] [  boy  ] [  saw  ] [   a   ] [  girl  ] [  with  ] [   a   ] [telescope]
 
-############### Sample for conversion of dependency tree -> constituency tree ####################
-
-                                     _______________________________
-                                     |                         prep|
-       _____________________________ |___________________          | ____________________
-       |                     <root>| |              dobj|          | |              pobj|
-       |       _________ _________ | |       __________ |          | |       __________ |
-       |       |det    | |nsubj  | | |       |det     | |          | |       |det     | |
-       |       V       | V       | V |       V        | V          V |       V        | V
-[ <root> ] [   a   ] [  boy  ] [  saw  ] [   a   ] [  girl  ] [  with  ] [   a   ] [telescope]
-                        <root>
-     _____________________|_____________________
-     |                                         |
-     |                                        saw
-     |              ___________________________|___________________________
-     |              |              |              |                       |
-     |              |              |              |                      with
-     |              |              |              |                _______|________
-     |              |              |              |                |              |
-     |             boy             |             girl              |          telescope
-     |         _____|_____         |         _____|______          |         _____|______
-     |         |         |         |         |          |          |         |          |
-     *         *         *         *         *          *          *         *          *
-     |         |         |         |         |          |          |         |          |
-[ <root> ] [   a   ] [  boy  ] [  saw  ] [   a   ] [  girl  ] [  with  ] [   a   ] [telescope]
-
-############### Sample for conversion of constituency tree -> dependency tree ####################
+############### Sample for conversion from constituency tree to dependency tree ####################
 
                             S
          ___________________|___________________
@@ -337,3 +311,26 @@ dtree.get_head(8) = (6, 'pobj')
        |       |NP     | |S      | | |       |NP      | |          | |       |NP      | |
        |       V       | V       | V |       V        | V          V |       V        | V
 [ <root> ] [   a   ] [  boy  ] [  saw  ] [   a   ] [  girl  ] [  with  ] [   a   ] [telescope]
+
+############### Sample for conversion from dependency tree to constituency tree ####################
+
+                                     _______________________________
+                                     |                         prep|
+       _____________________________ |___________________          | ____________________
+       |                     <root>| |              dobj|          | |              pobj|
+       |       _________ _________ | |       __________ |          | |       __________ |
+       |       |det    | |nsubj  | | |       |det     | |          | |       |det     | |
+       |       V       | V       | V |       V        | V          V |       V        | V
+[ <root> ] [   a   ] [  boy  ] [  saw  ] [   a   ] [  girl  ] [  with  ] [   a   ] [telescope]
+                             nsubj/dobj/prep
+         ___________________________|___________________________
+         |              |              |                       |
+         |              |              |                      pobj
+         |              |              |                _______|________
+         |              |              |                |              |
+        det             |             det               |             det
+    _____|_____         |         _____|______          |         _____|______
+    |         |         |         |          |          |         |          |
+    *         *         *         *          *          *         *          *
+    |         |         |         |          |          |         |          |
+[   a   ] [  boy  ] [  saw  ] [   a   ] [  girl  ] [  with  ] [   a   ] [telescope]
