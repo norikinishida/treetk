@@ -1,9 +1,8 @@
 from collections import defaultdict
-import copy
 
 import numpy as np
 
-import treetk
+from . import treetk
 
 class DependencyTree(object):
 
@@ -90,169 +89,39 @@ def hyphens2arcs(hyphens):
     return arcs
 
 #####################################
+# Aggregation of arcs
 
-def ctree2dtree(tree, func_label_rule):
-    """
-    :type NonTerminal or Terminal
-    :type func_label_rule: function of (NonTerminal, int, int) -> str
-    :rtype: DependencyTree
-    """
-    if (tree.head_token_index is None) or (tree.head_child_index is None):
-        raise ValueError("Please call ``tree.calc_heads(func_head_child_rule)'' before conversion.")
-    if tree.is_terminal():
-        raise ValueError("``tree'' must be NonTerminal.")
-
-    arcs = _rec_ctree2dtree(tree, func_label_rule)
-    tokens = tree.leaves()
-
-    # Add a ROOT symbol to the dependency tree
-    arcs = [(h+1, d+1, l) for h,d,l in arcs]
-    arcs.append((0, tree.head_token_index+1, "<root>"))
-    tokens = ["<root>"] + tokens
-
-    dtree = arcs2dtree(arcs=arcs, tokens=tokens)
-    return dtree
-
-def _rec_ctree2dtree(node, func_label_rule=None):
-    """
-    :type node: NonTerminal or Terminal
-    :type func_label_rule: function of (NonTerminal, int, int) -> str
-    :rtype: list of (int, int, str)
-    """
-    if node.is_terminal():
-        return []
-
-    arcs = []
-
-    # Process the child nodes
-    for c_i in range(len(node.children)):
-        sub_arcs = _rec_ctree2dtree(node.children[c_i], func_label_rule=func_label_rule)
-        arcs.extend(sub_arcs)
-
-    # Process the current node
-    head_token_index = node.head_token_index
-    for c_i in range(len(node.children)):
-        dep_token_index = node.children[c_i].head_token_index
-        if head_token_index == dep_token_index:
-            continue
-        if func_label_rule is None:
-            label = "*"
-        else:
-            label = func_label_rule(node, node.head_child_index, c_i)
-        arcs.append((head_token_index, dep_token_index, label))
-
-    return arcs
-
-#####################################
-
-def dtree2ctree(dtree, binarize=None, LPAREN="(", RPAREN=")"):
+def traverse_dtree(dtree, head_i, order="pre-order", acc=None):
     """
     :type dtree: DependencyTree
-    :type binarize: None, or str
-    :type LPAREN: str
-    :type RPAREN: str
-    :rtype: NonTerminal
-    """
-    # (1) Get dependency spans.
-    dependency_spans = _get_dependency_spans(dtree)
-    assert len(dependency_spans) == len(dtree.tokens)
-    # (2) Sort. Remove spans of length 1.
-    span2token = {}
-    for span, token in zip(dependency_spans, dtree.tokens):
-        span2token[span] = token
-    dependency_spans_sorted = sorted(dependency_spans, key=lambda x: (x[0], -x[1]))
-    dependency_spans_sorted_filtered = [span for span in dependency_spans_sorted if span[0] != span[1]]
-    # (3) Compute left/right sides for each token.
-    left_sides, right_sides = [], []
-    for _ in range(len(dtree.tokens)):
-        left_sides.append([])
-        right_sides.append([])
-    for span in dependency_spans_sorted_filtered:
-        begin_i, end_i = span
-        head = span2token[span] # NOTE
-        left_sides[begin_i].append(LPAREN) # from left to right
-        left_sides[begin_i].append(head)
-        right_sides[end_i] = [RPAREN] + right_sides[end_i] # from right to left
-    # (4) Create a S-expression according to the left_sides, tokens, and right_sides.
-    sexp = []
-    for index in range(len(dtree.tokens)):
-        sexp.extend(left_sides[index])
-        sexp.append(dtree.tokens[index])
-        sexp.extend(right_sides[index])
-    # (5) Convert the S-expression to a constituency tree instance.
-    sexp = treetk.preprocess(sexp)
-    ctree = treetk.sexp2tree(sexp, with_nonterminal_labels=True, with_terminal_labels=False)
-    # (6) Binarize the tree.
-    if binarize is not None:
-        # TODO
-        pass
-    return ctree
-
-def _get_dependency_spans(dtree):
-    """
-    :type dtree: DependencyTree
-    :rtype: list of (int, int)
-    """
-    # Create a map from each token to its dependents that can be traced via the arcs.
-    head2dependents = _get_head2dependents_map(dtree)
-    # Convert to spans.
-    dependency_spans = []
-    for token_index in range(len(dtree.tokens)):
-        dependents = head2dependents[token_index]
-        min_index = min(dependents)
-        max_index = max(dependents)
-        span = (min_index, max_index)
-        dependency_spans.append(span)
-    return dependency_spans
-
-def _get_head2dependents_map(dtree):
-    """
-    :type dtree: DependencyTree
-    :rtype: dictionary of {int: list of int}
-    """
-    head2dependents = {}
-
-    # Add all tokens even if a token does not have any dependents.
-    for token_index in range(len(dtree.tokens)):
-        head2dependents[token_index] = []
-        head2dependents[token_index].append(token_index)
-
-    # Add first-order dependents.
-    for head, dependent, label in dtree.arcs:
-        head2dependents[head].append(dependent)
-
-    # Add dependents recursively.
-    for token_index in range(len(dtree.tokens)):
-        dependents = _get_dependents_recursively(token_index, head2dependents)
-        head2dependents[token_index] = dependents
-
-    return head2dependents
-
-def _get_dependents_recursively(head, head2dependents):
-    """
-    :type head: int
-    :type head2dependents: dictionary of {int: list of int}
+    :type head_i: int
+    :type order: str
+    :type acc: list of int
     :rtype: list of int
     """
-    dependents = set(head2dependents[head])
+    if acc is None:
+        acc = []
 
-    history = set()
-    while True:
-        prev_length = len(dependents)
-        for dependent in copy.deepcopy(dependents):
-            if dependent == head:
-                continue
-            if dependent in history:
-                continue
-            history.add(dependent)
-            # Add dependents of the dependent.
-            for dd in head2dependents[dependent]:
-                dependents.add(dd)
-        # Finish if new tokens were not added.
-        new_length = len(dependents)
-        if prev_length == new_length:
-            break
-    return list(dependents)
+    if len(dtree.get_dependents(head_i)) == 0:
+        acc.append(head_i)
+        return acc
+
+    if order == "pre-order":
+        # Process the current head
+        acc.append(head_i)
+        # Process the dependents
+        for dep_i, _ in dtree.get_dependents(head_i):
+            acc = traverse_dtree(dtree, dep_i, order=order, acc=acc)
+    elif order == "post-order":
+        # Process the dependents
+        for dep_i, _ in dtree.get_dependents(head_i):
+            acc = traverse_dtree(dtree, dep_i, order=order, acc=acc)
+        # Process the current head
+        acc.append(head_i)
+    else:
+        raise ValueError("Invalid order=%s" % order)
+
+    return acc
 
 #####################################
 
@@ -415,5 +284,105 @@ def _generate_text(textmap, tokens_padded):
         text = text + SPACE
     text = text[:-SPACE_SIZE]
     return text
+
+#####################################
+
+def ctree2dtree(tree, func_label_rule=None):
+    """
+    :type NonTerminal or Terminal
+    :type func_label_rule: function of (NonTerminal, int, int) -> str
+    :rtype: DependencyTree
+    """
+    if (tree.head_token_index is None) or (tree.head_child_index is None):
+        raise ValueError("Please call ``tree.calc_heads(func_head_child_rule)'' before conversion.")
+    assert not tree.is_terminal()
+
+    nodes = treetk.traverse(tree, order="post-order", include_terminal=False)
+
+    arcs = []
+    for node in nodes:
+        head_token_index = node.head_token_index
+        for c_i in range(len(node.children)):
+            dep_token_index = node.children[c_i].head_token_index
+            if head_token_index == dep_token_index:
+                continue
+            if func_label_rule is None:
+                label = "*"
+            else:
+                label = func_label_rule(node, node.head_child_index, c_i)
+            arcs.append((head_token_index, dep_token_index, label))
+    tokens = tree.leaves()
+
+    # Add a ROOT symbol to the dependency tree
+    arcs = [(h+1, d+1, l) for h,d,l in arcs]
+    arcs.append((0, tree.head_token_index+1, "<root>"))
+    tokens = ["<root>"] + tokens
+
+    dtree = arcs2dtree(arcs=arcs, tokens=tokens)
+    return dtree
+
+#####################################
+
+def dtree2ctree(dtree):
+    """
+    :type dtree: DependencyTree
+    :rtype: NonTerminal
+    """
+    from . import lu
+
+    # We exclude the root symbol in the resulting constituent tree
+    root_deps = dtree.get_dependents(0)
+    assert len(root_deps) == 1
+    root_dep_index, _  = root_deps[0]
+
+    token_indices = traverse_dtree(dtree, head_i=root_dep_index, order="post-order", acc=None)
+
+    # Create terminal nodes in post-order
+    memo_nodes = defaultdict(list)
+    for token_index in token_indices:
+        terminal = lu.Terminal(token=dtree.tokens[token_index], index=token_index-1) # NOTE: index is shifted by -1
+        memo_nodes[token_index].append(terminal)
+
+    # Create non-terminal nodes
+    for token_index in token_indices:
+        if len(dtree.get_dependents(token_index)) == 0:
+            continue
+        # Required properties
+        label_list = []
+        children = []
+        index_span = (None, None)
+        head_token_index = token_index - 1 # NOTE: index is shifted by -1
+        head_child_index = None
+        # Left-side child nodes
+        for dep_index, label in dtree.get_dependents(token_index):
+            if dep_index >= token_index:
+                continue
+            child_node = memo_nodes[dep_index][-1]
+            label_list.append(label)
+            children.append(child_node)
+        # Center/head child node
+        child_node = memo_nodes[token_index][-1]
+        children.append(child_node)
+        head_child_index = len(children) - 1
+        # Right-side child nodes
+        for dep_index, label in dtree.get_dependents(token_index):
+            if dep_index <= token_index:
+                continue
+            child_node = memo_nodes[dep_index][-1]
+            label_list.append(label)
+            children.append(child_node)
+        label = "/".join(label_list)
+        min_index = min([c.index_span[0] for c in children])
+        max_index = max([c.index_span[1] for c in children])
+        index_span = (min_index, max_index) # NOTE: indices are automatically shifted by -1
+        # Create a non-terminal node
+        nonterminal = lu.NonTerminal(label=label)
+        nonterminal.children = children
+        nonterminal.index_span = index_span
+        nonterminal.head_token_index = head_token_index
+        nonterminal.head_child_index = head_child_index
+        memo_nodes[token_index].append(nonterminal)
+
+    return memo_nodes[root_dep_index][-1]
 
 

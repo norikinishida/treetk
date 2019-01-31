@@ -61,58 +61,66 @@ def filter_parens(sexp, LPAREN="(", RPAREN=")"):
     return [x for x in sexp if not x in [LPAREN, RPAREN]]
 
 ################
-# Aggregation of production rules
-# NOTE: only for trees with nonterminal labels
+# Aggregation of nodes
 
-def aggregate_production_rules(root, order="pre-order"):
-    """
-    :type root: NonTerminal
-    :type order: str
-    :rtype: list of tuple of str
-    """
-    assert root.with_nonterminal_labels
-    assert order in ["pre-order", "post-order"]
-    nodes = _rec_aggregate_production_rules(node=root, acc=None, order=order)
-    return nodes
-
-def _rec_aggregate_production_rules(node, acc=None, order="pre-order"):
+def traverse(node, order="pre-order", include_terminal=True, acc=None):
     """
     :type node: NonTerminal or Terminal
     :type order: str
-    :type acc: list of tuple of str, or None
-    :rtype: list of tuple of str
+    :type include_terminal: bool
+    :type acc: list of NonTerminal/Terminal
+    :rtype list of NonTerminal/Terminal
     """
     if acc is None:
         acc = []
 
+    if node.is_terminal():
+        if include_terminal:
+            acc.append(node)
+        return acc
+
     if order == "pre-order":
         # Process the current node
-        if node.is_terminal():
-            if node.with_terminal_labels:
-                acc.append((node.label, node.token))
-        else:
-            if node.with_terminal_labels:
-                # e.g., NP -> DT NN
-                rhs = [c.label for c in node.children]
-            else:
-                # e.g., NP -> a mouse
-                rhs = [c.token if c.is_terminal() else c.label for c in node.children]
-            rule = [node.label] + list(rhs)
-            acc.append(tuple(rule))
+        acc.append(node)
         # Process the child nodes
-        if not node.is_terminal():
-            for c in node.children:
-                acc = _rec_aggregate_production_rules(node=c, acc=acc, order=order)
+        for c in node.children:
+            acc = traverse(c, order=order, include_terminal=include_terminal, acc=acc)
     elif order == "post-order":
         # Process the child nodes
-        if not node.is_terminal():
-            for c in node.children:
-                acc = _rec_aggregate_production_rules(node=c, acc=acc, order=order)
+        for c in node.children:
+            acc = traverse(c, order=order, include_terminal=include_terminal, acc=acc)
         # Process the current node
+        acc.append(node)
+    else:
+        raise ValueError("Invalid order=%s" % order)
+
+    return acc
+
+################
+# Aggregation of production rules
+# NOTE: only for trees with nonterminal labels
+
+def aggregate_production_rules(root, order="pre-order", include_terminal=True):
+    """
+    :type root: NonTerminal
+    :type order: str
+    :type include_terminal: bool
+    :rtype: list of tuple of str
+    """
+    assert root.with_nonterminal_labels
+    if include_terminal:
+        assert root.with_terminal_labels
+
+    nodes = traverse(root, order=order, include_terminal=include_terminal, acc=None)
+
+    rules = []
+    for node in nodes:
         if node.is_terminal():
+            # Terminal node
             if node.with_terminal_labels:
-                acc.append((node.label, node.token))
+                rules.append((node.label, node.token))
         else:
+            # Non-Terminal node
             if node.with_terminal_labels:
                 # e.g., NP -> DT NN
                 rhs = [c.label for c in node.children]
@@ -120,140 +128,76 @@ def _rec_aggregate_production_rules(node, acc=None, order="pre-order"):
                 # e.g., NP -> a mouse
                 rhs = [c.token if c.is_terminal() else c.label for c in node.children]
             rule = [node.label] + list(rhs)
-            acc.append(tuple(rule))
-    else:
-        raise ValueError("Invalid order=%s" % order)
-    return acc
+            rules.append(tuple(rule))
+    return rules
 
 ################
 # Aggregation of spans
 
-def aggregate_spans(node, acc=None, order="pre-order"):
+def aggregate_spans(root, order="pre-order"):
     """
-    :type node: NonTerminal or Terminal
-    :type acc: list of (int,int), or list of (str,int,int), or None
+    :type root: NonTerminal or Terminal
     :type order: str
-    :rtype: list of (int,int), or list of (str,int,int)
+    :rtype: list of (int,int)/(str,int,int)
     """
-    if acc is None:
-        acc = []
+    nodes = traverse(root, order=order, include_terminal=False, acc=None)
 
-    if node.is_terminal():
-        return acc
-
-    if order == "pre-order":
-        # Process the current node
+    spans = []
+    for node in nodes:
         if node.with_nonterminal_labels:
-            acc.append(tuple([node.label] + list(node.index_span)))
+            # e.g., (NP, 2, 4)
+            spans.append(tuple([node.label] + list(node.index_span)))
         else:
-            acc.append(node.index_span)
-        # Process the child nodes
-        for c in node.children:
-            acc = aggregate_spans(c, acc=acc, order=order)
-    elif order == "post-order":
-        # Process the child nodes
-        for c in node.children:
-            acc = aggregate_spans(c, acc=acc, order=order)
-        # Process the current node
-        if node.with_nonterminal_labels:
-            acc.append(tuple([node.label] + list(node.index_span)))
-        else:
-            acc.append(node.index_span)
-    else:
-        raise ValueError("Invalid order=%s" % order)
-    return acc
+            # e.g., (2, 4)
+            spans.append(node.index_span)
 
-def aggregate_composition_spans(node, acc=None, binary=True, order="pre-order"):
+    return spans
+
+def aggregate_composition_spans(root, order="pre-order", binary=True):
     """
-    :type node: NonTerminal or Terminal
-    :type acc: list of [(int,int,...), (int,int,...)], or list of [str, (int,int,...), (int,int,...)], or None
+    :type root: NonTerminal or Terminal
+    :type order: str
     :type binary: bool
-    :type order: str
     :rtype: list of [(int,int,...), (int,int,...)], or list of [str, (int,int,...), (int,int,...)]
     """
-    if acc is None:
-        acc = []
-
-    if node.is_terminal():
-        return acc
+    nodes = traverse(root, order=order, include_terminal=False, acc=None)
 
     # Check
     if binary:
-        if len(node.children) != 2:
-            raise ValueError("(A nonterminal node does NOT have two children. The node is %s" % node)
+        for node in nodes:
+            assert len(node.children) == 2
 
-    if order == "pre-order":
-        # Process the current node
+    comp_spans = []
+    for node in nodes:
         if node.with_nonterminal_labels:
-            acc.append([node.label] + [c.index_span for c in node.children])
+            # e.g., [NP, (0,1), (2,4)]
+            comp_spans.append([node.label] + [c.index_span for c in node.children])
         else:
-            acc.append([c.index_span for c in node.children])
-        # Process the child nodes
-        for c in node.children:
-            acc = aggregate_composition_spans(c, acc=acc, binary=binary, order=order)
-    elif order == "post-order":
-        # Process the child nodes
-        for c in node.children:
-            acc = aggregate_composition_spans(c, acc=acc, binary=binary, order=order)
-        # Process the current node
-        if node.with_nonterminal_labels:
-            acc.append([node.label] + [c.index_span for c in node.children])
-        else:
-            acc.append([c.index_span for c in node.children])
-    else:
-        raise ValueError("Invalid order=%s" % order)
+            # e.g., [(0,1), (2,4)]
+            comp_spans.append([c.index_span for c in node.children])
 
-    return acc
+    return comp_spans
 
 ################
-# Aggregation of subtrees.
+# Aggregation of subtrees (strings)
 
-def aggregate_subtrees(root, string=True, order="pre-order"):
+def aggregate_subtree_strings(root, order="pre-order", include_terminal=True):
     """
     :type root: NonTerminal
-    :type string: bool
     :type order: str
+    :type include_terminal: bool
     :rtype: list of str
     """
-    nodes = _rec_aggregate_subtrees(root, order=order)
-    if string:
-        nodes = [n.__str__() for n in nodes]
-    return nodes
+    if include_terminal:
+        assert root.with_terminal_labels
 
-def _rec_aggregate_subtrees(node, acc=None, order="pre-order"):
-    """
-    :type node: NonTerminal or Terminal
-    :type acc: list of (NonTerminal or Terminal), or None
-    :type order: str
-    :rtype: list of (NonTerminal or Terminal)
-    """
-    if acc is None:
-        acc = []
+    nodes = traverse(root, order=order, include_terminal=include_terminal, acc=None)
 
-    if order == "pre-order":
-        # Process the current node
-        if node.is_terminal() and (not node.with_terminal_labels):
-            pass
-        else:
-            acc.append(node)
-        # Process the child nodes
-        if not node.is_terminal():
-            for c in node.children:
-                acc = _rec_aggregate_subtrees(c, acc=acc, order=order)
-    elif order == "post-order":
-        # Process the child nodes
-        if not node.is_terminal():
-            for c in node.children:
-                acc = _rec_aggregate_subtrees(c, acc=acc, order=order)
-        # Process the current node
-        if node.is_terminal() and (not node.with_terminal_labels):
-            pass
-        else:
-            acc.append(node)
-    else:
-        raise ValueError("Invalid order=%s" % order)
+    subtree_strs = []
+    for node in nodes:
+        subtree_strs.append(node.__str__())
 
-    return acc
+    return subtree_strs
 
 ################
 # Tree shifting

@@ -23,7 +23,7 @@ print("tree.children[1].leaves() = %s" % tree.children[1].leaves())
 
 treetk.pretty_print(tree)
 
-rules = treetk.aggregate_production_rules(tree, order="pre-order")
+rules = treetk.aggregate_production_rules(tree, order="pre-order", include_terminal=True)
 print_list("production rules =", rules)
 
 tree.calc_spans()
@@ -32,7 +32,7 @@ print_list("spans =", spans)
 mrg_spans = treetk.aggregate_composition_spans(tree, order="pre-order")
 print_list("composition spans =", mrg_spans)
 
-subtree_strings = treetk.aggregate_subtrees(tree, string=True, order="pre-order")
+subtree_strings = treetk.aggregate_subtree_strings(tree, order="pre-order", include_terminal=True)
 print_list("subtrees =", subtree_strings)
 
 print("tree2sexp(tree) = %s" % treetk.tree2sexp(tree))
@@ -54,7 +54,7 @@ print("tree.children[1].leaves() = %s" % tree.children[1].leaves())
 
 treetk.pretty_print(tree)
 
-rules = treetk.aggregate_production_rules(tree, order="pre-order")
+rules = treetk.aggregate_production_rules(tree, order="pre-order", include_terminal=False)
 print_list("production rules =", rules)
 
 tree.calc_spans()
@@ -63,7 +63,7 @@ print_list("spans =", spans)
 mrg_spans = treetk.aggregate_composition_spans(tree, order="pre-order")
 print_list("composition spans =", mrg_spans)
 
-subtree_strings = treetk.aggregate_subtrees(tree, string=True, order="pre-order")
+subtree_strings = treetk.aggregate_subtree_strings(tree, order="pre-order", include_terminal=False)
 print_list("subtrees =", subtree_strings)
 
 print("tree2sexp(tree) = %s" % treetk.tree2sexp(tree))
@@ -92,7 +92,7 @@ print_list("spans =", spans)
 mrg_spans = treetk.aggregate_composition_spans(tree, order="pre-order")
 print_list("composition spans =", mrg_spans)
 
-subtree_strings = treetk.aggregate_subtrees(tree, string=True, order="pre-order")
+subtree_strings = treetk.aggregate_subtree_strings(tree, order="pre-order", include_terminal=True)
 print_list("subtrees =", subtree_strings)
 
 print("tree2sexp(tree) = %s" % treetk.tree2sexp(tree))
@@ -120,7 +120,7 @@ print_list("spans =", spans)
 mrg_spans = treetk.aggregate_composition_spans(tree, order="pre-order")
 print_list("composition spans =", mrg_spans)
 
-subtree_strings = treetk.aggregate_subtrees(tree, string=True, order="pre-order")
+subtree_strings = treetk.aggregate_subtree_strings(tree, order="pre-order", include_terminal=False)
 print_list("subtrees =", subtree_strings)
 
 print("tree2sexp(tree) = %s" % treetk.tree2sexp(tree))
@@ -142,16 +142,16 @@ print("tree.children[1].leaves() = %s" % tree.children[1].leaves())
 
 treetk.pretty_print(tree)
 
-rules = treetk.aggregate_production_rules(tree, order="pre-order")
+rules = treetk.aggregate_production_rules(tree, order="pre-order", include_terminal=True)
 print_list("production rules =", rules)
 
 tree.calc_spans()
 spans = treetk.aggregate_spans(tree, order="pre-order")
 print_list("spans =", spans)
-mrg_spans = treetk.aggregate_composition_spans(tree, binary=False, order="pre-order")
+mrg_spans = treetk.aggregate_composition_spans(tree, order="pre-order", binary=False)
 print_list("composition spans =", mrg_spans)
 
-subtree_strings = treetk.aggregate_subtrees(tree, string=True, order="pre-order")
+subtree_strings = treetk.aggregate_subtree_strings(tree, order="pre-order", include_terminal=True)
 print_list("subtrees =", subtree_strings)
 
 print("tree2sexp(tree) = %s" % treetk.tree2sexp(tree))
@@ -173,12 +173,7 @@ for index in range(len(tokens)):
     print("dtree.get_head(%d) = %s" % (index, dtree.get_head(index)))
 treetk.pretty_print_dtree(dtree)
 
-print("\n############### Sample for conversion of dependency tree -> constituency tree ####################\n")
-treetk.pretty_print_dtree(dtree)
-ctree = treetk.dtree2ctree(dtree)
-treetk.pretty_print(ctree)
-
-print("\n############### Sample for conversion of constituency tree -> dependency tree ####################\n")
+print("\n############### Sample for conversion from constituency tree to dependency tree ####################\n")
 sexp = treetk.preprocess("(S (NP (DT a) (NN boy)) (VP (VP (VBD saw) (NP (DT a) (NN girl))) (PP (IN with) (NP (DT a) (NN telescope)))))".split())
 ctree = treetk.sexp2tree(sexp, with_nonterminal_labels=True, with_terminal_labels=True)
 treetk.pretty_print(ctree)
@@ -213,4 +208,13 @@ def func_label_rule(node, i, j):
     # return "%s,%s,%s" % (node.label, node.children[i].label, node.children[j].label)
 dtree = treetk.ctree2dtree(ctree, func_label_rule=func_label_rule)
 treetk.pretty_print_dtree(dtree)
+
+print("\n############### Sample for conversion from dependency tree to constituency tree ####################\n")
+tokens = ["<root>", "a", "boy", "saw", "a", "girl", "with", "a", "telescope"]
+arcs = [(2, 1, "det"), (3, 2, "nsubj"), (3, 5, "dobj"), (5, 4, "det"), (3, 6, "prep"), (6, 8, "pobj"), (8, 7, "det"), (0, 3, "<root>")]
+dtree = treetk.arcs2dtree(arcs=arcs, tokens=tokens)
+treetk.pretty_print_dtree(dtree)
+ctree = treetk.dtree2ctree(dtree)
+treetk.pretty_print(ctree)
+
 
