@@ -48,3 +48,5 @@ from .dtree import dtree2ctree
 # Penn-Treebank (WSJ)
 from . import ptbwsj
 
+# RST Discourse Treebank
+from . import rstdt

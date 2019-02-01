@@ -28,7 +28,7 @@ def read_sexps(path, LPAREN="(", RPAREN=")"):
     return sexps
 
 ############################
-# Preprocessing
+# Postprocessing
 
 PUNCTUATIONS = ["-NONE-",
                 ",", ".", "?", "!",
@@ -48,8 +48,11 @@ def lowercasing(node):
     if node.is_terminal():
         node.token = node.token.lower()
         return node
+
+    # Recursive
     for c_i in range(len(node.children)):
         node.children[c_i] = lowercasing(node.children[c_i])
+
     return node
 
 def remove_punctuations_and_empties(node):
@@ -68,6 +71,7 @@ def _remove_punctuations(node):
     """
     if node.is_terminal():
         return node
+
     new_children = []
     for c_i in range(len(node.children)):
         # Remove child nodes that are terminals and punctuations.
@@ -76,6 +80,8 @@ def _remove_punctuations(node):
             continue
         new_children.append(node.children[c_i])
     node.children = new_children
+
+    # Recursive
     for c_i in range(len(node.children)):
         node.children[c_i] = _remove_punctuations(node.children[c_i])
     return node
@@ -87,14 +93,18 @@ def _remove_empties(node):
     """
     if node.is_terminal():
         return node
+
     new_children = []
     for c_i in range(len(node.children)):
         # Remove non-terminal nodes without any child terminals.
         if _count_terminals(node.children[c_i]) > 0:
             new_children.append(node.children[c_i])
     node.children = new_children
+
+    # Recursive
     for c_i in range(len(node.children)):
         node.children[c_i] = _remove_empties(node.children[c_i])
+
     return node
 
 def _count_terminals(node):
@@ -104,13 +114,11 @@ def _count_terminals(node):
     """
     if node.is_terminal():
         return 1
+
     count = 0
     for c in node.children:
         count += _count_terminals(c)
     return count
-
-############################
-# Preprocessing of non-terminal node labels.
 
 def remove_function_tags(node):
     """
@@ -119,9 +127,14 @@ def remove_function_tags(node):
     """
     if node.is_terminal():
         return node
+
+    # Remove function tags from the label
     node.label = _remove_function_tags(node.label)
+
+    # Recursive
     for c_i in range(len(node.children)):
         node.children[c_i] = remove_function_tags(node.children[c_i])
+
     return node
 
 def _remove_function_tags(label):
@@ -135,9 +148,6 @@ def _remove_function_tags(label):
     else:
         return label
 
-############################
-# Binarization
-
 def binarize(node, right_branching=True):
     """
     :type node: NonTerminal or Terminal
@@ -146,40 +156,45 @@ def binarize(node, right_branching=True):
     """
     if node.is_terminal():
         return node
+
+    # Right/Left branching
     if len(node.children) > 2:
         if right_branching:
             node.children = _right_branching(node.children)
         else:
             node.children = _left_branching(node.children)
+
+    # Recursive
     for c_i in range(len(node.children)):
         node.children[c_i] = binarize(node.children[c_i])
+
     return node
 
 def _right_branching(nodes):
     """
-    :type node: NonTerminal or Terminal
+    :type nodes: list of NonTerminal/Terminal
     :rtype: [NonTerminal/Terminal, NonTerminal/Terminal]
     """
     if len(nodes) == 2:
         return nodes
-    else:
-        lhs = nodes[0]
-        rhs = NonTerminal("+".join([n.label for n in nodes[1:]]))
-        rhs.children = _right_branching(nodes[1:])
-        return [lhs, rhs]
+
+    lhs = nodes[0] # The left-most child node is head
+    rhs = NonTerminal("+".join([n.label for n in nodes[1:]]))
+    rhs.children = _right_branching(nodes[1:])
+    return [lhs, rhs]
 
 def _left_branching(nodes):
     """
-    :type node: NonTerminal or Terminal
+    :type nodes: list of NonTerminal/Terminal
     :rtype: [NonTerminal/Terminal, NonTerminal/Terminal]
     """
     if len(nodes) == 2:
         return nodes
-    else:
-        lhs = NonTerminal("+".join([n.label for n in nodes[:-1]]))
-        lhs.children = _left_branching(nodes[:-1])
-        rhs = nodes[-1]
-        return [lhs, rhs]
+
+    lhs = NonTerminal("+".join([n.label for n in nodes[:-1]]))
+    lhs.children = _left_branching(nodes[:-1])
+    rhs = nodes[-1] # The right-most child node is head
+    return [lhs, rhs]
 
 ############################
 # Others
