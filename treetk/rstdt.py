@@ -1,3 +1,5 @@
+import re
+
 from .ll import NonTerminal, Terminal
 
 LPAREN = "("
@@ -80,6 +82,9 @@ def sexp2tree(sexp):
     """
     :type sexp: list of str
     :rtype: NonTerminal
+
+    Please note that the input ``sexp'' is assumed to be the raw version in RST-DT.
+    So, if you want to convert a loaded S-expression after preprocessing, please use ``treetk.sexp2tree(sexp, with_nonterminal_labels=True, with_terminal_labels=True)'' instead.
     """
     tmp_node = make_nonterminal(index_span=(-1,-1), relation="TMP", nuclearity="tmp")
     stack = [tmp_node]
@@ -255,16 +260,40 @@ def _right_branching(nodes):
     rhs.children = _right_branching(nodes[1:])
     return [lhs, rhs]
 
+###########################
+# Others
 
+def calc_relations_and_nuclearities(root):
+    """
+    :type root: NonTerminal/Terminal
+    :rtype: NonTerminal/Terminal
+    """
+    if root.is_terminal():
+        return root
 
+    re_comp = re.compile("<(.+),(.+)>")
+    root = _calc_relations_and_nuclearities(root, re_comp)
+    return root
 
+def _calc_relations_and_nuclearities(node, re_comp):
+    """
+    :type node: NonTerminal/Terminal
+    :type re_comp: _sre.SRE_Pattern
+    :rtype: NonTerminal/Terminal
+    """
+    if node.is_terminal():
+        return node
 
+    # Extract relations and nuclearities from the label
+    match = re_comp.findall(node.label)
+    assert len(match) == 1
+    node.relations = match[0][0].split("/")
+    node.nuclearities = match[0][1].split("/")
 
+    # Recursive
+    for c_i in range(len(node.children)):
+        node.children[c_i] = _calc_relations_and_nuclearities(node.children[c_i], re_comp)
 
-
-
-
-
-
+    return node
 
 
