@@ -263,7 +263,7 @@ def _right_branching(nodes):
 ###########################
 # Others
 
-def calc_relations_and_nuclearities(root):
+def assign_relations_and_nuclearities(root):
     """
     :type root: NonTerminal/Terminal
     :rtype: NonTerminal/Terminal
@@ -272,10 +272,10 @@ def calc_relations_and_nuclearities(root):
         return root
 
     re_comp = re.compile("<(.+),(.+)>")
-    root = _calc_relations_and_nuclearities(root, re_comp)
+    root = _assign_relations_and_nuclearities(root, re_comp)
     return root
 
-def _calc_relations_and_nuclearities(node, re_comp):
+def _assign_relations_and_nuclearities(node, re_comp):
     """
     :type node: NonTerminal/Terminal
     :type re_comp: _sre.SRE_Pattern
@@ -292,8 +292,16 @@ def _calc_relations_and_nuclearities(node, re_comp):
 
     # Recursive
     for c_i in range(len(node.children)):
-        node.children[c_i] = _calc_relations_and_nuclearities(node.children[c_i], re_comp)
+        node.children[c_i] = _assign_relations_and_nuclearities(node.children[c_i], re_comp)
 
     return node
 
-
+def assign_heads(root):
+    """
+    :type root: NonTerminal/Terminal
+    :rtype: NonTerminal/Terminal
+    """
+    if root.is_terminal():
+        return root
+    root.calc_heads(func_head_child_rule=lambda node: node.nuclearities.index("N"))
+    return root
