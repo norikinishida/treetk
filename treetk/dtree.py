@@ -84,7 +84,7 @@ def hyphens2arcs(hyphens):
     :rtype: list of (int, int, str)
     """
     arcs = [x.split("-") for x in hyphens]
-    arcs = [(int(arc[0]), int(arc[1]), str(arc[2])) if len(arc) == 3
+    arcs = [(int(arc[0]), int(arc[1]), str("-".join(arc[2:]))) if len(arc) >= 3
              else (int(arc[0]), int(arc[1]), "*")
              for arc in arcs]
     return arcs
