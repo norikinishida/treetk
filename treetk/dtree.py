@@ -35,8 +35,11 @@ class DependencyTree(object):
         """
         :rtype: str
         """
-        return str([(str(h) + "_" + self.tokens[h], str(d) + "_" + self.tokens[d], l)
-                    for h,d,l in self.arcs])
+        arcs = self.tolist()
+        arcs = ["%d-%d-%s" % (h,d,l) for h,d,l in arcs]
+        return " ".join(arcs)
+        # return str([(str(h) + "_" + self.tokens[h], str(d) + "_" + self.tokens[d], l)
+        #             for h,d,l in self.arcs])
 
     def tolist(self, labeled=True, replace_with_tokens=False):
         """

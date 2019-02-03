@@ -1,17 +1,10 @@
 
 ############### Sample for labeled trees with POS tags ####################
 
-sexp = ['(', 'S', '(', 'NP', '(', 'DT', 'a', ')', '(', 'NN', 'cat', ')', ')', '(', 'VP', '(', 'VBZ', 'bites', ')', '(', 'NP', '(', 'DT', 'a', ')', '(', 'NN', 'mouse', ')', ')', ')', ')']
-tree.__str__() = ( S ( NP ( DT a ) ( NN cat ) ) ( VP ( VBZ bites ) ( NP ( DT a ) ( NN mouse ) ) ) )
-tree.tolist() = ['S', ['NP', ['DT', 'a'], ['NN', 'cat']], ['VP', ['VBZ', 'bites'], ['NP', ['DT', 'a'], ['NN', 'mouse']]]]
-tree.leaves() = ['a', 'cat', 'bites', 'a', 'mouse']
-tree.labelleaves() = ['DT', 'NN', 'VBZ', 'DT', 'NN']
-tree.children[0].__str__() = ( NP ( DT a ) ( NN cat ) )
-tree.children[1].__str__() = ( VP ( VBZ bites ) ( NP ( DT a ) ( NN mouse ) ) )
-tree.children[0].tolist() = ['NP', ['DT', 'a'], ['NN', 'cat']]
-tree.children[1].tolist() = ['VP', ['VBZ', 'bites'], ['NP', ['DT', 'a'], ['NN', 'mouse']]]
-tree.children[0].leaves() = ['a', 'cat']
-tree.children[1].leaves() = ['bites', 'a', 'mouse']
+S-expression:
+	['(', 'S', '(', 'NP', '(', 'DT', 'a', ')', '(', 'NN', 'cat', ')', ')', '(', 'VP', '(', 'VBZ', 'bites', ')', '(', 'NP', '(', 'DT', 'a', ')', '(', 'NN', 'mouse', ')', ')', ')', ')']
+Constituent tree (with_nonterminal_labels=True, with_terminal_labels=True):
+
                     S
          ___________|___________
          |                     |
@@ -24,7 +17,89 @@ tree.children[1].leaves() = ['bites', 'a', 'mouse']
     DT        NN       VBZ        DT        NN
     |         |         |         |         |
 [   a   ] [  cat  ] [ bites ] [   a   ] [ mouse ]
-production rules =
+
+Traversing (pre-order):
+	#1
+	node.is_terminal() = False
+	node.label = S
+	str(node) = ( S ( NP ( DT a ) ( NN cat ) ) ( VP ( VBZ bites ) ( NP ( DT a ) ( NN mouse ) ) ) )
+	node.tolist() = ['S', ['NP', ['DT', 'a'], ['NN', 'cat']], ['VP', ['VBZ', 'bites'], ['NP', ['DT', 'a'], ['NN', 'mouse']]]]
+	node.leaves() = ['a', 'cat', 'bites', 'a', 'mouse']
+		#1-1
+		str(node.children[0]) = ( NP ( DT a ) ( NN cat ) )
+		#1-2
+		str(node.children[1]) = ( VP ( VBZ bites ) ( NP ( DT a ) ( NN mouse ) ) )
+	#2
+	node.is_terminal() = False
+	node.label = NP
+	str(node) = ( NP ( DT a ) ( NN cat ) )
+	node.tolist() = ['NP', ['DT', 'a'], ['NN', 'cat']]
+	node.leaves() = ['a', 'cat']
+		#2-1
+		str(node.children[0]) = ( DT a )
+		#2-2
+		str(node.children[1]) = ( NN cat )
+	#3
+	node.is_terminal() = True
+	node.label = DT
+	node.token = a
+	node.index = 0
+	str(node) = ( DT a )
+	node.tolist() = ['DT', 'a']
+	node.leaves() = ['a']
+	#4
+	node.is_terminal() = True
+	node.label = NN
+	node.token = cat
+	node.index = 1
+	str(node) = ( NN cat )
+	node.tolist() = ['NN', 'cat']
+	node.leaves() = ['cat']
+	#5
+	node.is_terminal() = False
+	node.label = VP
+	str(node) = ( VP ( VBZ bites ) ( NP ( DT a ) ( NN mouse ) ) )
+	node.tolist() = ['VP', ['VBZ', 'bites'], ['NP', ['DT', 'a'], ['NN', 'mouse']]]
+	node.leaves() = ['bites', 'a', 'mouse']
+		#5-1
+		str(node.children[0]) = ( VBZ bites )
+		#5-2
+		str(node.children[1]) = ( NP ( DT a ) ( NN mouse ) )
+	#6
+	node.is_terminal() = True
+	node.label = VBZ
+	node.token = bites
+	node.index = 2
+	str(node) = ( VBZ bites )
+	node.tolist() = ['VBZ', 'bites']
+	node.leaves() = ['bites']
+	#7
+	node.is_terminal() = False
+	node.label = NP
+	str(node) = ( NP ( DT a ) ( NN mouse ) )
+	node.tolist() = ['NP', ['DT', 'a'], ['NN', 'mouse']]
+	node.leaves() = ['a', 'mouse']
+		#7-1
+		str(node.children[0]) = ( DT a )
+		#7-2
+		str(node.children[1]) = ( NN mouse )
+	#8
+	node.is_terminal() = True
+	node.label = DT
+	node.token = a
+	node.index = 3
+	str(node) = ( DT a )
+	node.tolist() = ['DT', 'a']
+	node.leaves() = ['a']
+	#9
+	node.is_terminal() = True
+	node.label = NN
+	node.token = mouse
+	node.index = 4
+	str(node) = ( NN mouse )
+	node.tolist() = ['NN', 'mouse']
+	node.leaves() = ['mouse']
+Aggregation of production rules (pre-order):
 	('S', 'NP', 'VP')
 	('NP', 'DT', 'NN')
 	('DT', 'a')
@@ -34,40 +109,25 @@ production rules =
 	('NP', 'DT', 'NN')
 	('DT', 'a')
 	('NN', 'mouse')
-spans =
+Aggregation of spans (pre-order):
 	('S', 0, 4)
 	('NP', 0, 1)
 	('VP', 2, 4)
 	('NP', 3, 4)
-composition spans =
+Aggregation of composition spans (pre-order):
 	['S', (0, 1), (2, 4)]
 	['NP', (0, 0), (1, 1)]
 	['VP', (2, 2), (3, 4)]
 	['NP', (3, 3), (4, 4)]
-subtrees =
-	( S ( NP ( DT a ) ( NN cat ) ) ( VP ( VBZ bites ) ( NP ( DT a ) ( NN mouse ) ) ) )
-	( NP ( DT a ) ( NN cat ) )
-	( DT a )
-	( NN cat )
-	( VP ( VBZ bites ) ( NP ( DT a ) ( NN mouse ) ) )
-	( VBZ bites )
-	( NP ( DT a ) ( NN mouse ) )
-	( DT a )
-	( NN mouse )
-tree2sexp(tree) = ['(', 'S', '(', 'NP', '(', 'DT', 'a', ')', '(', 'NN', 'cat', ')', ')', '(', 'VP', '(', 'VBZ', 'bites', ')', '(', 'NP', '(', 'DT', 'a', ')', '(', 'NN', 'mouse', ')', ')', ')', ')']
+S-expression (reversed):
+	['(', 'S', '(', 'NP', '(', 'DT', 'a', ')', '(', 'NN', 'cat', ')', ')', '(', 'VP', '(', 'VBZ', 'bites', ')', '(', 'NP', '(', 'DT', 'a', ')', '(', 'NN', 'mouse', ')', ')', ')', ')']
 
 ############### Sample for labeled trees without POS tags ####################
 
-sexp = ['(', 'S', '(', 'NP', 'a', 'cat', ')', '(', 'VP', 'bites', '(', 'NP', 'a', 'mouse', ')', ')', ')']
-tree.__str__() = ( S ( NP a cat ) ( VP bites ( NP a mouse ) ) )
-tree.tolist() = ['S', ['NP', 'a', 'cat'], ['VP', 'bites', ['NP', 'a', 'mouse']]]
-tree.leaves() = ['a', 'cat', 'bites', 'a', 'mouse']
-tree.children[0].__str__() = ( NP a cat )
-tree.children[1].__str__() = ( VP bites ( NP a mouse ) )
-tree.children[0].tolist() = ['NP', 'a', 'cat']
-tree.children[1].tolist() = ['VP', 'bites', ['NP', 'a', 'mouse']]
-tree.children[0].leaves() = ['a', 'cat']
-tree.children[1].leaves() = ['bites', 'a', 'mouse']
+S-expression:
+	['(', 'S', '(', 'NP', 'a', 'cat', ')', '(', 'VP', 'bites', '(', 'NP', 'a', 'mouse', ')', ')', ')']
+Constituent tree (with_nonterminal_labels=True, with_terminal_labels=False):
+
                     S
          ___________|___________
          |                     |
@@ -80,41 +140,107 @@ tree.children[1].leaves() = ['bites', 'a', 'mouse']
     *         *         *         *         *
     |         |         |         |         |
 [   a   ] [  cat  ] [ bites ] [   a   ] [ mouse ]
-production rules =
+
+Traversing (pre-order):
+	#1
+	node.is_terminal() = False
+	node.label = S
+	str(node) = ( S ( NP a cat ) ( VP bites ( NP a mouse ) ) )
+	node.tolist() = ['S', ['NP', 'a', 'cat'], ['VP', 'bites', ['NP', 'a', 'mouse']]]
+	node.leaves() = ['a', 'cat', 'bites', 'a', 'mouse']
+		#1-1
+		str(node.children[0]) = ( NP a cat )
+		#1-2
+		str(node.children[1]) = ( VP bites ( NP a mouse ) )
+	#2
+	node.is_terminal() = False
+	node.label = NP
+	str(node) = ( NP a cat )
+	node.tolist() = ['NP', 'a', 'cat']
+	node.leaves() = ['a', 'cat']
+		#2-1
+		str(node.children[0]) = a
+		#2-2
+		str(node.children[1]) = cat
+	#3
+	node.is_terminal() = True
+	node.token = a
+	node.index = 0
+	str(node) = a
+	node.tolist() = a
+	node.leaves() = ['a']
+	#4
+	node.is_terminal() = True
+	node.token = cat
+	node.index = 1
+	str(node) = cat
+	node.tolist() = cat
+	node.leaves() = ['cat']
+	#5
+	node.is_terminal() = False
+	node.label = VP
+	str(node) = ( VP bites ( NP a mouse ) )
+	node.tolist() = ['VP', 'bites', ['NP', 'a', 'mouse']]
+	node.leaves() = ['bites', 'a', 'mouse']
+		#5-1
+		str(node.children[0]) = bites
+		#5-2
+		str(node.children[1]) = ( NP a mouse )
+	#6
+	node.is_terminal() = True
+	node.token = bites
+	node.index = 2
+	str(node) = bites
+	node.tolist() = bites
+	node.leaves() = ['bites']
+	#7
+	node.is_terminal() = False
+	node.label = NP
+	str(node) = ( NP a mouse )
+	node.tolist() = ['NP', 'a', 'mouse']
+	node.leaves() = ['a', 'mouse']
+		#7-1
+		str(node.children[0]) = a
+		#7-2
+		str(node.children[1]) = mouse
+	#8
+	node.is_terminal() = True
+	node.token = a
+	node.index = 3
+	str(node) = a
+	node.tolist() = a
+	node.leaves() = ['a']
+	#9
+	node.is_terminal() = True
+	node.token = mouse
+	node.index = 4
+	str(node) = mouse
+	node.tolist() = mouse
+	node.leaves() = ['mouse']
+Aggregation of production rules (pre-order):
 	('S', 'NP', 'VP')
 	('NP', 'a', 'cat')
 	('VP', 'bites', 'NP')
 	('NP', 'a', 'mouse')
-spans =
+Aggregation of spans (pre-order):
 	('S', 0, 4)
 	('NP', 0, 1)
 	('VP', 2, 4)
 	('NP', 3, 4)
-composition spans =
+Aggregation of composition spans (pre-order):
 	['S', (0, 1), (2, 4)]
 	['NP', (0, 0), (1, 1)]
 	['VP', (2, 2), (3, 4)]
 	['NP', (3, 3), (4, 4)]
-subtrees =
-	( S ( NP a cat ) ( VP bites ( NP a mouse ) ) )
-	( NP a cat )
-	( VP bites ( NP a mouse ) )
-	( NP a mouse )
-tree2sexp(tree) = ['(', 'S', '(', 'NP', 'a', 'cat', ')', '(', 'VP', 'bites', '(', 'NP', 'a', 'mouse', ')', ')', ')']
+S-expression (reversed):
+	['(', 'S', '(', 'NP', 'a', 'cat', ')', '(', 'VP', 'bites', '(', 'NP', 'a', 'mouse', ')', ')', ')']
 
 ############### Sample for unlabeled trees with POS tags ####################
 
-sexp = ['(', '(', '(', 'DT', 'a', ')', '(', 'NN', 'cat', ')', ')', '(', '(', 'VBZ', 'bites', ')', '(', '(', 'DT', 'a', ')', '(', 'NN', 'mouse', ')', ')', ')', ')']
-tree.__str__() = ( ( ( DT a ) ( NN cat ) ) ( ( VBZ bites ) ( ( DT a ) ( NN mouse ) ) ) )
-tree.tolist() = [[['DT', 'a'], ['NN', 'cat']], [['VBZ', 'bites'], [['DT', 'a'], ['NN', 'mouse']]]]
-tree.leaves() = ['a', 'cat', 'bites', 'a', 'mouse']
-tree.labelleaves() = ['DT', 'NN', 'VBZ', 'DT', 'NN']
-tree.children[0].__str__() = ( ( DT a ) ( NN cat ) )
-tree.children[1].__str__() = ( ( VBZ bites ) ( ( DT a ) ( NN mouse ) ) )
-tree.children[0].tolist() = [['DT', 'a'], ['NN', 'cat']]
-tree.children[1].tolist() = [['VBZ', 'bites'], [['DT', 'a'], ['NN', 'mouse']]]
-tree.children[0].leaves() = ['a', 'cat']
-tree.children[1].leaves() = ['bites', 'a', 'mouse']
+S-expression:
+	['(', '(', '(', 'DT', 'a', ')', '(', 'NN', 'cat', ')', ')', '(', '(', 'VBZ', 'bites', ')', '(', '(', 'DT', 'a', ')', '(', 'NN', 'mouse', ')', ')', ')', ')']
+Constituent tree (with_nonterminal_labels=False, with_terminal_labels=True):
+
                     *
          ___________|___________
          |                     |
@@ -127,40 +253,103 @@ tree.children[1].leaves() = ['bites', 'a', 'mouse']
     DT        NN       VBZ        DT        NN
     |         |         |         |         |
 [   a   ] [  cat  ] [ bites ] [   a   ] [ mouse ]
-spans =
+
+Traversing (pre-order):
+	#1
+	node.is_terminal() = False
+	str(node) = ( ( ( DT a ) ( NN cat ) ) ( ( VBZ bites ) ( ( DT a ) ( NN mouse ) ) ) )
+	node.tolist() = [[['DT', 'a'], ['NN', 'cat']], [['VBZ', 'bites'], [['DT', 'a'], ['NN', 'mouse']]]]
+	node.leaves() = ['a', 'cat', 'bites', 'a', 'mouse']
+		#1-1
+		str(node.children[0]) = ( ( DT a ) ( NN cat ) )
+		#1-2
+		str(node.children[1]) = ( ( VBZ bites ) ( ( DT a ) ( NN mouse ) ) )
+	#2
+	node.is_terminal() = False
+	str(node) = ( ( DT a ) ( NN cat ) )
+	node.tolist() = [['DT', 'a'], ['NN', 'cat']]
+	node.leaves() = ['a', 'cat']
+		#2-1
+		str(node.children[0]) = ( DT a )
+		#2-2
+		str(node.children[1]) = ( NN cat )
+	#3
+	node.is_terminal() = True
+	node.label = DT
+	node.token = a
+	node.index = 0
+	str(node) = ( DT a )
+	node.tolist() = ['DT', 'a']
+	node.leaves() = ['a']
+	#4
+	node.is_terminal() = True
+	node.label = NN
+	node.token = cat
+	node.index = 1
+	str(node) = ( NN cat )
+	node.tolist() = ['NN', 'cat']
+	node.leaves() = ['cat']
+	#5
+	node.is_terminal() = False
+	str(node) = ( ( VBZ bites ) ( ( DT a ) ( NN mouse ) ) )
+	node.tolist() = [['VBZ', 'bites'], [['DT', 'a'], ['NN', 'mouse']]]
+	node.leaves() = ['bites', 'a', 'mouse']
+		#5-1
+		str(node.children[0]) = ( VBZ bites )
+		#5-2
+		str(node.children[1]) = ( ( DT a ) ( NN mouse ) )
+	#6
+	node.is_terminal() = True
+	node.label = VBZ
+	node.token = bites
+	node.index = 2
+	str(node) = ( VBZ bites )
+	node.tolist() = ['VBZ', 'bites']
+	node.leaves() = ['bites']
+	#7
+	node.is_terminal() = False
+	str(node) = ( ( DT a ) ( NN mouse ) )
+	node.tolist() = [['DT', 'a'], ['NN', 'mouse']]
+	node.leaves() = ['a', 'mouse']
+		#7-1
+		str(node.children[0]) = ( DT a )
+		#7-2
+		str(node.children[1]) = ( NN mouse )
+	#8
+	node.is_terminal() = True
+	node.label = DT
+	node.token = a
+	node.index = 3
+	str(node) = ( DT a )
+	node.tolist() = ['DT', 'a']
+	node.leaves() = ['a']
+	#9
+	node.is_terminal() = True
+	node.label = NN
+	node.token = mouse
+	node.index = 4
+	str(node) = ( NN mouse )
+	node.tolist() = ['NN', 'mouse']
+	node.leaves() = ['mouse']
+Aggregation of spans (pre-order):
 	(0, 4)
 	(0, 1)
 	(2, 4)
 	(3, 4)
-composition spans =
+Aggregation of composition spans (pre-order):
 	[(0, 1), (2, 4)]
 	[(0, 0), (1, 1)]
 	[(2, 2), (3, 4)]
 	[(3, 3), (4, 4)]
-subtrees =
-	( ( ( DT a ) ( NN cat ) ) ( ( VBZ bites ) ( ( DT a ) ( NN mouse ) ) ) )
-	( ( DT a ) ( NN cat ) )
-	( DT a )
-	( NN cat )
-	( ( VBZ bites ) ( ( DT a ) ( NN mouse ) ) )
-	( VBZ bites )
-	( ( DT a ) ( NN mouse ) )
-	( DT a )
-	( NN mouse )
-tree2sexp(tree) = ['(', '(', '(', 'DT', 'a', ')', '(', 'NN', 'cat', ')', ')', '(', '(', 'VBZ', 'bites', ')', '(', '(', 'DT', 'a', ')', '(', 'NN', 'mouse', ')', ')', ')', ')']
+S-expression (reversed):
+	['(', '(', '(', 'DT', 'a', ')', '(', 'NN', 'cat', ')', ')', '(', '(', 'VBZ', 'bites', ')', '(', '(', 'DT', 'a', ')', '(', 'NN', 'mouse', ')', ')', ')', ')']
 
 ############### Sample for unlabeled trees without POS tags ####################
 
-sexp = ['(', '(', 'a', 'cat', ')', '(', 'bites', '(', 'a', 'mouse', ')', ')', ')']
-tree.__str__() = ( ( a cat ) ( bites ( a mouse ) ) )
-tree.tolist() = [['a', 'cat'], ['bites', ['a', 'mouse']]]
-tree.leaves() = ['a', 'cat', 'bites', 'a', 'mouse']
-tree.children[0].__str__() = ( a cat )
-tree.children[1].__str__() = ( bites ( a mouse ) )
-tree.children[0].tolist() = ['a', 'cat']
-tree.children[1].tolist() = ['bites', ['a', 'mouse']]
-tree.children[0].leaves() = ['a', 'cat']
-tree.children[1].leaves() = ['bites', 'a', 'mouse']
+S-expression:
+	['(', '(', 'a', 'cat', ')', '(', 'bites', '(', 'a', 'mouse', ')', ')', ')']
+Constituent tree (with_nonterminal_labels=False, with_terminal_labels=False):
+
                     *
          ___________|___________
          |                     |
@@ -173,35 +362,98 @@ tree.children[1].leaves() = ['bites', 'a', 'mouse']
     *         *         *         *         *
     |         |         |         |         |
 [   a   ] [  cat  ] [ bites ] [   a   ] [ mouse ]
-spans =
+
+Traversing (pre-order):
+	#1
+	node.is_terminal() = False
+	str(node) = ( ( a cat ) ( bites ( a mouse ) ) )
+	node.tolist() = [['a', 'cat'], ['bites', ['a', 'mouse']]]
+	node.leaves() = ['a', 'cat', 'bites', 'a', 'mouse']
+		#1-1
+		str(node.children[0]) = ( a cat )
+		#1-2
+		str(node.children[1]) = ( bites ( a mouse ) )
+	#2
+	node.is_terminal() = False
+	str(node) = ( a cat )
+	node.tolist() = ['a', 'cat']
+	node.leaves() = ['a', 'cat']
+		#2-1
+		str(node.children[0]) = a
+		#2-2
+		str(node.children[1]) = cat
+	#3
+	node.is_terminal() = True
+	node.token = a
+	node.index = 0
+	str(node) = a
+	node.tolist() = a
+	node.leaves() = ['a']
+	#4
+	node.is_terminal() = True
+	node.token = cat
+	node.index = 1
+	str(node) = cat
+	node.tolist() = cat
+	node.leaves() = ['cat']
+	#5
+	node.is_terminal() = False
+	str(node) = ( bites ( a mouse ) )
+	node.tolist() = ['bites', ['a', 'mouse']]
+	node.leaves() = ['bites', 'a', 'mouse']
+		#5-1
+		str(node.children[0]) = bites
+		#5-2
+		str(node.children[1]) = ( a mouse )
+	#6
+	node.is_terminal() = True
+	node.token = bites
+	node.index = 2
+	str(node) = bites
+	node.tolist() = bites
+	node.leaves() = ['bites']
+	#7
+	node.is_terminal() = False
+	str(node) = ( a mouse )
+	node.tolist() = ['a', 'mouse']
+	node.leaves() = ['a', 'mouse']
+		#7-1
+		str(node.children[0]) = a
+		#7-2
+		str(node.children[1]) = mouse
+	#8
+	node.is_terminal() = True
+	node.token = a
+	node.index = 3
+	str(node) = a
+	node.tolist() = a
+	node.leaves() = ['a']
+	#9
+	node.is_terminal() = True
+	node.token = mouse
+	node.index = 4
+	str(node) = mouse
+	node.tolist() = mouse
+	node.leaves() = ['mouse']
+Aggregation of spans (pre-order):
 	(0, 4)
 	(0, 1)
 	(2, 4)
 	(3, 4)
-composition spans =
+Aggregation of composition spans (pre-order):
 	[(0, 1), (2, 4)]
 	[(0, 0), (1, 1)]
 	[(2, 2), (3, 4)]
 	[(3, 3), (4, 4)]
-subtrees =
-	( ( a cat ) ( bites ( a mouse ) ) )
-	( a cat )
-	( bites ( a mouse ) )
-	( a mouse )
-tree2sexp(tree) = ['(', '(', 'a', 'cat', ')', '(', 'bites', '(', 'a', 'mouse', ')', ')', ')']
+S-expression (reversed):
+	['(', '(', 'a', 'cat', ')', '(', 'bites', '(', 'a', 'mouse', ')', ')', ')']
 
 ############### Sample for unary or n-ary trees ####################
 
-sexp = ['(', 'NP', '(', 'NP', '(', 'NP', '(', 'N', 'w0', ')', ')', '(', 'NP', '(', 'N', 'w1', ')', ')', ')', '(', 'NP', '(', 'N', 'w2', ')', '(', 'N', 'w3', ')', '(', 'N', 'w4', ')', ')', ')']
-tree.__str__() = ( NP ( NP ( NP ( N w0 ) ) ( NP ( N w1 ) ) ) ( NP ( N w2 ) ( N w3 ) ( N w4 ) ) )
-tree.tolist() = ['NP', ['NP', ['NP', ['N', 'w0']], ['NP', ['N', 'w1']]], ['NP', ['N', 'w2'], ['N', 'w3'], ['N', 'w4']]]
-tree.leaves() = ['w0', 'w1', 'w2', 'w3', 'w4']
-tree.children[0].__str__() = ( NP ( NP ( N w0 ) ) ( NP ( N w1 ) ) )
-tree.children[1].__str__() = ( NP ( N w2 ) ( N w3 ) ( N w4 ) )
-tree.children[0].tolist() = ['NP', ['NP', ['N', 'w0']], ['NP', ['N', 'w1']]]
-tree.children[1].tolist() = ['NP', ['N', 'w2'], ['N', 'w3'], ['N', 'w4']]
-tree.children[0].leaves() = ['w0', 'w1']
-tree.children[1].leaves() = ['w2', 'w3', 'w4']
+S-expression:
+	['(', 'NP', '(', 'NP', '(', 'NP', '(', 'N', 'w0', ')', ')', '(', 'NP', '(', 'N', 'w1', ')', ')', ')', '(', 'NP', '(', 'N', 'w2', ')', '(', 'N', 'w3', ')', '(', 'N', 'w4', ')', ')', ')']
+Constituent tree (with_nonterminal_labels=True, with_terminal_labels=True):
+
                         NP
           ______________|______________
           |                           |
@@ -214,7 +466,97 @@ tree.children[1].leaves() = ['w2', 'w3', 'w4']
      N          N          N          N          N
      |          |          |          |          |
 [   w0   ] [   w1   ] [   w2   ] [   w3   ] [   w4   ]
-production rules =
+
+Traversing (pre-order):
+	#1
+	node.is_terminal() = False
+	node.label = NP
+	str(node) = ( NP ( NP ( NP ( N w0 ) ) ( NP ( N w1 ) ) ) ( NP ( N w2 ) ( N w3 ) ( N w4 ) ) )
+	node.tolist() = ['NP', ['NP', ['NP', ['N', 'w0']], ['NP', ['N', 'w1']]], ['NP', ['N', 'w2'], ['N', 'w3'], ['N', 'w4']]]
+	node.leaves() = ['w0', 'w1', 'w2', 'w3', 'w4']
+		#1-1
+		str(node.children[0]) = ( NP ( NP ( N w0 ) ) ( NP ( N w1 ) ) )
+		#1-2
+		str(node.children[1]) = ( NP ( N w2 ) ( N w3 ) ( N w4 ) )
+	#2
+	node.is_terminal() = False
+	node.label = NP
+	str(node) = ( NP ( NP ( N w0 ) ) ( NP ( N w1 ) ) )
+	node.tolist() = ['NP', ['NP', ['N', 'w0']], ['NP', ['N', 'w1']]]
+	node.leaves() = ['w0', 'w1']
+		#2-1
+		str(node.children[0]) = ( NP ( N w0 ) )
+		#2-2
+		str(node.children[1]) = ( NP ( N w1 ) )
+	#3
+	node.is_terminal() = False
+	node.label = NP
+	str(node) = ( NP ( N w0 ) )
+	node.tolist() = ['NP', ['N', 'w0']]
+	node.leaves() = ['w0']
+		#3-1
+		str(node.children[0]) = ( N w0 )
+	#4
+	node.is_terminal() = True
+	node.label = N
+	node.token = w0
+	node.index = 0
+	str(node) = ( N w0 )
+	node.tolist() = ['N', 'w0']
+	node.leaves() = ['w0']
+	#5
+	node.is_terminal() = False
+	node.label = NP
+	str(node) = ( NP ( N w1 ) )
+	node.tolist() = ['NP', ['N', 'w1']]
+	node.leaves() = ['w1']
+		#5-1
+		str(node.children[0]) = ( N w1 )
+	#6
+	node.is_terminal() = True
+	node.label = N
+	node.token = w1
+	node.index = 1
+	str(node) = ( N w1 )
+	node.tolist() = ['N', 'w1']
+	node.leaves() = ['w1']
+	#7
+	node.is_terminal() = False
+	node.label = NP
+	str(node) = ( NP ( N w2 ) ( N w3 ) ( N w4 ) )
+	node.tolist() = ['NP', ['N', 'w2'], ['N', 'w3'], ['N', 'w4']]
+	node.leaves() = ['w2', 'w3', 'w4']
+		#7-1
+		str(node.children[0]) = ( N w2 )
+		#7-2
+		str(node.children[1]) = ( N w3 )
+		#7-3
+		str(node.children[2]) = ( N w4 )
+	#8
+	node.is_terminal() = True
+	node.label = N
+	node.token = w2
+	node.index = 2
+	str(node) = ( N w2 )
+	node.tolist() = ['N', 'w2']
+	node.leaves() = ['w2']
+	#9
+	node.is_terminal() = True
+	node.label = N
+	node.token = w3
+	node.index = 3
+	str(node) = ( N w3 )
+	node.tolist() = ['N', 'w3']
+	node.leaves() = ['w3']
+	#10
+	node.is_terminal() = True
+	node.label = N
+	node.token = w4
+	node.index = 4
+	str(node) = ( N w4 )
+	node.tolist() = ['N', 'w4']
+	node.leaves() = ['w4']
+Aggregation of production rules (pre-order):
 	('NP', 'NP', 'NP')
 	('NP', 'NP', 'NP')
 	('NP', 'N')
@@ -225,58 +567,26 @@ production rules =
 	('N', 'w2')
 	('N', 'w3')
 	('N', 'w4')
-spans =
+Aggregation of spans (pre-order):
 	('NP', 0, 4)
 	('NP', 0, 1)
 	('NP', 0, 0)
 	('NP', 1, 1)
 	('NP', 2, 4)
-composition spans =
+Aggregation of composition spans (pre-order):
 	['NP', (0, 1), (2, 4)]
 	['NP', (0, 0), (1, 1)]
 	['NP', (0, 0)]
 	['NP', (1, 1)]
 	['NP', (2, 2), (3, 3), (4, 4)]
-subtrees =
-	( NP ( NP ( NP ( N w0 ) ) ( NP ( N w1 ) ) ) ( NP ( N w2 ) ( N w3 ) ( N w4 ) ) )
-	( NP ( NP ( N w0 ) ) ( NP ( N w1 ) ) )
-	( NP ( N w0 ) )
-	( N w0 )
-	( NP ( N w1 ) )
-	( N w1 )
-	( NP ( N w2 ) ( N w3 ) ( N w4 ) )
-	( N w2 )
-	( N w3 )
-	( N w4 )
-tree2sexp(tree) = ['(', 'NP', '(', 'NP', '(', 'NP', '(', 'N', 'w0', ')', ')', '(', 'NP', '(', 'N', 'w1', ')', ')', ')', '(', 'NP', '(', 'N', 'w2', ')', '(', 'N', 'w3', ')', '(', 'N', 'w4', ')', ')', ')']
+S-expression (reversed):
+	['(', 'NP', '(', 'NP', '(', 'NP', '(', 'N', 'w0', ')', ')', '(', 'NP', '(', 'N', 'w1', ')', ')', ')', '(', 'NP', '(', 'N', 'w2', ')', '(', 'N', 'w3', ')', '(', 'N', 'w4', ')', ')', ')']
 
 ############### Sample for dependency trees ####################
 
 tokens = ['<root>', 'a', 'boy', 'saw', 'a', 'girl', 'with', 'a', 'telescope']
 arcs = [(2, 1, 'det'), (3, 2, 'nsubj'), (3, 5, 'dobj'), (5, 4, 'det'), (3, 6, 'prep'), (6, 8, 'pobj'), (8, 7, 'det'), (0, 3, '<root>')]
-dtree.__str__() = [('2_boy', '1_a', 'det'), ('3_saw', '2_boy', 'nsubj'), ('0_<root>', '3_saw', '<root>'), ('5_girl', '4_a', 'det'), ('3_saw', '5_girl', 'dobj'), ('3_saw', '6_with', 'prep'), ('8_telescope', '7_a', 'det'), ('6_with', '8_telescope', 'pobj')]
-dtree.tolist(labeled=True) = [(2, 1, 'det'), (3, 2, 'nsubj'), (0, 3, '<root>'), (5, 4, 'det'), (3, 5, 'dobj'), (3, 6, 'prep'), (8, 7, 'det'), (6, 8, 'pobj')]
-dtree.tolist(labeled=False) = [(2, 1), (3, 2), (0, 3), (5, 4), (3, 5), (3, 6), (8, 7), (6, 8)]
-dtree.head2dependents=defaultdict(<class 'list'>, {2: [(1, 'det')], 3: [(2, 'nsubj'), (5, 'dobj'), (6, 'prep')], 0: [(3, '<root>')], 5: [(4, 'det')], 8: [(7, 'det')], 6: [(8, 'pobj')]})
-dtree.dependent2head={0: (None, None), 1: (2, 'det'), 2: (3, 'nsubj'), 3: (0, '<root>'), 4: (5, 'det'), 5: (3, 'dobj'), 6: (3, 'prep'), 7: (8, 'det'), 8: (6, 'pobj')}
-dtree.get_dependents(0) = [(3, '<root>')]
-dtree.get_head(0) = (None, None)
-dtree.get_dependents(1) = []
-dtree.get_head(1) = (2, 'det')
-dtree.get_dependents(2) = [(1, 'det')]
-dtree.get_head(2) = (3, 'nsubj')
-dtree.get_dependents(3) = [(2, 'nsubj'), (5, 'dobj'), (6, 'prep')]
-dtree.get_head(3) = (0, '<root>')
-dtree.get_dependents(4) = []
-dtree.get_head(4) = (5, 'det')
-dtree.get_dependents(5) = [(4, 'det')]
-dtree.get_head(5) = (3, 'dobj')
-dtree.get_dependents(6) = [(8, 'pobj')]
-dtree.get_head(6) = (3, 'prep')
-dtree.get_dependents(7) = []
-dtree.get_head(7) = (8, 'det')
-dtree.get_dependents(8) = [(7, 'det')]
-dtree.get_head(8) = (6, 'pobj')
+
                                      _______________________________
                                      |                         prep|
        _____________________________ |___________________          | ____________________
@@ -285,6 +595,39 @@ dtree.get_head(8) = (6, 'pobj')
        |       |det    | |nsubj  | | |       |det     | |          | |       |det     | |
        |       V       | V       | V |       V        | V          V |       V        | V
 [ <root> ] [   a   ] [  boy  ] [  saw  ] [   a   ] [  girl  ] [  with  ] [   a   ] [telescope]
+
+str(dtree) = 2-1-det 3-2-nsubj 0-3-<root> 5-4-det 3-5-dobj 3-6-prep 8-7-det 6-8-pobj
+dtree.tolist(labeled=True) = [(2, 1, 'det'), (3, 2, 'nsubj'), (0, 3, '<root>'), (5, 4, 'det'), (3, 5, 'dobj'), (3, 6, 'prep'), (8, 7, 'det'), (6, 8, 'pobj')]
+dtree.tolist(labeled=False) = [(2, 1), (3, 2), (0, 3), (5, 4), (3, 5), (3, 6), (8, 7), (6, 8)]
+dtree.head2dependents=defaultdict(<class 'list'>, {2: [(1, 'det')], 3: [(2, 'nsubj'), (5, 'dobj'), (6, 'prep')], 0: [(3, '<root>')], 5: [(4, 'det')], 8: [(7, 'det')], 6: [(8, 'pobj')]})
+dtree.dependent2head={0: (None, None), 1: (2, 'det'), 2: (3, 'nsubj'), 3: (0, '<root>'), 4: (5, 'det'), 5: (3, 'dobj'), 6: (3, 'prep'), 7: (8, 'det'), 8: (6, 'pobj')}
+	Token 0
+	dtree.get_head(0) = (None, None)
+	dtree.get_dependents(0) = [(3, '<root>')]
+	Token 1
+	dtree.get_head(1) = (2, 'det')
+	dtree.get_dependents(1) = []
+	Token 2
+	dtree.get_head(2) = (3, 'nsubj')
+	dtree.get_dependents(2) = [(1, 'det')]
+	Token 3
+	dtree.get_head(3) = (0, '<root>')
+	dtree.get_dependents(3) = [(2, 'nsubj'), (5, 'dobj'), (6, 'prep')]
+	Token 4
+	dtree.get_head(4) = (5, 'det')
+	dtree.get_dependents(4) = []
+	Token 5
+	dtree.get_head(5) = (3, 'dobj')
+	dtree.get_dependents(5) = [(4, 'det')]
+	Token 6
+	dtree.get_head(6) = (3, 'prep')
+	dtree.get_dependents(6) = [(8, 'pobj')]
+	Token 7
+	dtree.get_head(7) = (8, 'det')
+	dtree.get_dependents(7) = []
+	Token 8
+	dtree.get_head(8) = (6, 'pobj')
+	dtree.get_dependents(8) = [(7, 'det')]
 
 ############### Sample for conversion from constituency tree to dependency tree ####################
 
@@ -303,6 +646,68 @@ dtree.get_head(8) = (6, 'pobj')
     DT        NN       VBD        DT         NN         IN        DT         NN
     |         |         |         |          |          |         |          |
 [   a   ] [  boy  ] [  saw  ] [   a   ] [  girl  ] [  with  ] [   a   ] [telescope]
+
+Heads (post-order):
+	#1
+	str(node) = ( DT a )
+	node.head_child_index = 0
+	node.head_token_index = 0
+	#2
+	str(node) = ( NN boy )
+	node.head_child_index = 1
+	node.head_token_index = 1
+	#3
+	str(node) = ( NP ( DT a ) ( NN boy ) )
+	node.head_child_index = 1
+	node.head_token_index = 1
+	#4
+	str(node) = ( VBD saw )
+	node.head_child_index = 2
+	node.head_token_index = 2
+	#5
+	str(node) = ( DT a )
+	node.head_child_index = 3
+	node.head_token_index = 3
+	#6
+	str(node) = ( NN girl )
+	node.head_child_index = 4
+	node.head_token_index = 4
+	#7
+	str(node) = ( NP ( DT a ) ( NN girl ) )
+	node.head_child_index = 1
+	node.head_token_index = 4
+	#8
+	str(node) = ( VP ( VBD saw ) ( NP ( DT a ) ( NN girl ) ) )
+	node.head_child_index = 0
+	node.head_token_index = 2
+	#9
+	str(node) = ( IN with )
+	node.head_child_index = 5
+	node.head_token_index = 5
+	#10
+	str(node) = ( DT a )
+	node.head_child_index = 6
+	node.head_token_index = 6
+	#11
+	str(node) = ( NN telescope )
+	node.head_child_index = 7
+	node.head_token_index = 7
+	#12
+	str(node) = ( NP ( DT a ) ( NN telescope ) )
+	node.head_child_index = 1
+	node.head_token_index = 7
+	#13
+	str(node) = ( PP ( IN with ) ( NP ( DT a ) ( NN telescope ) ) )
+	node.head_child_index = 0
+	node.head_token_index = 5
+	#14
+	str(node) = ( VP ( VP ( VBD saw ) ( NP ( DT a ) ( NN girl ) ) ) ( PP ( IN with ) ( NP ( DT a ) ( NN telescope ) ) ) )
+	node.head_child_index = 0
+	node.head_token_index = 2
+	#15
+	str(node) = ( S ( NP ( DT a ) ( NN boy ) ) ( VP ( VP ( VBD saw ) ( NP ( DT a ) ( NN girl ) ) ) ( PP ( IN with ) ( NP ( DT a ) ( NN telescope ) ) ) ) )
+	node.head_child_index = 1
+	node.head_token_index = 2
                                      _______________________________
                                      |                           VP|
        _____________________________ |___________________          | ____________________
@@ -322,6 +727,7 @@ dtree.get_head(8) = (6, 'pobj')
        |       |det    | |nsubj  | | |       |det     | |          | |       |det     | |
        |       V       | V       | V |       V        | V          V |       V        | V
 [ <root> ] [   a   ] [  boy  ] [  saw  ] [   a   ] [  girl  ] [  with  ] [   a   ] [telescope]
+
                              nsubj/dobj/prep
          ___________________________|___________________________
          |              |              |                       |

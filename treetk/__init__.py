@@ -11,7 +11,7 @@ from .treetk import traverse
 from .treetk import aggregate_production_rules
 from .treetk import aggregate_spans
 from .treetk import aggregate_composition_spans
-from .treetk import aggregate_subtree_strings
+from .treetk import aggregate_constituents
 
 # Tree shifting
 from .treetk import left_shift

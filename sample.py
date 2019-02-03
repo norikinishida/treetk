@@ -1,182 +1,120 @@
 import treetk
 
-def print_list(msg, xs):
-    print(msg)
-    for x in xs:
-        print("\t%s" % str(x))
+def test_ctree(sexp, with_nonterminal_labels, with_terminal_labels):
+    # Preprocessing
+    sexp = treetk.preprocess(sexp)
+    print("S-expression:")
+    print("\t%s" % sexp)
+
+    # S-expression -> C-tree
+    tree = treetk.sexp2tree(sexp, with_nonterminal_labels=with_nonterminal_labels, with_terminal_labels=with_terminal_labels)
+    print("Constituent tree (with_nonterminal_labels=%s, with_terminal_labels=%s):" % (with_nonterminal_labels, with_terminal_labels))
+    print("")
+    treetk.pretty_print(tree)
+    print("")
+
+    # Traversing
+    nodes = treetk.traverse(tree, order="pre-order", include_terminal=True, acc=None)
+    print("Traversing (pre-order):")
+    for node_i, node in enumerate(nodes):
+        print("\t#%d" % (node_i+1))
+        print("\tnode.is_terminal() = %s" % node.is_terminal())
+        if node.is_terminal():
+            if with_terminal_labels:
+                print("\tnode.label = %s" % node.label)
+            print("\tnode.token = %s" % node.token)
+            print("\tnode.index = %s" % node.index)
+        else:
+            if with_nonterminal_labels:
+                print("\tnode.label = %s" % node.label)
+        print("\tstr(node) = %s" % str(node))
+        print("\tnode.tolist() = %s" % node.tolist())
+        print("\tnode.leaves() = %s" % node.leaves())
+        if not node.is_terminal():
+            for c_i in range(len(node.children)):
+                print("\t\t#%d-%d" % (node_i+1, c_i+1))
+                print("\t\tstr(node.children[%d]) = %s" % (c_i, str(node.children[c_i])))
+
+    # Aggregation of production rules
+    if with_nonterminal_labels:
+        rules = treetk.aggregate_production_rules(tree, order="pre-order", include_terminal=with_terminal_labels)
+        print("Aggregation of production rules (pre-order):")
+        for rule in rules:
+            print("\t%s" % str(rule))
+
+    # Aggregation of spans
+    tree.calc_spans() # NOTE
+    spans = treetk.aggregate_spans(tree, order="pre-order")
+    mrg_spans = treetk.aggregate_composition_spans(tree, order="pre-order", binary=False)
+    print("Aggregation of spans (pre-order):")
+    for span in spans:
+        print("\t%s" % str(span))
+    print("Aggregation of composition spans (pre-order):")
+    for span in mrg_spans:
+        print("\t%s" % str(span))
+
+    # Aggregation of constituents
+    constituents = treetk.aggregate_constituents(tree, order="pre-order")
+    print("Aggregation of constituents (pre-order):")
+    for constituent in constituents:
+        print("\t%s" % str(constituent))
+
+    # C-tree -> S-expression
+    sexp = treetk.tree2sexp(tree)
+    print("S-expression (reversed):")
+    print("\t%s" % sexp)
 
 print("\n############### Sample for labeled trees with POS tags ####################\n")
-sexp = treetk.preprocess("(S (NP (DT a) (NN cat)) (VP (VBZ bites) (NP (DT a) (NN mouse))))")
-print("sexp = %s" % sexp)
-
-tree = treetk.sexp2tree(sexp, with_nonterminal_labels=True, with_terminal_labels=True)
-print("tree.__str__() = %s" % tree)
-print("tree.tolist() = %s" % tree.tolist())
-print("tree.leaves() = %s" % tree.leaves())
-print("tree.labelleaves() = %s" % tree.labelleaves())
-print("tree.children[0].__str__() = %s" % tree.children[0])
-print("tree.children[1].__str__() = %s" % tree.children[1])
-print("tree.children[0].tolist() = %s" % tree.children[0].tolist())
-print("tree.children[1].tolist() = %s" % tree.children[1].tolist())
-print("tree.children[0].leaves() = %s" % tree.children[0].leaves())
-print("tree.children[1].leaves() = %s" % tree.children[1].leaves())
-
-treetk.pretty_print(tree)
-
-rules = treetk.aggregate_production_rules(tree, order="pre-order", include_terminal=True)
-print_list("production rules =", rules)
-
-tree.calc_spans()
-spans = treetk.aggregate_spans(tree, order="pre-order")
-print_list("spans =", spans)
-mrg_spans = treetk.aggregate_composition_spans(tree, order="pre-order")
-print_list("composition spans =", mrg_spans)
-
-subtree_strings = treetk.aggregate_subtree_strings(tree, order="pre-order", include_terminal=True)
-print_list("subtrees =", subtree_strings)
-
-print("tree2sexp(tree) = %s" % treetk.tree2sexp(tree))
+test_ctree("(S (NP (DT a) (NN cat)) (VP (VBZ bites) (NP (DT a) (NN mouse))))",
+           with_nonterminal_labels=True,
+           with_terminal_labels=True)
 
 print("\n############### Sample for labeled trees without POS tags ####################\n")
-sexp = treetk.preprocess("(S (NP a cat) (VP bites (NP a mouse)))")
-print("sexp = %s" % sexp)
-
-tree = treetk.sexp2tree(sexp, with_nonterminal_labels=True, with_terminal_labels=False)
-print("tree.__str__() = %s" % tree)
-print("tree.tolist() = %s" % tree.tolist())
-print("tree.leaves() = %s" % tree.leaves())
-print("tree.children[0].__str__() = %s" % tree.children[0])
-print("tree.children[1].__str__() = %s" % tree.children[1])
-print("tree.children[0].tolist() = %s" % tree.children[0].tolist())
-print("tree.children[1].tolist() = %s" % tree.children[1].tolist())
-print("tree.children[0].leaves() = %s" % tree.children[0].leaves())
-print("tree.children[1].leaves() = %s" % tree.children[1].leaves())
-
-treetk.pretty_print(tree)
-
-rules = treetk.aggregate_production_rules(tree, order="pre-order", include_terminal=False)
-print_list("production rules =", rules)
-
-tree.calc_spans()
-spans = treetk.aggregate_spans(tree, order="pre-order")
-print_list("spans =", spans)
-mrg_spans = treetk.aggregate_composition_spans(tree, order="pre-order")
-print_list("composition spans =", mrg_spans)
-
-subtree_strings = treetk.aggregate_subtree_strings(tree, order="pre-order", include_terminal=False)
-print_list("subtrees =", subtree_strings)
-
-print("tree2sexp(tree) = %s" % treetk.tree2sexp(tree))
+test_ctree("(S (NP a cat) (VP bites (NP a mouse)))",
+           with_nonterminal_labels=True,
+           with_terminal_labels=False)
 
 print("\n############### Sample for unlabeled trees with POS tags ####################\n")
-sexp = treetk.preprocess("(((DT a) (NN cat)) ((VBZ bites) ((DT a) (NN mouse))))")
-print("sexp = %s" % sexp)
-
-tree = treetk.sexp2tree(sexp, with_nonterminal_labels=False, with_terminal_labels=True)
-print("tree.__str__() = %s" % tree)
-print("tree.tolist() = %s" % tree.tolist())
-print("tree.leaves() = %s" % tree.leaves())
-print("tree.labelleaves() = %s" % tree.labelleaves())
-print("tree.children[0].__str__() = %s" % tree.children[0])
-print("tree.children[1].__str__() = %s" % tree.children[1])
-print("tree.children[0].tolist() = %s" % tree.children[0].tolist())
-print("tree.children[1].tolist() = %s" % tree.children[1].tolist())
-print("tree.children[0].leaves() = %s" % tree.children[0].leaves())
-print("tree.children[1].leaves() = %s" % tree.children[1].leaves())
-
-treetk.pretty_print(tree)
-
-tree.calc_spans()
-spans = treetk.aggregate_spans(tree, order="pre-order")
-print_list("spans =", spans)
-mrg_spans = treetk.aggregate_composition_spans(tree, order="pre-order")
-print_list("composition spans =", mrg_spans)
-
-subtree_strings = treetk.aggregate_subtree_strings(tree, order="pre-order", include_terminal=True)
-print_list("subtrees =", subtree_strings)
-
-print("tree2sexp(tree) = %s" % treetk.tree2sexp(tree))
+test_ctree("(((DT a) (NN cat)) ((VBZ bites) ((DT a) (NN mouse))))",
+           with_nonterminal_labels=False,
+           with_terminal_labels=True)
 
 print("\n############### Sample for unlabeled trees without POS tags ####################\n")
-sexp = treetk.preprocess("((a cat) (bites (a mouse)))")
-print("sexp = %s" % sexp)
-
-tree = treetk.sexp2tree(sexp, with_nonterminal_labels=False, with_terminal_labels=False)
-print("tree.__str__() = %s" % tree)
-print("tree.tolist() = %s" % tree.tolist())
-print("tree.leaves() = %s" % tree.leaves())
-print("tree.children[0].__str__() = %s" % tree.children[0])
-print("tree.children[1].__str__() = %s" % tree.children[1])
-print("tree.children[0].tolist() = %s" % tree.children[0].tolist())
-print("tree.children[1].tolist() = %s" % tree.children[1].tolist())
-print("tree.children[0].leaves() = %s" % tree.children[0].leaves())
-print("tree.children[1].leaves() = %s" % tree.children[1].leaves())
-
-treetk.pretty_print(tree)
-
-tree.calc_spans()
-spans = treetk.aggregate_spans(tree, order="pre-order")
-print_list("spans =", spans)
-mrg_spans = treetk.aggregate_composition_spans(tree, order="pre-order")
-print_list("composition spans =", mrg_spans)
-
-subtree_strings = treetk.aggregate_subtree_strings(tree, order="pre-order", include_terminal=False)
-print_list("subtrees =", subtree_strings)
-
-print("tree2sexp(tree) = %s" % treetk.tree2sexp(tree))
+test_ctree("((a cat) (bites (a mouse)))",
+           with_nonterminal_labels=False,
+           with_terminal_labels=False)
 
 print("\n############### Sample for unary or n-ary trees ####################\n")
-sexp = treetk.preprocess("(NP (NP (NP (N w0)) (NP (N w1))) (NP (N w2) (N w3) (N w4)))")
-print("sexp = %s" % sexp)
-
-tree = treetk.sexp2tree(sexp, with_nonterminal_labels=True, with_terminal_labels=True)
-print("tree.__str__() = %s" % tree)
-print("tree.tolist() = %s" % tree.tolist())
-print("tree.leaves() = %s" % tree.leaves())
-print("tree.children[0].__str__() = %s" % tree.children[0])
-print("tree.children[1].__str__() = %s" % tree.children[1])
-print("tree.children[0].tolist() = %s" % tree.children[0].tolist())
-print("tree.children[1].tolist() = %s" % tree.children[1].tolist())
-print("tree.children[0].leaves() = %s" % tree.children[0].leaves())
-print("tree.children[1].leaves() = %s" % tree.children[1].leaves())
-
-treetk.pretty_print(tree)
-
-rules = treetk.aggregate_production_rules(tree, order="pre-order", include_terminal=True)
-print_list("production rules =", rules)
-
-tree.calc_spans()
-spans = treetk.aggregate_spans(tree, order="pre-order")
-print_list("spans =", spans)
-mrg_spans = treetk.aggregate_composition_spans(tree, order="pre-order", binary=False)
-print_list("composition spans =", mrg_spans)
-
-subtree_strings = treetk.aggregate_subtree_strings(tree, order="pre-order", include_terminal=True)
-print_list("subtrees =", subtree_strings)
-
-print("tree2sexp(tree) = %s" % treetk.tree2sexp(tree))
+test_ctree("(NP (NP (NP (N w0)) (NP (N w1))) (NP (N w2) (N w3) (N w4)))",
+           with_nonterminal_labels=True,
+           with_terminal_labels=True)
 
 print("\n############### Sample for dependency trees ####################\n")
 tokens = ["<root>", "a", "boy", "saw", "a", "girl", "with", "a", "telescope"]
 arcs = [(2, 1, "det"), (3, 2, "nsubj"), (3, 5, "dobj"), (5, 4, "det"), (3, 6, "prep"), (6, 8, "pobj"), (8, 7, "det"), (0, 3, "<root>")]
 print("tokens = %s" % tokens)
 print("arcs = %s" % arcs)
-# dtree = treetk.arcs2dtree(arcs=arcs) # this is allowable
 dtree = treetk.arcs2dtree(arcs=arcs, tokens=tokens)
-print("dtree.__str__() = %s" % dtree)
+print("")
+treetk.pretty_print_dtree(dtree)
+print("")
+print("str(dtree) = %s" % str(dtree))
 print("dtree.tolist(labeled=True) = %s" % dtree.tolist(labeled=True))
 print("dtree.tolist(labeled=False) = %s" % dtree.tolist(labeled=False))
 print("dtree.head2dependents=%s" % dtree.head2dependents)
 print("dtree.dependent2head=%s" % dtree.dependent2head)
 for index in range(len(tokens)):
-    print("dtree.get_dependents(%d) = %s" % (index, dtree.get_dependents(index)))
-    print("dtree.get_head(%d) = %s" % (index, dtree.get_head(index)))
-treetk.pretty_print_dtree(dtree)
+    print("\tToken %d" % index)
+    print("\tdtree.get_head(%d) = %s" % (index, dtree.get_head(index)))
+    print("\tdtree.get_dependents(%d) = %s" % (index, dtree.get_dependents(index)))
 
 print("\n############### Sample for conversion from constituency tree to dependency tree ####################\n")
-sexp = treetk.preprocess("(S (NP (DT a) (NN boy)) (VP (VP (VBD saw) (NP (DT a) (NN girl))) (PP (IN with) (NP (DT a) (NN telescope)))))".split())
+sexp = treetk.preprocess("(S (NP (DT a) (NN boy)) (VP (VP (VBD saw) (NP (DT a) (NN girl))) (PP (IN with) (NP (DT a) (NN telescope)))))")
 ctree = treetk.sexp2tree(sexp, with_nonterminal_labels=True, with_terminal_labels=True)
 treetk.pretty_print(ctree)
+print("")
+
+# Assign heads
 def func_head_child_rule(node):
     """
     :type node: NonTerminal
@@ -195,7 +133,16 @@ def func_head_child_rule(node):
         return 0
     else:
         return 0
-ctree.calc_heads(func_head_child_rule=func_head_child_rule)
+ctree.calc_heads(func_head_child_rule=func_head_child_rule) # NOTE
+
+nodes = treetk.traverse(ctree, order="post-order", include_terminal=True, acc=None)
+print("Heads (post-order):")
+for node_i, node in enumerate(nodes):
+    print("\t#%d" % (node_i+1))
+    print("\tstr(node) = %s" % str(node))
+    print("\tnode.head_child_index = %d" % node.head_child_index)
+    print("\tnode.head_token_index = %d" % node.head_token_index)
+
 def func_label_rule(node, i, j):
     """
     :type node: NonTerminal
@@ -214,7 +161,8 @@ tokens = ["<root>", "a", "boy", "saw", "a", "girl", "with", "a", "telescope"]
 arcs = [(2, 1, "det"), (3, 2, "nsubj"), (3, 5, "dobj"), (5, 4, "det"), (3, 6, "prep"), (6, 8, "pobj"), (8, 7, "det"), (0, 3, "<root>")]
 dtree = treetk.arcs2dtree(arcs=arcs, tokens=tokens)
 treetk.pretty_print_dtree(dtree)
+print("")
+
 ctree = treetk.dtree2ctree(dtree)
 treetk.pretty_print(ctree)
-
 

@@ -98,7 +98,6 @@ def traverse(node, order="pre-order", include_terminal=True, acc=None):
 
 ################
 # Aggregation of production rules
-# NOTE: only for trees with nonterminal labels
 
 def aggregate_production_rules(root, order="pre-order", include_terminal=True):
     """
@@ -107,6 +106,7 @@ def aggregate_production_rules(root, order="pre-order", include_terminal=True):
     :type include_terminal: bool
     :rtype: list of tuple of str
     """
+    # NOTE: only for trees with nonterminal labels
     assert root.with_nonterminal_labels
     if include_terminal:
         assert root.with_terminal_labels
@@ -179,25 +179,20 @@ def aggregate_composition_spans(root, order="pre-order", binary=True):
     return comp_spans
 
 ################
-# Aggregation of subtrees (strings)
+# Aggregation of constituents
 
-def aggregate_subtree_strings(root, order="pre-order", include_terminal=True):
+def aggregate_constituents(root, order="pre-order"):
     """
-    :type root: NonTerminal
-    :type order: str
-    :type include_terminal: bool
-    :rtype: list of str
+    :type root: NonTerminal/Terminal
+    :rtype: list of list of str
     """
-    if include_terminal:
-        assert root.with_terminal_labels
+    nodes = traverse(root, order=order, include_terminal=False, acc=None)
 
-    nodes = traverse(root, order=order, include_terminal=include_terminal, acc=None)
-
-    subtree_strs = []
+    constituents = []
     for node in nodes:
-        subtree_strs.append(node.__str__())
+        constituents.append(node.leaves())
 
-    return subtree_strs
+    return constituents
 
 ################
 # Tree shifting
