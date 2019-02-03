@@ -119,6 +119,11 @@ Aggregation of composition spans (pre-order):
 	['NP', (0, 0), (1, 1)]
 	['VP', (2, 2), (3, 4)]
 	['NP', (3, 3), (4, 4)]
+Aggregation of constituents (pre-order):
+	['a', 'cat', 'bites', 'a', 'mouse']
+	['a', 'cat']
+	['bites', 'a', 'mouse']
+	['a', 'mouse']
 S-expression (reversed):
 	['(', 'S', '(', 'NP', '(', 'DT', 'a', ')', '(', 'NN', 'cat', ')', ')', '(', 'VP', '(', 'VBZ', 'bites', ')', '(', 'NP', '(', 'DT', 'a', ')', '(', 'NN', 'mouse', ')', ')', ')', ')']
 
@@ -232,6 +237,11 @@ Aggregation of composition spans (pre-order):
 	['NP', (0, 0), (1, 1)]
 	['VP', (2, 2), (3, 4)]
 	['NP', (3, 3), (4, 4)]
+Aggregation of constituents (pre-order):
+	['a', 'cat', 'bites', 'a', 'mouse']
+	['a', 'cat']
+	['bites', 'a', 'mouse']
+	['a', 'mouse']
 S-expression (reversed):
 	['(', 'S', '(', 'NP', 'a', 'cat', ')', '(', 'VP', 'bites', '(', 'NP', 'a', 'mouse', ')', ')', ')']
 
@@ -341,6 +351,11 @@ Aggregation of composition spans (pre-order):
 	[(0, 0), (1, 1)]
 	[(2, 2), (3, 4)]
 	[(3, 3), (4, 4)]
+Aggregation of constituents (pre-order):
+	['a', 'cat', 'bites', 'a', 'mouse']
+	['a', 'cat']
+	['bites', 'a', 'mouse']
+	['a', 'mouse']
 S-expression (reversed):
 	['(', '(', '(', 'DT', 'a', ')', '(', 'NN', 'cat', ')', ')', '(', '(', 'VBZ', 'bites', ')', '(', '(', 'DT', 'a', ')', '(', 'NN', 'mouse', ')', ')', ')', ')']
 
@@ -445,6 +460,11 @@ Aggregation of composition spans (pre-order):
 	[(0, 0), (1, 1)]
 	[(2, 2), (3, 4)]
 	[(3, 3), (4, 4)]
+Aggregation of constituents (pre-order):
+	['a', 'cat', 'bites', 'a', 'mouse']
+	['a', 'cat']
+	['bites', 'a', 'mouse']
+	['a', 'mouse']
 S-expression (reversed):
 	['(', '(', 'a', 'cat', ')', '(', 'bites', '(', 'a', 'mouse', ')', ')', ')']
 
@@ -579,6 +599,12 @@ Aggregation of composition spans (pre-order):
 	['NP', (0, 0)]
 	['NP', (1, 1)]
 	['NP', (2, 2), (3, 3), (4, 4)]
+Aggregation of constituents (pre-order):
+	['w0', 'w1', 'w2', 'w3', 'w4']
+	['w0', 'w1']
+	['w0']
+	['w1']
+	['w2', 'w3', 'w4']
 S-expression (reversed):
 	['(', 'NP', '(', 'NP', '(', 'NP', '(', 'N', 'w0', ')', ')', '(', 'NP', '(', 'N', 'w1', ')', ')', ')', '(', 'NP', '(', 'N', 'w2', ')', '(', 'N', 'w3', ')', '(', 'N', 'w4', ')', ')', ')']
 
