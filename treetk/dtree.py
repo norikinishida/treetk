@@ -30,6 +30,7 @@ class DependencyTree(object):
             if self.dependent2head[dependent] != (None, None):
                 raise ValueError("The %d-th token has multiple heads! Arcs=%s" % (dependent, self.arcs))
             self.dependent2head[dependent] = (head, label)
+        assert self.dependent2head[0] == (None, None) # The 0-th token is a root symbol.
 
     def __str__(self):
         """
@@ -38,8 +39,6 @@ class DependencyTree(object):
         arcs = self.tolist()
         arcs = ["%d-%d-%s" % (h,d,l) for h,d,l in arcs]
         return " ".join(arcs)
-        # return str([(str(h) + "_" + self.tokens[h], str(d) + "_" + self.tokens[d], l)
-        #             for h,d,l in self.arcs])
 
     def tolist(self, labeled=True, replace_with_tokens=False):
         """
@@ -77,7 +76,7 @@ def arcs2dtree(arcs, tokens=None):
     arcs = sorted(arcs, key=lambda x: x[1])
     arcs_checked = [x if len(x) == 3 else (x[0],x[1],"*") for x in arcs]
     if tokens is None:
-        tokens = ["x%s" % tok_i for tok_i in range(len(arcs_checked)+1)]
+        tokens = ["<root>"] + ["x%s" % (tok_i+1) for tok_i in range(len(arcs_checked))]
     dtree = DependencyTree(arcs=arcs_checked, tokens=tokens)
     return dtree
 
