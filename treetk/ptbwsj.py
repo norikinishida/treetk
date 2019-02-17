@@ -55,18 +55,20 @@ def lowercasing(node):
 
     return node
 
-def remove_punctuations_and_empties(node):
+def remove_punctuations_and_empties(node, punctuations=None):
     """
     :type node: NonTerminal or Terminal
+    :type punctuations: list of str
     :rtype: NonTerminal or Terminal
     """
-    node = _remove_punctuations(node)
+    node = _remove_punctuations(node, punctuations=punctuations)
     node = _remove_empties(node)
     return node
 
-def _remove_punctuations(node):
+def _remove_punctuations(node, punctuations=None):
     """
     :type node: NonTerminal or Terminal
+    :type punctuations: list of str
     :rtype: NonTerminal or Terminal
     """
     if node.is_terminal():
@@ -75,15 +77,20 @@ def _remove_punctuations(node):
     new_children = []
     for c_i in range(len(node.children)):
         # Remove child nodes that are terminals and punctuations.
-        if node.children[c_i].is_terminal() and \
-                node.children[c_i].label in PUNCTUATIONS:
-            continue
+        if punctuations is None:
+            if node.children[c_i].is_terminal() and \
+                    node.children[c_i].label in PUNCTUATIONS:
+                continue
+        else:
+            if node.children[c_i].is_terminal() and \
+                    node.children[c_i].label in punctuations:
+                continue
         new_children.append(node.children[c_i])
     node.children = new_children
 
     # Recursive
     for c_i in range(len(node.children)):
-        node.children[c_i] = _remove_punctuations(node.children[c_i])
+        node.children[c_i] = _remove_punctuations(node.children[c_i], punctuations=punctuations)
     return node
 
 def _remove_empties(node):
