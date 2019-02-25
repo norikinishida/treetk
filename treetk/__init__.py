@@ -28,8 +28,9 @@ from .treetk import nltk_draw
 ####################################
 
 # Arcs -> Dependency tree
-from .dtree import hyphens2arcs
 from .dtree import arcs2dtree
+from .dtree import hyphens2arcs
+from .dtree import sort_arcs
 
 # Aggregation
 from .dtree import traverse_dtree

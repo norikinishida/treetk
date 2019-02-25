@@ -73,7 +73,7 @@ def arcs2dtree(arcs, tokens=None):
     :type tokens: list of str, or None
     :rtype DependencyTree
     """
-    arcs = sorted(arcs, key=lambda x: x[1])
+    arcs = sort_arcs(arcs)
     arcs_checked = [x if len(x) == 3 else (x[0],x[1],"*") for x in arcs]
     if tokens is None:
         tokens = ["<root>"] + ["x%s" % (tok_i+1) for tok_i in range(len(arcs_checked))]
@@ -90,6 +90,13 @@ def hyphens2arcs(hyphens):
              else (int(arc[0]), int(arc[1]), "*")
              for arc in arcs]
     return arcs
+
+def sort_arcs(arcs):
+    """
+    :type arcs: list of (int, int)/(int, int, str)
+    :rtype: list of (int, int)/(int, int, str)
+    """
+    return sorted(arcs, key=lambda x: x[1])
 
 #####################################
 # Aggregation of arcs
