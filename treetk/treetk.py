@@ -144,12 +144,20 @@ def aggregate_spans(root, include_terminal=False, order="pre-order"):
 
     spans = []
     for node in nodes:
-        if node.with_nonterminal_labels:
-            # e.g., (NP, 2, 4)
-            spans.append(tuple([node.label] + list(node.index_span)))
+        if node.is_terminal():
+            if node.with_terminal_labels:
+                # e.g., (NN, 2, 2)
+                spans.append(tuple([node.label] + list(node.index_span)))
+            else:
+                # e.g., (2, 2)
+                spans.append(node.index_span)
         else:
-            # e.g., (2, 4)
-            spans.append(node.index_span)
+            if node.with_nonterminal_labels:
+                # e.g., (NP, 2, 4)
+                spans.append(tuple([node.label] + list(node.index_span)))
+            else:
+                # e.g., (2, 4)
+                spans.append(node.index_span)
 
     return spans
 

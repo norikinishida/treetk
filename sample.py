@@ -44,15 +44,16 @@ def test_ctree(sexp, with_nonterminal_labels, with_terminal_labels):
 
     # Aggregation of spans
     tree.calc_spans() # NOTE
+
     spans = treetk.aggregate_spans(tree, include_terminal=False, order="pre-order")
     print("Aggregation of spans (w/o terminals, pre-order):")
     for span in spans:
         print("\t%s" % str(span))
-    if with_terminal_labels:
-        spans = treetk.aggregate_spans(tree, include_terminal=True, order="pre-order")
-        print("Aggregation of spans (w/ terminals, pre-order):")
-        for span in spans:
-            print("\t%s" % str(span))
+
+    spans = treetk.aggregate_spans(tree, include_terminal=True, order="pre-order")
+    print("Aggregation of spans (w/ terminals, pre-order):")
+    for span in spans:
+        print("\t%s" % str(span))
 
     mrg_spans = treetk.aggregate_composition_spans(tree, order="pre-order", binary=False)
     print("Aggregation of composition spans (pre-order):")
