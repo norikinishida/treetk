@@ -167,9 +167,9 @@ def binarize(node, right_branching=True):
     # Right/Left branching
     if len(node.children) > 2:
         if right_branching:
-            node.children = _right_branching(node.children)
+            node.children = _right_branching(node.children, parent_label=node.label)
         else:
-            node.children = _left_branching(node.children)
+            node.children = _left_branching(node.children, parent_label=node.label)
 
     # Recursive
     for c_i in range(len(node.children)):
@@ -177,30 +177,38 @@ def binarize(node, right_branching=True):
 
     return node
 
-def _right_branching(nodes):
+def _right_branching(nodes, parent_label):
     """
     :type nodes: list of NonTerminal/Terminal
+    :type parent_label: str
     :rtype: [NonTerminal/Terminal, NonTerminal/Terminal]
     """
     if len(nodes) == 2:
         return nodes
 
     lhs = nodes[0] # The left-most child node is head
-    rhs = NonTerminal("+".join([n.label for n in nodes[1:]]))
-    rhs.children = _right_branching(nodes[1:])
+
+    # rhs = NonTerminal("+".join([n.label for n in nodes[1:]]))
+    rhs = NonTerminal(parent_label if parent_label.endswith("^") else (parent_label + "^"))
+    rhs.children = _right_branching(nodes[1:], parent_label=parent_label)
+
     return [lhs, rhs]
 
-def _left_branching(nodes):
+def _left_branching(nodes, parent_label):
     """
     :type nodes: list of NonTerminal/Terminal
+    :type parent_label: str
     :rtype: [NonTerminal/Terminal, NonTerminal/Terminal]
     """
     if len(nodes) == 2:
         return nodes
 
-    lhs = NonTerminal("+".join([n.label for n in nodes[:-1]]))
-    lhs.children = _left_branching(nodes[:-1])
+    # lhs = NonTerminal("+".join([n.label for n in nodes[:-1]]))
+    lhs = NonTerminal(parent_label if parent_label.endswith("^") else (parent_label + "^"))
+    lhs.children = _left_branching(nodes[:-1], parent_label=parent_label)
+
     rhs = nodes[-1] # The right-most child node is head
+
     return [lhs, rhs]
 
 ############################
