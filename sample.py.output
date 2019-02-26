@@ -109,11 +109,21 @@ Aggregation of production rules (pre-order):
 	('NP', 'DT', 'NN')
 	('DT', 'a')
 	('NN', 'mouse')
-Aggregation of spans (pre-order):
+Aggregation of spans (w/o terminals, pre-order):
 	('S', 0, 4)
 	('NP', 0, 1)
 	('VP', 2, 4)
 	('NP', 3, 4)
+Aggregation of spans (w/ terminals, pre-order):
+	('S', 0, 4)
+	('NP', 0, 1)
+	('DT', 0, 0)
+	('NN', 1, 1)
+	('VP', 2, 4)
+	('VBZ', 2, 2)
+	('NP', 3, 4)
+	('DT', 3, 3)
+	('NN', 4, 4)
 Aggregation of composition spans (pre-order):
 	['S', (0, 1), (2, 4)]
 	['NP', (0, 0), (1, 1)]
@@ -227,7 +237,7 @@ Aggregation of production rules (pre-order):
 	('NP', 'a', 'cat')
 	('VP', 'bites', 'NP')
 	('NP', 'a', 'mouse')
-Aggregation of spans (pre-order):
+Aggregation of spans (w/o terminals, pre-order):
 	('S', 0, 4)
 	('NP', 0, 1)
 	('VP', 2, 4)
@@ -341,11 +351,21 @@ Traversing (pre-order):
 	str(node) = ( NN mouse )
 	node.tolist() = ['NN', 'mouse']
 	node.leaves() = ['mouse']
-Aggregation of spans (pre-order):
+Aggregation of spans (w/o terminals, pre-order):
 	(0, 4)
 	(0, 1)
 	(2, 4)
 	(3, 4)
+Aggregation of spans (w/ terminals, pre-order):
+	(0, 4)
+	(0, 1)
+	(0, 0)
+	(1, 1)
+	(2, 4)
+	(2, 2)
+	(3, 4)
+	(3, 3)
+	(4, 4)
 Aggregation of composition spans (pre-order):
 	[(0, 1), (2, 4)]
 	[(0, 0), (1, 1)]
@@ -450,7 +470,7 @@ Traversing (pre-order):
 	str(node) = mouse
 	node.tolist() = mouse
 	node.leaves() = ['mouse']
-Aggregation of spans (pre-order):
+Aggregation of spans (w/o terminals, pre-order):
 	(0, 4)
 	(0, 1)
 	(2, 4)
@@ -587,12 +607,23 @@ Aggregation of production rules (pre-order):
 	('N', 'w2')
 	('N', 'w3')
 	('N', 'w4')
-Aggregation of spans (pre-order):
+Aggregation of spans (w/o terminals, pre-order):
 	('NP', 0, 4)
 	('NP', 0, 1)
 	('NP', 0, 0)
 	('NP', 1, 1)
 	('NP', 2, 4)
+Aggregation of spans (w/ terminals, pre-order):
+	('NP', 0, 4)
+	('NP', 0, 1)
+	('NP', 0, 0)
+	('N', 0, 0)
+	('NP', 1, 1)
+	('N', 1, 1)
+	('NP', 2, 4)
+	('N', 2, 2)
+	('N', 3, 3)
+	('N', 4, 4)
 Aggregation of composition spans (pre-order):
 	['NP', (0, 1), (2, 4)]
 	['NP', (0, 0), (1, 1)]

@@ -134,13 +134,13 @@ def aggregate_production_rules(root, order="pre-order", include_terminal=True):
 ################
 # Aggregation of spans
 
-def aggregate_spans(root, order="pre-order"):
+def aggregate_spans(root, include_terminal=False, order="pre-order"):
     """
     :type root: NonTerminal or Terminal
     :type order: str
     :rtype: list of (int,int)/(str,int,int)
     """
-    nodes = traverse(root, order=order, include_terminal=False, acc=None)
+    nodes = traverse(root, order=order, include_terminal=include_terminal, acc=None)
 
     spans = []
     for node in nodes:
