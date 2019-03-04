@@ -1,3 +1,4 @@
+import os
 import re
 
 from .ll import NonTerminal, Terminal
@@ -213,7 +214,7 @@ def shift_labels(node):
     if node.is_terminal():
         return node
 
-    # Set properties for labeling the current node
+    # Set properties (i.e., ``nuclearities_of_children'', ``relations_of_children'') for labeling the current node
     node.nuclearities_of_children = [c.nuclearity for c in node.children]
     node.relations_of_children = [c.relation for c in node.children if c.relation != "span"]
     if len(set(node.nuclearities_of_children)) == 1 and node.nuclearities_of_children[0] == "N":
@@ -263,6 +264,18 @@ def _right_branching(nodes):
 ###########################
 # Others
 
+def extract_relations_and_nuclearities(label):
+    """
+    :type label: str
+    :rtype: list of str, list of str
+    """
+    re_comp = re.compile("<(.+),(.+)>")
+    match = re_comp.findall(label)
+    assert len(match) == 1
+    relations = match[0][0].split("/")
+    nuclearities = match[0][1].split("/")
+    return relations, nuclearities
+
 def assign_relations_and_nuclearities(root):
     """
     :type root: NonTerminal/Terminal
@@ -271,28 +284,25 @@ def assign_relations_and_nuclearities(root):
     if root.is_terminal():
         return root
 
-    re_comp = re.compile("<(.+),(.+)>")
-    root = _assign_relations_and_nuclearities(root, re_comp)
+    root = _assign_relations_and_nuclearities(root)
     return root
 
-def _assign_relations_and_nuclearities(node, re_comp):
+def _assign_relations_and_nuclearities(node):
     """
     :type node: NonTerminal/Terminal
-    :type re_comp: _sre.SRE_Pattern
     :rtype: NonTerminal/Terminal
     """
     if node.is_terminal():
         return node
 
     # Extract relations and nuclearities from the label
-    match = re_comp.findall(node.label)
-    assert len(match) == 1
-    node.relations = match[0][0].split("/")
-    node.nuclearities = match[0][1].split("/")
+    relations, nuclearities = extract_relations_and_nuclearities(node.label) # list of str, list of str
+    node.relations = relations
+    node.nuclearities = nuclearities
 
     # Recursive
     for c_i in range(len(node.children)):
-        node.children[c_i] = _assign_relations_and_nuclearities(node.children[c_i], re_comp)
+        node.children[c_i] = _assign_relations_and_nuclearities(node.children[c_i])
 
     return node
 
@@ -305,3 +315,46 @@ def assign_heads(root):
         return root
     root.calc_heads(func_head_child_rule=lambda node: node.nuclearities.index("N"))
     return root
+
+class RelationMapper(object):
+    """
+    A class for mapping between fine-grained relations and coarse-grained classes.
+    Mapping is defined in ./rstdt_relation_mapping.txt
+    """
+
+    def __init__(self):
+
+        self.coarse2fine = {} # {str: list of str}
+        self.fine2coarse = {} # {str: str}
+        for line in open(os.path.join(os.path.dirname(__file__), "rstdt_relation_mapping.txt")):
+            items = line.strip().split()
+            assert len(items) > 1
+            crel = items[0]
+            frels = items[1:]
+            self.coarse2fine[crel] = frels
+            for frel in frels:
+                assert not frel in self.fine2coarse
+                self.fine2coarse[frel] = crel
+
+    def c2f(self, crel):
+        """
+        :type crel: str
+        :rtype: list of str
+        """
+        return self.coarse2fine[crel]
+
+    def f2c(self, frel):
+        """
+        :type frel: str
+        :rtype: str
+        """
+        return self.fine2coarse[frel]
+
+    def get_relation_lists(self):
+        """
+        :rtype: list of str, list of str
+        """
+        crels = list(self.coarse2fine.keys())
+        frels = list(self.fine2coarse.keys())
+        return crels, frels
+
