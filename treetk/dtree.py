@@ -76,7 +76,8 @@ def arcs2dtree(arcs, tokens=None):
     arcs = sort_arcs(arcs)
     arcs_checked = [x if len(x) == 3 else (x[0],x[1],"*") for x in arcs]
     if tokens is None:
-        tokens = ["<root>"] + ["x%s" % (tok_i+1) for tok_i in range(len(arcs_checked))]
+        # tokens = ["<root>"] + ["x%s" % (tok_i+1) for tok_i in range(len(arcs_checked))]
+        tokens = [str(i) for i in range(len(arcs_checked)+1)]
     dtree = DependencyTree(arcs=arcs_checked, tokens=tokens)
     return dtree
 

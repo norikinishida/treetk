@@ -320,6 +320,7 @@ class RelationMapper(object):
     """
     A class for mapping between fine-grained relations and coarse-grained classes.
     Mapping is defined in ./rstdt_relation_mapping.txt
+    We also make mapping from coarse-grained relations to the corresponding abbreviations (defined in ./rstdt_relation_abbreviations.txt).
     """
 
     def __init__(self):
@@ -336,6 +337,16 @@ class RelationMapper(object):
                 assert not frel in self.fine2coarse
                 self.fine2coarse[frel] = crel
 
+        self.coarse2abb = {} # {str: str}
+        self.abb2coarse = {} # {str: str}
+        for line in open(os.path.join(os.path.dirname(__file__), "rstdt_relation_abbreviations.txt")):
+            items = line.strip().split()
+            assert len(items) > 1
+            crel = items[0]
+            abb = items[1]
+            self.coarse2abb[crel] = abb
+            self.abb2coarse[abb] = crel
+
     def c2f(self, crel):
         """
         :type crel: str
@@ -349,6 +360,20 @@ class RelationMapper(object):
         :rtype: str
         """
         return self.fine2coarse[frel]
+
+    def c2a(self, crel):
+        """
+        :type crel: str
+        :rtype: str
+        """
+        return self.coarse2abb[crel]
+
+    def a2c(self, abb):
+        """
+        :type abb: str
+        :rtype: str
+        """
+        return self.abb2coarse[abb]
 
     def get_relation_lists(self):
         """
