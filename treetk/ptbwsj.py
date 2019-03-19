@@ -38,6 +38,7 @@ PUNCTUATIONS = ["-NONE-",
                 "--", "-",
                 "-LRB-", "-RRB-",
                 "-LCB-", "-RCB-",
+                "(", ")", "{", "}",
                 "$", "#"]
 
 def lowercasing(node):
