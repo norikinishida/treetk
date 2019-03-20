@@ -204,7 +204,7 @@ def sexp2tree(sexp):
     return tmp_node.children[0]
 
 ###########################
-# Postprocessing
+# Preprocessing
 
 def shift_labels(node):
     """

@@ -28,23 +28,19 @@ def read_sexps(path, LPAREN="(", RPAREN=")"):
     return sexps
 
 ############################
-# Postprocessing
+# Preprocessing
 
-PUNCTUATIONS = ["-NONE-",
-                ",", ".", "?", "!",
-                "...",
-                ":", ";",
-                "``", "''",
+PUNCTUATIONS = ["``", "''", ":", ",", ".",
+                "?", "!", ";", "...",
                 "--", "-",
-                "-LRB-", "-RRB-",
-                "-LCB-", "-RCB-",
+                "-LRB-", "-RRB-", "-LCB-", "-RCB-",
                 "(", ")", "{", "}",
                 "$", "#"]
 
 def lowercasing(node):
     """
-    :type node: NonTerminal or Terminal
-    :rtype: NonTerminal or Terminal
+    :type node: NonTerminal/Terminal
+    :rtype: NonTerminal/Terminal
     """
     if node.is_terminal():
         node.token = node.token.lower()
@@ -56,82 +52,10 @@ def lowercasing(node):
 
     return node
 
-def remove_punctuations_and_empties(node, punctuations=None):
-    """
-    :type node: NonTerminal or Terminal
-    :type punctuations: list of str
-    :rtype: NonTerminal or Terminal
-    """
-    node = _remove_punctuations(node, punctuations=punctuations)
-    node = _remove_empties(node)
-    return node
-
-def _remove_punctuations(node, punctuations=None):
-    """
-    :type node: NonTerminal or Terminal
-    :type punctuations: list of str
-    :rtype: NonTerminal or Terminal
-    """
-    if node.is_terminal():
-        return node
-
-    new_children = []
-    for c_i in range(len(node.children)):
-        # Remove child nodes that are terminals and punctuations.
-        if punctuations is None:
-            if node.children[c_i].is_terminal() and \
-                    node.children[c_i].label in PUNCTUATIONS:
-                continue
-        else:
-            if node.children[c_i].is_terminal() and \
-                    node.children[c_i].label in punctuations:
-                continue
-        new_children.append(node.children[c_i])
-    node.children = new_children
-
-    # Recursive
-    for c_i in range(len(node.children)):
-        node.children[c_i] = _remove_punctuations(node.children[c_i], punctuations=punctuations)
-    return node
-
-def _remove_empties(node):
-    """
-    :type node: NonTerminal or Terminal
-    :rtype: NonTerminal or Terminal
-    """
-    if node.is_terminal():
-        return node
-
-    new_children = []
-    for c_i in range(len(node.children)):
-        # Remove non-terminal nodes without any child terminals.
-        if _count_terminals(node.children[c_i]) > 0:
-            new_children.append(node.children[c_i])
-    node.children = new_children
-
-    # Recursive
-    for c_i in range(len(node.children)):
-        node.children[c_i] = _remove_empties(node.children[c_i])
-
-    return node
-
-def _count_terminals(node):
-    """
-    :type node: NonTerminal or Terminal
-    :rtype: int
-    """
-    if node.is_terminal():
-        return 1
-
-    count = 0
-    for c in node.children:
-        count += _count_terminals(c)
-    return count
-
 def remove_function_tags(node):
     """
-    :type node: NonTerminal or Terminal
-    :rtype: NonTerminal or Terminal
+    :type node: NonTerminal/Terminal
+    :rtype: NonTerminal/Terminal
     """
     if node.is_terminal():
         return node
@@ -156,11 +80,91 @@ def _remove_function_tags(label):
     else:
         return label
 
-def binarize(node, right_branching=True):
+def remove_empty_nodes(node):
     """
-    :type node: NonTerminal or Terminal
+    :type node: NonTerminal/Terminal
+    :rtype: NonTerminal/Terminal
+    """
+    node = _remove_nodes(node, removal_tags=["-NONE-"])
+    node = _remove_invalid_nonterminals(node)
+    return node
+
+def remove_punctuations(node, punctuations=None):
+    """
+    :type node: NonTerminal/Terminal
+    :type punctuations: list of str
+    :rtype: NonTerminal/Terminal
+    """
+    if punctuations is None:
+        punctuations = PUNCTUATIONS
+    node = _remove_nodes(node, removal_tags=punctuations)
+    node = _remove_invalid_nonterminals(node)
+    return node
+
+def _remove_nodes(node, removal_tags):
+    """
+    :type node: NonTerminal/Terminal
+    :type removal_tags: list of str
+    :rtype: NonTerminal/Terminal
+    """
+    if node.is_terminal():
+        return node
+
+    # Children of this node
+    new_children = []
+    for c_i in range(len(node.children)):
+        # Remove (skip) child terminal nodes whose tags are in removal_tags.
+        if node.children[c_i].is_terminal() and node.children[c_i].label in removal_tags:
+            continue
+        new_children.append(node.children[c_i])
+    node.children = new_children
+
+    # Recursive
+    for c_i in range(len(node.children)):
+        node.children[c_i] = _remove_nodes(node.children[c_i], removal_tags=removal_tags)
+    return node
+
+def _remove_invalid_nonterminals(node):
+    """
+    :type node: NonTerminal/Terminal
+    :rtype: NonTerminal/Terminal
+    """
+    if node.is_terminal():
+        return node
+
+    # Children of this node
+    new_children = []
+    for c_i in range(len(node.children)):
+        # Remove (skip) child nonterminal nodes without any child terminals.
+        if _count_terminals(node.children[c_i]) == 0:
+            continue
+        new_children.append(node.children[c_i])
+    node.children = new_children
+
+    # Recursive
+    for c_i in range(len(node.children)):
+        node.children[c_i] = _remove_invalid_nonterminals(node.children[c_i])
+    return node
+
+def _count_terminals(node):
+    """
+    :type node: NonTerminal/Terminal
+    :rtype: int
+    """
+    if node.is_terminal():
+        return 1
+
+    count = 0
+    for c in node.children:
+        count += _count_terminals(c)
+    return count
+
+def binarize(node, right_branching=True, special_empty_label=None):
+    """
+    :type node: NonTerminal/Terminal
     :type right_branching: bool
-    :rtype: NonTerminal or Terminal
+    :type special_empty_label: str
+    :rtype: NonTerminal/Terminal
     """
     if node.is_terminal():
         return node
@@ -168,49 +172,113 @@ def binarize(node, right_branching=True):
     # Right/Left branching
     if len(node.children) > 2:
         if right_branching:
-            node.children = _right_branching(node.children, parent_label=node.label)
+            if special_empty_label is None:
+                node.children = _right_branching(node.children,
+                                                 inherit=True, parent_label=node.label)
+            else:
+                node.children = _right_branching(node.children,
+                                                 inherit=False, special_empty_label=special_empty_label)
         else:
-            node.children = _left_branching(node.children, parent_label=node.label)
+            if special_empty_label is None:
+                node.children = _left_branching(node.children,
+                                                inherit=True, parent_label=node.label)
+            else:
+                node.children = _left_branching(node.children,
+                                                inherit=False, special_empty_label=special_empty_label)
 
     # Recursive
     for c_i in range(len(node.children)):
-        node.children[c_i] = binarize(node.children[c_i])
-
+        node.children[c_i] = binarize(node.children[c_i],
+                                      right_branching=right_branching,
+                                      special_empty_label=special_empty_label)
     return node
 
-def _right_branching(nodes, parent_label):
+def _right_branching(nodes, inherit, parent_label=None, special_empty_label=None):
     """
     :type nodes: list of NonTerminal/Terminal
+    :type inherit: bool
     :type parent_label: str
+    :type special_empty_label: str
     :rtype: [NonTerminal/Terminal, NonTerminal/Terminal]
     """
     if len(nodes) == 2:
         return nodes
 
+    # Left node
     lhs = nodes[0] # The left-most child node is head
-
-    # rhs = NonTerminal("+".join([n.label for n in nodes[1:]]))
-    rhs = NonTerminal(parent_label if parent_label.endswith("^") else (parent_label + "^"))
-    rhs.children = _right_branching(nodes[1:], parent_label=parent_label)
+    # Right node
+    if inherit:
+        assert parent_label is not None
+        assert special_empty_label is None
+        rhs = NonTerminal(parent_label if parent_label.endswith("^") else (parent_label + "^"))
+        rhs.children = _right_branching(nodes[1:], inherit=True, parent_label=parent_label)
+    else:
+        assert parent_label is None
+        assert special_empty_label is not None
+        rhs = NonTerminal(special_empty_label)
+        rhs.children = _right_branching(nodes[1:], inherit=False, special_empty_label=special_empty_label)
 
     return [lhs, rhs]
 
-def _left_branching(nodes, parent_label):
+def _left_branching(nodes, inherit, parent_label=None, special_empty_label=None):
     """
     :type nodes: list of NonTerminal/Terminal
+    :type inherit: bool
     :type parent_label: str
+    :type special_empty_label: str
     :rtype: [NonTerminal/Terminal, NonTerminal/Terminal]
     """
     if len(nodes) == 2:
         return nodes
 
-    # lhs = NonTerminal("+".join([n.label for n in nodes[:-1]]))
-    lhs = NonTerminal(parent_label if parent_label.endswith("^") else (parent_label + "^"))
-    lhs.children = _left_branching(nodes[:-1], parent_label=parent_label)
-
+    # Left node
+    if inherit:
+        assert parent_label is not None
+        assert special_empty_label is None
+        lhs = NonTerminal(parent_label if parent_label.endswith("^") else (parent_label + "^"))
+        lhs.children = _left_branching(nodes[:-1], inherit=True, parent_label=parent_label)
+    else:
+        assert parent_label is None
+        assert special_empty_label is not None
+        lhs = NonTerminal(special_empty_label)
+        lhs.children = _left_branching(nodes[:-1], inherit=False, special_empty_label=special_empty_label)
+    # Right node
     rhs = nodes[-1] # The right-most child node is head
 
     return [lhs, rhs]
+
+############################
+# Postprocessing
+
+def recover_narytree_by_removing_special_empty_labels(node, special_empty_label):
+    """
+    :type node: NonTerminal/Terminal
+    :type special_empty_label: str
+    :rtype: NonTerminal/Terminal
+    """
+    if node.is_terminal():
+        return node
+
+    # NOTE: Process in post order
+
+    # Recursive
+    for c_i in range(len(node.children)):
+        node.children[c_i] = recover_narytree_by_removing_special_empty_labels(
+                                node.children[c_i],
+                                special_empty_label=special_empty_label)
+
+    # Children of this node
+    new_children = []
+    for c_i in range(len(node.children)):
+        if node.children[c_i].is_terminal():
+            new_children.append(node.children[c_i])
+        elif node.children[c_i].label != special_empty_label:
+            new_children.append(node.children[c_i])
+        else:
+            new_children.extend(node.children[c_i].children)
+    node.children = new_children
+
+    return node
 
 ############################
 # Others
