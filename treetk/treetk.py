@@ -138,7 +138,7 @@ def aggregate_spans(root, include_terminal=False, order="pre-order"):
     """
     :type root: NonTerminal or Terminal
     :type order: str
-    :rtype: list of (int,int)/(str,int,int)
+    :rtype: list of (int,int,str)/(int,int)
     """
     nodes = traverse(root, order=order, include_terminal=include_terminal, acc=None)
 
@@ -146,15 +146,15 @@ def aggregate_spans(root, include_terminal=False, order="pre-order"):
     for node in nodes:
         if node.is_terminal():
             if node.with_terminal_labels:
-                # e.g., (NN, 2, 2)
-                spans.append(tuple([node.label] + list(node.index_span)))
+                # e.g., (2, 2, "NN")
+                spans.append(tuple(list(node.index_span) + [node.label]))
             else:
                 # e.g., (2, 2)
                 spans.append(node.index_span)
         else:
             if node.with_nonterminal_labels:
-                # e.g., (NP, 2, 4)
-                spans.append(tuple([node.label] + list(node.index_span)))
+                # e.g., (2, 4, "NP")
+                spans.append(tuple(list(node.index_span) + [node.label]))
             else:
                 # e.g., (2, 4)
                 spans.append(node.index_span)
@@ -163,10 +163,10 @@ def aggregate_spans(root, include_terminal=False, order="pre-order"):
 
 def aggregate_composition_spans(root, order="pre-order", binary=True):
     """
-    :type root: NonTerminal or Terminal
+    :type root: NonTerminal/Terminal
     :type order: str
     :type binary: bool
-    :rtype: list of [(int,int,...), (int,int,...)], or list of [str, (int,int,...), (int,int,...)]
+    :rtype: list of [(int,int), (int,int), str]/[(int,int), (int,int)]
     """
     nodes = traverse(root, order=order, include_terminal=False, acc=None)
 
@@ -178,8 +178,8 @@ def aggregate_composition_spans(root, order="pre-order", binary=True):
     comp_spans = []
     for node in nodes:
         if node.with_nonterminal_labels:
-            # e.g., [NP, (0,1), (2,4)]
-            comp_spans.append([node.label] + [c.index_span for c in node.children])
+            # e.g., [(0,1), (2,4), "NP"]
+            comp_spans.append([c.index_span for c in node.children] + [node.label])
         else:
             # e.g., [(0,1), (2,4)]
             comp_spans.append([c.index_span for c in node.children])
