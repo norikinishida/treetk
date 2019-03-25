@@ -159,6 +159,34 @@ def _count_terminals(node):
         count += _count_terminals(c)
     return count
 
+def remove_repetive_unary_chains(node):
+    """
+    :type node: NonTerminal/Terminal
+    :rtype: NonTerminal/Terminal
+    """
+    if node.is_terminal():
+        return node
+
+    # Recursive
+    for c_i in range(len(node.children)):
+        node.children[c_i] = remove_repetive_unary_chains(node.children[c_i])
+
+    # Process this node
+    if len(node.children) > 1:
+        return node
+    elif node.children[0].is_terminal():
+        # NonTerminal -> Terminal
+        return node
+    elif node.label != node.children[0].label:
+        # A -> B
+        return node
+    else:
+        # A -> A
+        return node.children[0]
+
+############################
+# Preprocessing (more optional)
+
 def binarize(node, right_branching=True, special_empty_label=None):
     """
     :type node: NonTerminal/Terminal
@@ -289,7 +317,7 @@ def convert_unary_chains_to_atomic_nodes(node, special_empty_label):
 ############################
 # Postprocessing
 
-def remove_special_empty_labels(node, special_empty_label):
+def recover_nary_trees_by_removing_special_empty_labels(node, special_empty_label):
     """
     :type node: NonTerminal/Terminal
     :type special_empty_label: str
@@ -302,7 +330,7 @@ def remove_special_empty_labels(node, special_empty_label):
 
     # Recursive
     for c_i in range(len(node.children)):
-        node.children[c_i] = remove_special_empty_labels(
+        node.children[c_i] = recover_nary_trees_by_removing_special_empty_labels(
                                 node.children[c_i],
                                 special_empty_label=special_empty_label)
 
@@ -342,6 +370,10 @@ def recover_unary_chains_by_decomposing_atomic_nodes(node, special_empty_label):
     return node
 
 def _decompose_atomic_nodes(node):
+    """
+    :type node: NonTerminal
+    :rtype: NonTerminal
+    """
     labels = node.label.split("->")
 
     if len(labels) == 1:
