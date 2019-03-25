@@ -1,4 +1,4 @@
-from .ll import NonTerminal
+from .ll import NonTerminal, Terminal
 
 ############################
 # IO
@@ -247,10 +247,7 @@ def _left_branching(nodes, inherit, parent_label=None, special_empty_label=None)
 
     return [lhs, rhs]
 
-############################
-# Postprocessing
-
-def recover_narytree_by_removing_special_empty_labels(node, special_empty_label):
+def convert_unary_chains_to_atomic_nodes(node, special_empty_label):
     """
     :type node: NonTerminal/Terminal
     :type special_empty_label: str
@@ -263,7 +260,49 @@ def recover_narytree_by_removing_special_empty_labels(node, special_empty_label)
 
     # Recursive
     for c_i in range(len(node.children)):
-        node.children[c_i] = recover_narytree_by_removing_special_empty_labels(
+        node.children[c_i] = convert_unary_chains_to_atomic_nodes(
+                                node.children[c_i],
+                                special_empty_label=special_empty_label)
+
+    # Conversion for this node
+    if len(node.children) > 1:
+        # return node
+        for c_i in range(len(node.children)):
+            if node.children[c_i].is_terminal():
+                empty_node = NonTerminal(special_empty_label)
+                tmp_terminal = Terminal(label=node.children[c_i].label,
+                                        token=node.children[c_i].token,
+                                        index=node.children[c_i].index)
+                empty_node.children = [tmp_terminal]
+                node.children[c_i] = empty_node
+        return node
+    elif node.children[0].is_terminal():
+        # NonTerminal -> Terminal
+        return node
+    else:
+        # NonTerminal -> NonTerminal
+        new_label = "->".join([node.label, node.children[0].label])
+        node.label = new_label
+        node.children = node.children[0].children
+        return node
+
+############################
+# Postprocessing
+
+def remove_special_empty_labels(node, special_empty_label):
+    """
+    :type node: NonTerminal/Terminal
+    :type special_empty_label: str
+    :rtype: NonTerminal/Terminal
+    """
+    if node.is_terminal():
+        return node
+
+    # NOTE: Process in post order
+
+    # Recursive
+    for c_i in range(len(node.children)):
+        node.children[c_i] = remove_special_empty_labels(
                                 node.children[c_i],
                                 special_empty_label=special_empty_label)
 
@@ -279,6 +318,40 @@ def recover_narytree_by_removing_special_empty_labels(node, special_empty_label)
     node.children = new_children
 
     return node
+
+def recover_unary_chains_by_decomposing_atomic_nodes(node, special_empty_label):
+    """
+    :type node: NonTerminal/Terminal
+    :type special_empty_label: str
+    :rtype: NonTerminal/Terminal
+    """
+    if node.is_terminal():
+        return node
+
+    # NOTE: Process in post order
+
+    # Recursive
+    for c_i in range(len(node.children)):
+        node.children[c_i] = recover_unary_chains_by_decomposing_atomic_nodes(
+                                node.children[c_i],
+                                special_empty_label=special_empty_label)
+
+    # Decomposing this node
+    while "->" in node.label:
+        node = _decompose_atomic_nodes(node)
+    return node
+
+def _decompose_atomic_nodes(node):
+    labels = node.label.split("->")
+
+    if len(labels) == 1:
+        return node
+
+    node.label = labels[-1]
+    new_parent_node = NonTerminal("->".join(labels[:-1]))
+    new_parent_node.children = [node]
+
+    return new_parent_node
 
 ############################
 # Others
