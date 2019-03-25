@@ -77,6 +77,9 @@ def _remove_function_tags(label):
     if "-" in label and not label in ["-NONE-", "-LRB-", "-RRB-", "-LCB-", "-RCB-"]:
         lst = label.split("-")
         return lst[0]
+    elif "=" in label:
+        lst = label.split("=")
+        return lst[0]
     else:
         return label
 
