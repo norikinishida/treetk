@@ -61,24 +61,6 @@ def make_nonterminal(index_span, relation, nuclearity):
     node.relations_of_children = [] # Temporal: used for labeling nodes
     return node
 
-def node2str(node, labeled=True):
-    """
-    :type node: NonTerminal/Terminal
-    :type labeled: bool
-    :rtype: str
-    """
-    if node.is_terminal():
-        return "%s" % node.index
-    else:
-        inner = " ".join([node2str(c, labeled=labeled) for c in node.children])
-        if labeled:
-            label_rel = "/".join(node.relations_of_children)
-            label_nuc = "/".join(node.nuclearities_of_children)
-            label = "<%s,%s>" % (label_rel, label_nuc)
-            return "( %s %s )" % (label, inner)
-        else:
-            return "( %s )" % inner
-
 def sexp2tree(sexp):
     """
     :type sexp: list of str
@@ -203,9 +185,6 @@ def sexp2tree(sexp):
     assert len(tmp_node.children) == 1
     return tmp_node.children[0]
 
-###########################
-# Preprocessing
-
 def shift_labels(node):
     """
     :type node: NonTerminal/Terminal
@@ -221,11 +200,38 @@ def shift_labels(node):
         assert len(set(node.relations_of_children)) == 1
         node.relations_of_children = [node.relations_of_children[0]]
 
+    # Labeling this node
+    new_label_rel = "/".join(node.relations_of_children)
+    new_label_nuc = "/".join(node.nuclearities_of_children)
+    new_label = "<%s,%s>" % (new_label_rel, new_label_nuc)
+    node.label = new_label
+
     # Recursive (pre-order)
     for c_i in range(len(node.children)):
         node.children[c_i] = shift_labels(node.children[c_i])
 
     return node
+
+def tree2str(node, labeled=True):
+    """
+    :type node: NonTerminal/Terminal
+    :type labeled: bool
+    :rtype: str
+    """
+    if node.is_terminal():
+        return "%s" % node.index
+
+    inner = " ".join([tree2str(c, labeled=labeled) for c in node.children])
+    if labeled:
+        # label_rel = "/".join(node.relations_of_children)
+        # label_nuc = "/".join(node.nuclearities_of_children)
+        # label = "<%s,%s>" % (label_rel, label_nuc)
+        return "( %s %s )" % (node.label, inner)
+    else:
+        return "( %s )" % inner
+
+###########################
+# Preprocessing (optional)
 
 def binarize(node):
     """
@@ -262,7 +268,7 @@ def _right_branching(nodes):
     return [lhs, rhs]
 
 ###########################
-# Others
+# Label "<R1/R2,N/S>" -> Relations ["R1","R2"] and Nuclearities ["N","S"]
 
 def extract_relations_and_nuclearities(label):
     """
@@ -316,6 +322,9 @@ def assign_heads(root):
     root.calc_heads(func_head_child_rule=lambda node: node.nuclearities.index("N"))
     return root
 
+###########################
+# Relation mapping
+
 class RelationMapper(object):
     """
     A class for mapping between fine-grained relations and coarse-grained classes.
@@ -347,12 +356,12 @@ class RelationMapper(object):
             self.coarse2abb[crel] = abb
             self.abb2coarse[abb] = crel
 
-    def c2f(self, crel):
-        """
-        :type crel: str
-        :rtype: list of str
-        """
-        return self.coarse2fine[crel]
+    # def c2f(self, crel):
+    #     """
+    #     :type crel: str
+    #     :rtype: list of str
+    #     """
+    #     return self.coarse2fine[crel]
 
     def f2c(self, frel):
         """
@@ -382,4 +391,35 @@ class RelationMapper(object):
         crels = list(self.coarse2fine.keys())
         frels = list(self.fine2coarse.keys())
         return crels, frels
+
+def map_relations(root, mode):
+    relation_mapper = RelationMapper()
+    map_func = None
+    if mode == "c2f":
+        map_func = relation_mapper.c2f
+    elif mode == "f2c":
+        map_func = relation_mapper.f2c
+    elif mode == "c2a":
+        map_func = relation_mapper.c2a
+    elif mode == "a2c":
+        map_func = relation_mapper.a2c
+    else:
+        raise ValueError("Invalid mode=%s" % mode)
+    root = _map_relations(root, map_func=map_func)
+    return root
+
+def _map_relations(node, map_func):
+    if node.is_terminal():
+        return node
+
+    # Map relations of this node
+    relations, nuclearities = extract_relations_and_nuclearities(node.label)
+    relations = [map_func(r) for r in relations]
+    node.label = "<%s,%s>" % ("/".join(relations), "/".join(nuclearities))
+
+    # Recursion
+    for c_i in range(len(node.children)):
+        node.children[c_i] = _map_relations(node.children[c_i], map_func=map_func)
+
+    return node
 

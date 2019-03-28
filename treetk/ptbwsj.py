@@ -76,12 +76,13 @@ def _remove_function_tags(label):
     """
     if "-" in label and not label in ["-NONE-", "-LRB-", "-RRB-", "-LCB-", "-RCB-"]:
         lst = label.split("-")
-        return lst[0]
-    elif "=" in label:
+        label = lst[0]
+
+    if "=" in label:
         lst = label.split("=")
-        return lst[0]
-    else:
-        return label
+        label = lst[0]
+
+    return label
 
 def remove_empty_nodes(node):
     """
