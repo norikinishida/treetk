@@ -17,6 +17,9 @@ from .treetk import aggregate_constituents
 from .treetk import left_shift
 from .treetk import right_shift
 
+# Label assignment
+from .treetk import assign_labels
+
 # Checking
 from .treetk import is_completely_binary
 

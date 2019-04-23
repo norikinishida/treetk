@@ -242,6 +242,23 @@ def right_shift(node):
     return left
 
 ################
+# Label assignment
+
+def assign_labels(node, span2label, with_terminal_labels):
+    """
+    :type node: NonTerminal/Terminal
+    :type spans: {(int, int): str}
+    :type with_terminal_labels: bool
+    :rtype: NonTerminal/Terminal
+    """
+    if node.index_span in span2label:
+        node.label = span2label[node.index_span]
+    if not node.is_terminal():
+        for c_i in range(len(node.children)):
+            node.children[c_i] = assign_labels(node.children[c_i], span2label)
+    return node
+
+################
 # Checking
 
 def is_completely_binary(node):
