@@ -255,7 +255,7 @@ def assign_labels(node, span2label, with_terminal_labels):
         node.label = span2label[node.index_span]
     if not node.is_terminal():
         for c_i in range(len(node.children)):
-            node.children[c_i] = assign_labels(node.children[c_i], span2label)
+            node.children[c_i] = assign_labels(node.children[c_i], span2label, with_terminal_labels=with_terminal_labels)
     return node
 
 ################
