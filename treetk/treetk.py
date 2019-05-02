@@ -251,8 +251,19 @@ def assign_labels(node, span2label, with_terminal_labels):
     :type with_terminal_labels: bool
     :rtype: NonTerminal/Terminal
     """
-    if node.index_span in span2label:
+    if node.is_terminal():
+        if with_terminal_labels:
+            # Terminal
+            assert node.index_span in span2label
+            node.label = span2label[node.index_span]
+            node.with_terminal_labels = True
+        else:
+            pass
+    else:
+        # NonTerminal
+        assert node.index_span in span2label
         node.label = span2label[node.index_span]
+        node.with_nonterminal_labels = True
     if not node.is_terminal():
         for c_i in range(len(node.children)):
             node.children[c_i] = assign_labels(node.children[c_i], span2label, with_terminal_labels=with_terminal_labels)
