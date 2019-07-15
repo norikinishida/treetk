@@ -229,7 +229,6 @@ def sexp2tree(sexp, LPAREN, RPAREN):
             stack[-1].add_child(node)
             i += 1
         else:
-            # 非終端ノードだと思ってプッシュしたけど終端ノードだった
             node = stack.pop()
             node = Terminal(label=node.label, token=tokens[i], index=pos_count)
             pos_count += 1
