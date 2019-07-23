@@ -37,9 +37,27 @@ def tree2sexp(tree):
     :type tree: NonTerminal or Terminal
     :rtype: list of str
     """
-    sexp = tree.__str__()
+    # sexp = tree.__str__()
+    sexp = _tree2sexp(tree)
     sexp = preprocess(sexp)
     return sexp
+
+def _tree2sexp(node):
+    """
+    :type node: NonTerminal or Terminal
+    :rtype: str
+    """
+    if node.is_terminal():
+        if hasattr(node, "label"):
+            return "( %s %s )" % (node.label, node.token)
+        else:
+            return "%s" % node.token
+    else:
+        inner = " ".join([_tree2sexp(c) for c in node.children])
+        if hasattr(node, "label"):
+            return "( %s %s )" % (node.label, inner)
+        else:
+            return "( %s )" % inner
 
 def preprocess(x, LPAREN="(", RPAREN=")"):
     """
