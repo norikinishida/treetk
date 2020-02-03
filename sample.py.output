@@ -817,3 +817,73 @@ Heads (post-order):
     *         *         *         *          *          *         *          *
     |         |         |         |          |          |         |          |
 [   a   ] [  boy  ] [  saw  ] [   a   ] [  girl  ] [  with  ] [   a   ] [telescope]
+
+############### Sample for RST-DT constituency tree ####################
+
+( <TextualOrganization,N/N> ( <elaboration-additional,N/S> ( <elaboration-additional,N/S> ( <elaboration-additional,N/S> ( <Same-Unit,N/N> ( <elaboration-object-attribute-e,N/S> 0 1 ) 2 ) ( <List,N/N> 3 4 ) ) ( <Same-Unit,N/N> ( <elaboration-object-attribute-e,N/S> 5 6 ) 7 ) ) ( <Otherwise,N/N> ( <elaboration-object-attribute-e,N/S> 8 9 ) 10 ) ) ( <elaboration-general-specific,N/S> 11 12 ) )
+                                                                                    <TEXTUAL-ORGANIZATION,N/N>
+                                                                       _________________________|_________________________
+                                                                       |                                                 |
+                                                               <ELABORATION,N/S>                                         |
+                                              _________________________|__________________________                       |
+                                              |                                                  |                       |
+                                      <ELABORATION,N/S>                                          |                       |
+                           ___________________|____________________                              |                       |
+                           |                                      |                              |                       |
+                   <ELABORATION,N/S>                              |                              |                       |
+                ___________|____________                          |                              |                       |
+                |                      |                          |                              |                       |
+         <SAME-UNIT,N/N>               |                   <SAME-UNIT,N/N>                <CONDITION,N/N>                |
+         _______|________              |                   _______|________              ________|________               |
+         |              |              |                   |              |              |               |               |
+ <ELABORATION,N/S>      |         <JOINT,N/N>      <ELABORATION,N/S>      |      <ELABORATION,N/S>       |       <ELABORATION,N/S>
+    _____|_____         |         _____|_____         _____|_____         |         _____|_____          |          _____|______
+    |         |         |         |         |         |         |         |         |         |          |          |          |
+    *         *         *         *         *         *         *         *         *         *          *          *          *
+    |         |         |         |         |         |         |         |         |         |          |          |          |
+[   0   ] [   1   ] [   2   ] [   3   ] [   4   ] [   5   ] [   6   ] [   7   ] [   8   ] [   9   ] [   10   ] [   11   ] [   12   ]
+TEXTUAL-ORGANIZATION N/N
+ELABORATION N/S
+ELABORATION N/S
+ELABORATION N/S
+SAME-UNIT N/N
+ELABORATION N/S
+JOINT N/N
+SAME-UNIT N/N
+ELABORATION N/S
+CONDITION N/N
+ELABORATION N/S
+ELABORATION N/S
+                                                                                    <TEXTUAL-ORGANIZATION,N/N>
+                                                                       _________________________|_________________________
+                                                                       |                                                 |
+                                                                <EXPANSION,N/S>                                          |
+                                              _________________________|__________________________                       |
+                                              |                                                  |                       |
+                                       <EXPANSION,N/S>                                           |                       |
+                           ___________________|____________________                              |                       |
+                           |                                      |                              |                       |
+                    <EXPANSION,N/S>                               |                              |                       |
+                ___________|____________                          |                              |                       |
+                |                      |                          |                              |                       |
+         <SAME-UNIT,N/N>               |                   <SAME-UNIT,N/N>               <CONTINGENCY,N/N>               |
+         _______|________              |                   _______|________              ________|________               |
+         |              |              |                   |              |              |               |               |
+  <EXPANSION,N/S>       |       <EXPANSION,N/N>     <EXPANSION,N/S>       |       <EXPANSION,N/S>        |        <EXPANSION,N/S>
+    _____|_____         |         _____|_____         _____|_____         |         _____|_____          |          _____|______
+    |         |         |         |         |         |         |         |         |         |          |          |          |
+    *         *         *         *         *         *         *         *         *         *          *          *          *
+    |         |         |         |         |         |         |         |         |         |          |          |          |
+[   0   ] [   1   ] [   2   ] [   3   ] [   4   ] [   5   ] [   6   ] [   7   ] [   8   ] [   9   ] [   10   ] [   11   ] [   12   ]
+TEXTUAL-ORGANIZATION N/N
+EXPANSION N/S
+EXPANSION N/S
+EXPANSION N/S
+SAME-UNIT N/N
+EXPANSION N/S
+EXPANSION N/N
+SAME-UNIT N/N
+EXPANSION N/S
+CONTINGENCY N/N
+EXPANSION N/S
+EXPANSION N/S

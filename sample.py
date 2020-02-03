@@ -1,4 +1,5 @@
 import treetk
+import utils
 
 def test_ctree(sexp, with_nonterminal_labels, with_terminal_labels):
     # Preprocessing
@@ -172,4 +173,23 @@ print("")
 
 ctree = treetk.dtree2ctree(dtree)
 treetk.pretty_print(ctree)
+
+print("\n############### Sample for RST-DT constituency tree ####################\n")
+sexp = utils.read_lines("./treetk/rstdt_example.labeled.nary.ctree", process=lambda line: line.split())[0]
+print(" ".join(sexp))
+
+ctree = treetk.sexp2tree(sexp, with_nonterminal_labels=True, with_terminal_labels=False)
+ctree = treetk.rstdt.assign_relation_and_nuclearity_labels(ctree)
+
+ctree = treetk.rstdt.map_relations(ctree, mode="f2c")
+treetk.pretty_print(ctree)
+nodes = treetk.traverse(ctree, order="pre-order", include_terminal=False, acc=None)
+for node in nodes:
+    print(node.relation_label, node.nuclearity_label)
+
+ctree = treetk.rstdt.map_relations(ctree, mode="c2y")
+treetk.pretty_print(ctree)
+nodes = treetk.traverse(ctree, order="pre-order", include_terminal=False, acc=None)
+for node in nodes:
+    print(node.relation_label, node.nuclearity_label)
 
