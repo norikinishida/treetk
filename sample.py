@@ -179,7 +179,7 @@ sexp = utils.read_lines("./treetk/rstdt_example.labeled.nary.ctree", process=lam
 print(" ".join(sexp))
 
 ctree = treetk.sexp2tree(sexp, with_nonterminal_labels=True, with_terminal_labels=False)
-ctree = treetk.rstdt.assign_relation_and_nuclearity_labels(ctree)
+ctree = treetk.rstdt.postprocess(ctree)
 
 ctree = treetk.rstdt.map_relations(ctree, mode="f2c")
 treetk.pretty_print(ctree)

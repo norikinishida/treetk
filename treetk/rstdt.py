@@ -268,25 +268,9 @@ def _right_branching(nodes):
     return [lhs, rhs]
 
 ###########################
-# Label "<R1/R2,N/S>" -> "R1/R2", "N/S"
+# Postprocessing (necessary)
 
-def extract_relation_and_nuclearity_labels(label):
-    """
-    :type label: str
-    # :rtype: list of str, list of str
-    :rtype: str, str
-    """
-    re_comp = re.compile("<(.+),(.+)>")
-    match = re_comp.findall(label)
-    assert len(match) == 1
-    # relations = match[0][0].split("/")
-    # nuclearities = match[0][1].split("/")
-    # return relations, nuclearities
-    relation_label = match[0][0]
-    nuclearity_label = match[0][1]
-    return relation_label, nuclearity_label
-
-def assign_relation_and_nuclearity_labels(root):
+def postprocess(root):
     """
     :type root: NonTerminal/Terminal
     :rtype: NonTerminal/Terminal
@@ -316,6 +300,18 @@ def _assign_relation_and_nuclearity_labels(node):
 
     return node
 
+def extract_relation_and_nuclearity_labels(label):
+    """
+    :type label: str
+    :rtype: str, str
+    """
+    re_comp = re.compile("<(.+),(.+)>")
+    match = re_comp.findall(label)
+    assert len(match) == 1
+    relation_label = match[0][0]
+    nuclearity_label = match[0][1]
+    return relation_label, nuclearity_label
+
 def assign_heads(root):
     """
     :type root: NonTerminal/Terminal
@@ -327,7 +323,7 @@ def assign_heads(root):
     return root
 
 ###########################
-# Relation mapping
+# Renaming of relation labels
 
 class RelationMapper(object):
     """
@@ -489,5 +485,4 @@ def _map_relations(node, map_func):
         node.children[c_i] = _map_relations(node.children[c_i], map_func=map_func)
 
     return node
-
 
