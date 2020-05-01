@@ -5,6 +5,7 @@ A Python library for processing S-expressions and constituency/dependency tree s
 ## Requirements ##
 
 - numpy
+- nltk
 
 ## Setting ##
 
