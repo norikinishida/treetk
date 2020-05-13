@@ -332,11 +332,20 @@ class RelationMapper(object):
     We also make mapping from coarse-grained relations to the corresponding abbreviations (defined in ./rstdt_relation_abbreviations.txt).
     """
 
-    def __init__(self):
+    def __init__(self, corpus_name="rstdt"):
+
+        if corpus_name == "rstdt":
+            mapping_file = "rstdt_relation_mapping.txt"
+            abb_file = "rstdt_relation_abbreviations.txt"
+        elif corpus_name == "scidtb":
+            mapping_file = "scidtb_relation_mapping.txt"
+            abb_file = "scidtb_relation_abbreviations.txt"
+        else:
+            raise ValueError("Invalid corpus_name=%s" % corpus_name)
 
         self.fine2coarse = {} # {str: str}
         self.coarse2fine = {} # {str: list of str}
-        for line in open(os.path.join(os.path.dirname(__file__), "rstdt_relation_mapping.txt")):
+        for line in open(os.path.join(os.path.dirname(__file__), mapping_file)):
             items = line.strip().split()
             assert len(items) > 1
             crel = items[0]
@@ -348,7 +357,7 @@ class RelationMapper(object):
 
         self.coarse2abb = {} # {str: str}
         self.abb2coarse = {} # {str: str}
-        for line in open(os.path.join(os.path.dirname(__file__), "rstdt_relation_abbreviations.txt")):
+        for line in open(os.path.join(os.path.dirname(__file__), abb_file)):
             items = line.strip().split()
             assert len(items) > 1
             crel = items[0]
@@ -356,27 +365,28 @@ class RelationMapper(object):
             self.coarse2abb[crel] = abb
             self.abb2coarse[abb] = crel
 
-        self.coarse2yung = {} # {str: str}
-        self.yung2coarse = {} # {str: list of str}
-        for line in open(os.path.join(os.path.dirname(__file__), "rstdt_relation_mapping_yung17.txt")):
-            items = line.strip().split()
-            assert len(items) > 1
-            yrel = items[0]
-            crels = items[1:]
-            self.yung2coarse[yrel] = crels
-            for crel in crels:
-                assert not crel in self.coarse2yung
-                self.coarse2yung[crel] = yrel
+        if corpus_name == "rstdt":
+            self.coarse2yung = {} # {str: str}
+            self.yung2coarse = {} # {str: list of str}
+            for line in open(os.path.join(os.path.dirname(__file__), "rstdt_relation_mapping_yung17.txt")):
+                items = line.strip().split()
+                assert len(items) > 1
+                yrel = items[0]
+                crels = items[1:]
+                self.yung2coarse[yrel] = crels
+                for crel in crels:
+                    assert not crel in self.coarse2yung
+                    self.coarse2yung[crel] = yrel
 
-        self.yung2abb = {} # {str: str}
-        self.abb2yung = {} # {str: str}
-        for line in open(os.path.join(os.path.dirname(__file__), "rstdt_relation_abbreviations_yung17.txt")):
-            items = line.strip().split()
-            assert len(items) > 1
-            yrel = items[0]
-            abb = items[1]
-            self.yung2abb[yrel] = abb
-            self.abb2yung[abb] = yrel
+            self.yung2abb = {} # {str: str}
+            self.abb2yung = {} # {str: str}
+            for line in open(os.path.join(os.path.dirname(__file__), "rstdt_relation_abbreviations_yung17.txt")):
+                items = line.strip().split()
+                assert len(items) > 1
+                yrel = items[0]
+                abb = items[1]
+                self.yung2abb[yrel] = abb
+                self.abb2yung[abb] = yrel
 
     # def c2f(self, crel):
     #     """
@@ -430,6 +440,8 @@ class RelationMapper(object):
         :rtype: str
         """
         return self.abb2yung[abb]
+
+    ###
 
     def get_relation_lists(self):
         """
