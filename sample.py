@@ -187,7 +187,7 @@ nodes = treetk.traverse(ctree, order="pre-order", include_terminal=False, acc=No
 for node in nodes:
     print(node.relation_label, node.nuclearity_label)
 
-ctree = treetk.rstdt.map_relations(ctree, mode="c2y")
+ctree = treetk.rstdt.map_relations(ctree, mode="c2a")
 treetk.pretty_print(ctree)
 nodes = treetk.traverse(ctree, order="pre-order", include_terminal=False, acc=None)
 for node in nodes:

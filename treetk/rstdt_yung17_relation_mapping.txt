@@ -1,0 +1,8 @@
+EXPANSION background background-e circumstance circumstance-e elaboration-additional elaboration-additional-e elaboration-general-specific elaboration-general-specific-e elaboration-part-whole elaboration-part-whole-e elaboration-process-step elaboration-process-step-e elaboration-object-attribute elaboration-object-attribute-e elaboration-set-member elaboration-set-member-e example example-e definition definition-e evaluation-n evaluation-s evaluation-s-e Evaluation interpretation-n interpretation-s interpretation-s-e Interpretation conclusion Conclusion comment comment-e List Disjunction manner manner-e means means-e problem-solution-n problem-solution-s Problem-Solution question-answer-n question-answer-s Question-Answer statement-response-n statement-response-s Statement-Response Topic-Comment Comment-Topic rhetorical-question summary-n summary-s restatement restatement-e topic-shift Topic-Shift topic-drift Topic-Drift
+COMPARISON comparison comparison-e Comparison preference preference-e analogy analogy-e Analogy Proportion Contrast concession concession-e antithesis antithesis-e
+CONTINGENCY cause result result-e Cause-Result consequence-n consequence-n-e consequence-s consequence-s-e Consequence condition condition-e hypothetical contingency otherwise Otherwise purpose purpose-e enablement enablement-e evidence evidence-e explanation-argumentative explanation-argumentative-e reason reason-e Reason
+TEMPORAL temporal-before temporal-before-e temporal-after temporal-after-e temporal-same-time temporal-same-time-e Temporal-Same-Time Sequence Inverted-Sequence
+ATTRIBUTIONattribution attribution-e attribution-n
+TEXTUAL-ORGANIZATION TextualOrganization
+SAME-UNIT Same-Unit
+<root> <root>

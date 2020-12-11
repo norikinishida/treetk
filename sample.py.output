@@ -854,36 +854,36 @@ ELABORATION N/S
 CONDITION N/N
 ELABORATION N/S
 ELABORATION N/S
-                                                                                    <TEXTUAL-ORGANIZATION,N/N>
+                                                                                            <ORG,N/N>
                                                                        _________________________|_________________________
                                                                        |                                                 |
-                                                                <EXPANSION,N/S>                                          |
+                                                                   <ELB,N/S>                                             |
                                               _________________________|__________________________                       |
                                               |                                                  |                       |
-                                       <EXPANSION,N/S>                                           |                       |
+                                          <ELB,N/S>                                              |                       |
                            ___________________|____________________                              |                       |
                            |                                      |                              |                       |
-                    <EXPANSION,N/S>                               |                              |                       |
+                       <ELB,N/S>                                  |                              |                       |
                 ___________|____________                          |                              |                       |
                 |                      |                          |                              |                       |
-         <SAME-UNIT,N/N>               |                   <SAME-UNIT,N/N>               <CONTINGENCY,N/N>               |
+             <SU,N/N>                  |                       <SU,N/N>                      <CND,N/N>                   |
          _______|________              |                   _______|________              ________|________               |
          |              |              |                   |              |              |               |               |
-  <EXPANSION,N/S>       |       <EXPANSION,N/N>     <EXPANSION,N/S>       |       <EXPANSION,N/S>        |        <EXPANSION,N/S>
+     <ELB,N/S>          |          <JNT,N/N>           <ELB,N/S>          |          <ELB,N/S>           |           <ELB,N/S>
     _____|_____         |         _____|_____         _____|_____         |         _____|_____          |          _____|______
     |         |         |         |         |         |         |         |         |         |          |          |          |
     *         *         *         *         *         *         *         *         *         *          *          *          *
     |         |         |         |         |         |         |         |         |         |          |          |          |
 [   0   ] [   1   ] [   2   ] [   3   ] [   4   ] [   5   ] [   6   ] [   7   ] [   8   ] [   9   ] [   10   ] [   11   ] [   12   ]
-TEXTUAL-ORGANIZATION N/N
-EXPANSION N/S
-EXPANSION N/S
-EXPANSION N/S
-SAME-UNIT N/N
-EXPANSION N/S
-EXPANSION N/N
-SAME-UNIT N/N
-EXPANSION N/S
-CONTINGENCY N/N
-EXPANSION N/S
-EXPANSION N/S
+ORG N/N
+ELB N/S
+ELB N/S
+ELB N/S
+SU N/N
+ELB N/S
+JNT N/N
+SU N/N
+ELB N/S
+CND N/N
+ELB N/S
+ELB N/S

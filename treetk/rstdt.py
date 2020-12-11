@@ -337,9 +337,15 @@ class RelationMapper(object):
         if corpus_name == "rstdt":
             mapping_file = "rstdt_relation_mapping.txt"
             abb_file = "rstdt_relation_abbreviations.txt"
+        elif corpus_name == "rstdt_yung17":
+            mapping_file = "rstdt_yung17_relation_mapping.txt"
+            abb_file = "rstdt_yung17_relation_abbreviations.txt"
         elif corpus_name == "scidtb":
             mapping_file = "scidtb_relation_mapping.txt"
             abb_file = "scidtb_relation_abbreviations.txt"
+        elif corpus_name == "covid19dt":
+            mapping_file = "covid19dt_relation_mapping.txt"
+            abb_file = "covid19dt_relation_abbreviations.txt"
         else:
             raise ValueError("Invalid corpus_name=%s" % corpus_name)
 
@@ -364,29 +370,6 @@ class RelationMapper(object):
             abb = items[1]
             self.coarse2abb[crel] = abb
             self.abb2coarse[abb] = crel
-
-        if corpus_name == "rstdt":
-            self.coarse2yung = {} # {str: str}
-            self.yung2coarse = {} # {str: list of str}
-            for line in open(os.path.join(os.path.dirname(__file__), "rstdt_relation_mapping_yung17.txt")):
-                items = line.strip().split()
-                assert len(items) > 1
-                yrel = items[0]
-                crels = items[1:]
-                self.yung2coarse[yrel] = crels
-                for crel in crels:
-                    assert not crel in self.coarse2yung
-                    self.coarse2yung[crel] = yrel
-
-            self.yung2abb = {} # {str: str}
-            self.abb2yung = {} # {str: str}
-            for line in open(os.path.join(os.path.dirname(__file__), "rstdt_relation_abbreviations_yung17.txt")):
-                items = line.strip().split()
-                assert len(items) > 1
-                yrel = items[0]
-                abb = items[1]
-                self.yung2abb[yrel] = abb
-                self.abb2yung[abb] = yrel
 
     # def c2f(self, crel):
     #     """
@@ -418,31 +401,6 @@ class RelationMapper(object):
         """
         return self.abb2coarse[abb]
 
-    ###
-
-    def c2y(self, crel):
-        """
-        :type crel: str
-        :rtype: str
-        """
-        return self.coarse2yung[crel]
-
-    def y2a(self, yrel):
-        """
-        :type yrel: str
-        :rtype: str
-        """
-        return self.yung2abb[yrel]
-
-    def a2y(self, abb):
-        """
-        :type abb: str
-        :rtype: str
-        """
-        return self.abb2yung[abb]
-
-    ###
-
     def get_relation_lists(self):
         """
         :rtype: list of str, list of str
@@ -465,12 +423,6 @@ def map_relations(root, mode):
         map_func = relation_mapper.c2a
     elif mode == "a2c":
         map_func = relation_mapper.a2c
-    elif mode == "c2y":
-        map_func = relation_mapper.c2y
-    elif mode == "y2a":
-        map_func = relation_mapper.y2a
-    elif mode == "a2y":
-        map_func = relation_mapper.a2y
     else:
         raise ValueError("Invalid mode=%s" % mode)
     root = _map_relations(root, map_func=map_func)
