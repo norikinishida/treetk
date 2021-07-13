@@ -3,17 +3,25 @@ import re
 
 from .ll import NonTerminal, Terminal
 
+
 LPAREN = "("
 RPAREN = ")"
 PARENS = [LPAREN, RPAREN]
 
+
 ###########################
 # Text -> S-expression
 
+
 def read_sexp(path):
     """
-    :type path: str
-    :rtype: list of str
+    Parameters
+    ----------
+    path: str
+
+    Returns
+    -------
+    list[str]
     """
     sexp = []
     for line in open(path):
@@ -28,16 +36,23 @@ def read_sexp(path):
         sexp.extend(tokens)
     return sexp
 
+
 ###########################
 # S-expression -> Tree
 
+
 def make_terminal(edu, edu_i, relation, nuclearity):
     """
-    :type edu: str
-    :type edu_i: int
-    :type relation: str
-    :type nuclearity: str
-    :rtype: Terminal
+    Parameters
+    ----------
+    edu: str
+    edu_i: int
+    relation: str
+    nuclearity: str
+
+    Returns
+    -------
+    Terminal
     """
     # node = Terminal(token=edu, index=edu_i, label="<%s,%s>" % (relation, nuclearity))
     node = Terminal(token=edu, index=edu_i, label="*")
@@ -45,12 +60,18 @@ def make_terminal(edu, edu_i, relation, nuclearity):
     node.nuclearity = nuclearity # Temporal
     return node
 
+
 def make_nonterminal(index_span, relation, nuclearity):
     """
-    :type index_span: (int, int)
-    :type relation: str
-    :type nuclearity: str
-    :rtype: NonTerminal
+    Parameters
+    ----------
+    index_span: (int, int)
+    relation: str
+    nuclearity: str
+
+    Returns
+    -------
+    NonTerminal
     """
     # node = NonTerminal(label="<%s,%s>" % (relation, nuclearity))
     node = NonTerminal(label="*")
@@ -61,11 +82,19 @@ def make_nonterminal(index_span, relation, nuclearity):
     node.relations_of_children = [] # Temporal: used for labeling nodes
     return node
 
+
 def sexp2tree(sexp):
     """
-    :type sexp: list of str
-    :rtype: NonTerminal
+    Parameters
+    ----------
+    sexp: list[str]
 
+    Returns
+    -------
+    NonTerminal
+
+    Notes
+    -----
     Please note that the input ``sexp'' is assumed to be the raw version in RST-DT.
     So, if you want to convert a loaded S-expression after preprocessing, please use ``treetk.sexp2tree(sexp, with_nonterminal_labels=True, with_terminal_labels=True)'' instead.
     """
@@ -185,10 +214,16 @@ def sexp2tree(sexp):
     assert len(tmp_node.children) == 1
     return tmp_node.children[0]
 
+
 def shift_labels(node):
     """
-    :type node: NonTerminal/Terminal
-    :rtype: NonTerminal/Terminal
+    Parameters
+    ----------
+    node: NonTerminal or Terminal
+
+    Returns
+    -------
+    NonTerminal or Terminal
     """
     if node.is_terminal():
         return node
@@ -212,11 +247,17 @@ def shift_labels(node):
 
     return node
 
+
 def tree2str(node, labeled=True):
     """
-    :type node: NonTerminal/Terminal
-    :type labeled: bool
-    :rtype: str
+    Parameters
+    ----------
+    node: NonTerminal or Terminal
+    labeled: bool, default True
+
+    Returns
+    -------
+    str
     """
     if node.is_terminal():
         return "%s" % node.index
@@ -230,13 +271,20 @@ def tree2str(node, labeled=True):
     else:
         return "( %s )" % inner
 
+
 ###########################
 # Preprocessing (optional)
 
+
 def binarize(node):
     """
-    :type node: NonTerminal/Terminal
-    :rtype: NonTerminal/Terminal
+    Parameters
+    ----------
+    node: NonTerminal or Terminal
+
+    Returns
+    -------
+    NonTerminal or Terminal
     """
     if node.is_terminal():
         return node
@@ -251,10 +299,18 @@ def binarize(node):
 
     return node
 
+
 def _right_branching(nodes):
     """
-    :type nodes: list of NonTerminal/Terminal
-    :rtype: [NonTerminal/Terminal, NonTerminal/Terminal]
+    Parameters
+    ----------
+    nodes: list[T]
+        T -> NonTerminal or Terminal
+
+    Returns
+    -------
+    list[T]
+        T -> NonTerminal or Terminal
     """
     if len(nodes) == 2:
         return nodes
@@ -267,13 +323,20 @@ def _right_branching(nodes):
     rhs.children = _right_branching(nodes[1:])
     return [lhs, rhs]
 
+
 ###########################
 # Postprocessing (necessary)
 
+
 def postprocess(root):
     """
-    :type root: NonTerminal/Terminal
-    :rtype: NonTerminal/Terminal
+    Parameters
+    ----------
+    root: NonTerminal or Terminal
+
+    Returns
+    -------
+    NonTerminal or Terminal
     """
     if root.is_terminal():
         return root
@@ -281,10 +344,16 @@ def postprocess(root):
     root = _assign_relation_and_nuclearity_labels(root)
     return root
 
+
 def _assign_relation_and_nuclearity_labels(node):
     """
-    :type node: NonTerminal/Terminal
-    :rtype: NonTerminal/Terminal
+    Parameters
+    ----------
+    node: NonTerminal or Terminal
+
+    Returns
+    -------
+    NonTerminal or Terminal
     """
     if node.is_terminal():
         return node
@@ -300,10 +369,17 @@ def _assign_relation_and_nuclearity_labels(node):
 
     return node
 
+
 def extract_relation_and_nuclearity_labels(label):
     """
-    :type label: str
-    :rtype: str, str
+    Parameters
+    ----------
+    label: str
+
+    Returns
+    -------
+    str
+    str
     """
     re_comp = re.compile("<(.+),(.+)>")
     match = re_comp.findall(label)
@@ -312,18 +388,26 @@ def extract_relation_and_nuclearity_labels(label):
     nuclearity_label = match[0][1]
     return relation_label, nuclearity_label
 
+
 def assign_heads(root):
     """
-    :type root: NonTerminal/Terminal
-    :rtype: NonTerminal/Terminal
+    Parameters
+    ----------
+    root: NonTerminal or Terminal
+
+    Returns
+    -------
+    NonTerminal or Terminal
     """
     if root.is_terminal():
         return root
     root.calc_heads(func_head_child_rule=lambda node: node.nuclearity_label.split("/").index("N"))
     return root
 
+
 ###########################
 # Renaming of relation labels
+
 
 class RelationMapper(object):
     """
@@ -333,6 +417,11 @@ class RelationMapper(object):
     """
 
     def __init__(self, corpus_name="rstdt"):
+        """
+        Parameters
+        ----------
+        corpus_name: str, default "rstdt"
+        """
 
         if corpus_name == "rstdt":
             mapping_file = "rstdt_relation_mapping.txt"
@@ -382,38 +471,62 @@ class RelationMapper(object):
 
     def f2c(self, frel):
         """
-        :type frel: str
+        Parameters
+        ----------
+        frel: str
+
+        Returns
+        -------
         :rtype: str
         """
         return self.fine2coarse[frel]
 
     def c2a(self, crel):
         """
-        :type crel: str
+        Parameters
+        ----------
+        crel: str
+
+        Returns
+        -------
         :rtype: str
         """
         return self.coarse2abb[crel]
 
     def a2c(self, abb):
         """
-        :type abb: str
+        Parameters
+        ----------
+        abb: str
+
+        Returns
+        -------
         :rtype: str
         """
         return self.abb2coarse[abb]
 
     def get_relation_lists(self):
         """
-        :rtype: list of str, list of str
+        Returns
+        -------
+        list[str]
+        list[str]
         """
         crels = list(self.coarse2fine.keys())
         frels = list(self.fine2coarse.keys())
         return crels, frels
 
+
 def map_relations(root, mode):
     """
-    :type root: NonTerminal/Terminal
-    :type mode: str
-    :rtype: NonTermina/Terminal
+    Parametrs
+    ---------
+    root: NonTerminal or Terminal
+    mode: str
+
+    Returns
+    -------
+    NonTermina or Terminal
     """
     relation_mapper = RelationMapper()
     map_func = None
@@ -428,11 +541,17 @@ def map_relations(root, mode):
     root = _map_relations(root, map_func=map_func)
     return root
 
+
 def _map_relations(node, map_func):
     """
-    :type node: NonTerminal/Terminal
-    :type map_func: function
-    :rtype: NonTerminal/Terminal
+    Parametrs
+    ---------
+    node: NonTerminal or Terminal
+    map_func: function: str -> str
+
+    Returns
+    -------
+    NonTerminal or Terminal
     """
     if node.is_terminal():
         return node

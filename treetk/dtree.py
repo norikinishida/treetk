@@ -4,12 +4,15 @@ import numpy as np
 
 from . import treetk
 
+
 class DependencyTree(object):
 
     def __init__(self, arcs, tokens):
         """
-        :type arcs: list of (int, int, str)
-        :type tokens: list of str
+        Parameters
+        ----------
+        arcs: list[(int, int, str)]
+        tokens: list[str]
         """
         # NOTE that integers in arcs are not word IDs but indices in the sentence.
         self.arcs = arcs
@@ -33,18 +36,21 @@ class DependencyTree(object):
         assert self.dependent2head[0] == (None, None) # The 0-th token is a root symbol.
 
     def __str__(self):
-        """
-        :rtype: str
-        """
         arcs = self.tolist()
         arcs = ["%d-%d-%s" % (h,d,l) for h,d,l in arcs]
         return " ".join(arcs)
 
     def tolist(self, labeled=True, replace_with_tokens=False):
         """
-        :type labeled: bool
-        :type replace_with_tokens: bool
-        :rtype: list of (T, T, str), or list of (T, T) where T \in {int, str}
+        Parameters
+        ----------
+        labeled: bool, default True
+        replace_with_tokens: bool, default False
+
+        Returns
+        -------
+        list[(T, T, str)] or list[(T, T)]
+            T is int or str
         """
         result = self.arcs
         if replace_with_tokens:
@@ -55,23 +61,39 @@ class DependencyTree(object):
 
     def get_dependents(self, index):
         """
-        :type index: int
-        :rtype: list of (int, str)
+        Parameters
+        ----------
+        index: int
+
+        Returns
+        -------
+        list[(int, str)]
         """
         return self.head2dependents.get(index, [])
 
     def get_head(self, index):
         """
-        :rtype index: int
-        :rtype: (int, str)
+        Parameters
+        ----------
+        index: int
+
+        Returns
+        -------
+        (int, str)
         """
         return self.dependent2head[index]
 
+
 def arcs2dtree(arcs, tokens=None):
     """
-    :type arcs: list of (int, int, str), or list of (int, int)
-    :type tokens: list of str, or None
-    :rtype DependencyTree
+    Parameters
+    ----------
+    arcs: list[(int, int, str)] or list[(int, int)]
+    tokens: list[str] or None, default None
+
+    Returns
+    -------
+    DependencyTree
     """
     arcs = sort_arcs(arcs)
     arcs_checked = [x if len(x) == 3 else (x[0],x[1],"*") for x in arcs]
@@ -81,10 +103,16 @@ def arcs2dtree(arcs, tokens=None):
     dtree = DependencyTree(arcs=arcs_checked, tokens=tokens)
     return dtree
 
+
 def hyphens2arcs(hyphens):
     """
-    :type hyphens: list of str
-    :rtype: list of (int, int, str)
+    Parameters
+    ----------
+    hyphens: list[str]
+
+    Returns
+    -------
+    list[(int, int, str)]
     """
     arcs = [x.split("-") for x in hyphens]
     arcs = [(int(arc[0]), int(arc[1]), str("-".join(arc[2:]))) if len(arc) >= 3
@@ -92,23 +120,36 @@ def hyphens2arcs(hyphens):
              for arc in arcs]
     return arcs
 
+
 def sort_arcs(arcs):
     """
-    :type arcs: list of (int, int)/(int, int, str)
-    :rtype: list of (int, int)/(int, int, str)
+    Parameters
+    ----------
+    arcs: list[(int, int)] or list[(int, int, str)]
+
+    Returns
+    -------
+    list[(int, int)] or list[(int, int, str)]
     """
     return sorted(arcs, key=lambda x: x[1])
+
 
 #####################################
 # Aggregation of arcs
 
+
 def traverse_dtree(dtree, head_i, order="pre-order", acc=None):
     """
-    :type dtree: DependencyTree
-    :type head_i: int
-    :type order: str
-    :type acc: list of int
-    :rtype: list of int
+    Parameters
+    ----------
+    dtree: DependencyTree
+    head_i: int
+    order: str, default "pre-order"
+    acc: list[int] or None, default None
+
+    Returns
+    -------
+    list[int]
     """
     if acc is None:
         acc = []
@@ -134,7 +175,9 @@ def traverse_dtree(dtree, head_i, order="pre-order", acc=None):
 
     return acc
 
+
 #####################################
+
 
 LEAF_WINDOW = 8
 SPACE_SIZE = 1
@@ -147,11 +190,17 @@ HORIZONTAL = 3
 # LABEL_BEGIN = 4
 # LABEL_END = 5
 
+
 def pretty_print_dtree(dtree, return_str=False):
     """
-    :type dtree: DependencyTree
-    :type return_str: bool
-    :rtype: None or str
+    Parameters
+    ----------
+    dtree: DependencyTree
+    return_str: bool, default False
+
+    Returns
+    -------
+    None or str
     """
     arcs_labeled = dtree.tolist(labeled=True)
     arcs_unlabeled = {(b,e) for b,e,_ in arcs_labeled}
@@ -173,10 +222,16 @@ def pretty_print_dtree(dtree, return_str=False):
     else:
         print(text)
 
+
 def _pad_token(token):
     """
-    :type token: str
-    :rtype: str
+    Parameters
+    ----------
+    token: str
+
+    Returns
+    -------
+    str
     """
     token = " " + token + " "
     while len(token) <= LEAF_WINDOW:
@@ -184,10 +239,16 @@ def _pad_token(token):
     token = "[" + token[1:-1] + "]"
     return token
 
+
 def _get_arc2height(arcs):
     """
-    :type arcs: list of (int, int)
-    :rtype: dictionary of {(int, int): int}
+    Parameters
+    ----------
+    arcs: list[(int, int)]
+
+    Returns
+    -------
+    dict[(int, int), int]
     """
     # arc2height = {(b,e): np.abs(b - e) for b, e in arcs}
 
@@ -204,11 +265,17 @@ def _get_arc2height(arcs):
                 arc2height[arcs_sorted[arc_i]] = max(arc2height[arcs_sorted[arc_j]] + 1, arc2height[arcs_sorted[arc_i]])
     return arc2height
 
+
 def _init_textmap(tokens_padded, arc2height):
     """
-    :type tokens_padded: list of str
-    :type arc2height: dictionary of {(int, int): int}
-    :rtype: numpy.ndarray(shape=(R,C), dtype="O")
+    Parameters
+    ----------
+    tokens_padded: list[str]
+    arc2height: dict[(int, int), int]
+
+    Returns
+    -------
+    numpy.ndarray(shape=(R,C), dtype="O")
     """
     max_height = -1
     for arc in arc2height.keys():
@@ -220,13 +287,19 @@ def _init_textmap(tokens_padded, arc2height):
                        dtype="O")
     return textmap
 
+
 def _edit_textmap(textmap, tokens_padded, arc2height, arc2label):
     """
-    :type textmap: numpy.ndarray(shape=(R,C), dtype="O")
-    :type tokens_padded: list of str
-    :type arc2height: dictionary of {(int, int): int}
-    :type arc2label: dictionary of {(int, int): str}
-    :rtype: numpy.ndarray(shape=(R,C), dtype="O")
+    Parameters
+    ----------
+    textmap: numpy.ndarray(shape=(R,C), dtype="O")
+    tokens_padded: list of str
+    arc2height: dict[(int, int), int]
+    arc2label: dict[(int, int), str]
+
+    Returns
+    -------
+    numpy.ndarray(shape=(R,C), dtype="O")
     """
     # Token index -> center position (i.e., column index in textmap)
     index2position = {} # {int: int}
@@ -269,10 +342,17 @@ def _edit_textmap(textmap, tokens_padded, arc2height, arc2label):
 
     return textmap
 
+
 def _generate_text(textmap, tokens_padded):
     """
-    :type textmap: numpy.ndarray(shape=(R,C), dtype="O")
-    :type tokens_padded: list of str
+    Parameters
+    ----------
+    textmap: numpy.ndarray(shape=(R,C), dtype="O")
+    tokens_padded: list[str]
+
+    Returns
+    -------
+    str
     """
     text = ""
     for row_i in range(textmap.shape[0]):
@@ -296,13 +376,20 @@ def _generate_text(textmap, tokens_padded):
     text = text[:-SPACE_SIZE]
     return text
 
+
 #####################################
+
 
 def ctree2dtree(tree, func_label_rule=None):
     """
-    :type NonTerminal or Terminal
-    :type func_label_rule: function of (NonTerminal, int, int) -> str
-    :rtype: DependencyTree
+    Parameters
+    ----------
+    tyee: NonTerminal or Terminal
+    func_label_rule: function: NonTerminal, int, int -> str, optional
+
+    Returns
+    -------
+    DependencyTree
     """
     if (tree.head_token_index is None) or (tree.head_child_index is None):
         raise ValueError("Please call ``tree.calc_heads(func_head_child_rule)'' before conversion.")
@@ -332,12 +419,19 @@ def ctree2dtree(tree, func_label_rule=None):
     dtree = arcs2dtree(arcs=arcs, tokens=tokens)
     return dtree
 
+
 #####################################
+
 
 def dtree2ctree(dtree):
     """
-    :type dtree: DependencyTree
-    :rtype: NonTerminal
+    Parameters
+    ----------
+    dtree: DependencyTree
+
+    Returns
+    -------
+    NonTerminal
     """
     from . import lu
 

@@ -2,17 +2,24 @@ import sys
 
 import numpy as np
 
+
 ################
 # Conversion (sexp -> tree, or tree -> sexp)
 
+
 def sexp2tree(sexp, with_nonterminal_labels, with_terminal_labels, LPAREN="(", RPAREN=")"):
     """
-    :type sexp: list of str
-    :type with_nonterminal_labels: bool
-    :type with_terminal_labels: bool
-    :type LPAREN: str
-    :type RPAREN: str
-    :rtype: NonTerminal
+    Parameters
+    ----------
+    sexp: list[str]
+    with_nonterminal_labels: bool
+    with_terminal_labels: bool
+    LPAREN: str, default "("
+    RPAREN: str, default ")"
+
+    Returns
+    -------
+    NonTerminal
     """
     if with_nonterminal_labels and with_terminal_labels:
         from . import ll
@@ -32,20 +39,32 @@ def sexp2tree(sexp, with_nonterminal_labels, with_terminal_labels, LPAREN="(", R
         sys.exit(-1)
     return tree
 
+
 def tree2sexp(tree):
     """
-    :type tree: NonTerminal or Terminal
-    :rtype: list of str
+    Parameters
+    ----------
+    tree: NonTerminal or Terminal
+
+    Returns
+    -------
+    list[str]
     """
     # sexp = tree.__str__()
     sexp = _tree2sexp(tree)
     sexp = preprocess(sexp)
     return sexp
 
+
 def _tree2sexp(node):
     """
-    :type node: NonTerminal or Terminal
-    :rtype: str
+    Parameters
+    ----------
+    node: NonTerminal or Terminal
+
+    Returns
+    -------
+    str
     """
     if node.is_terminal():
         if hasattr(node, "label"):
@@ -59,35 +78,58 @@ def _tree2sexp(node):
         else:
             return "( %s )" % inner
 
+
 def preprocess(x, LPAREN="(", RPAREN=")"):
     """
-    :type x: str or list of str
-    :rtype: list of str
+    Parameters
+    ----------
+    x: str or list[str]
+    LPAREN: str, default "("
+    RPAREN: str, default ")"
+
+    Returns
+    -------
+    list[str]
     """
     if isinstance(x, list):
         x = " ".join(x)
     sexp = x.replace(LPAREN, " %s " % LPAREN).replace(RPAREN, " %s " % RPAREN).split()
     return sexp
 
+
 def filter_parens(sexp, LPAREN="(", RPAREN=")"):
     """
-    :type sexp: list of str
-    :type LPAREN: str
-    :type RPAREN: str
-    :rtype: list of str
+    Parameters
+    ----------
+    sexp: list[str]
+    LPAREN: str, default "("
+    RPAREN: str, default ")"
+
+    Returns
+    -------
+    list[str]
     """
     return [x for x in sexp if not x in [LPAREN, RPAREN]]
+
 
 ################
 # Aggregation of nodes
 
+
 def traverse(node, order="pre-order", include_terminal=True, acc=None):
     """
-    :type node: NonTerminal or Terminal
-    :type order: str
-    :type include_terminal: bool
-    :type acc: list of NonTerminal/Terminal
-    :rtype list of NonTerminal/Terminal
+    Parameters
+    ----------
+    node: NonTerminal or Terminal
+    order: str, default "pre-order"
+    include_terminal: bool, default True
+    acc: list[T] or None, default None
+        T -> NonTerminal or Terminal
+
+    Returns
+    -------
+    list[T]
+        T -> NonTerminal or Terminal
     """
     if acc is None:
         acc = []
@@ -114,15 +156,22 @@ def traverse(node, order="pre-order", include_terminal=True, acc=None):
 
     return acc
 
+
 ################
 # Aggregation of production rules
 
+
 def aggregate_production_rules(root, order="pre-order", include_terminal=True):
     """
-    :type root: NonTerminal
-    :type order: str
-    :type include_terminal: bool
-    :rtype: list of tuple of str
+    Parameters
+    ----------
+    root: NonTerminal
+    order: str, default "pre-order"
+    include_terminal: bool, default True
+
+    Returns
+    -------
+    list[tuple[str]]
     """
     # NOTE: only for trees with nonterminal labels
     assert root.with_nonterminal_labels
@@ -149,14 +198,22 @@ def aggregate_production_rules(root, order="pre-order", include_terminal=True):
             rules.append(tuple(rule))
     return rules
 
+
 ################
 # Aggregation of spans
 
+
 def aggregate_spans(root, include_terminal=False, order="pre-order"):
     """
-    :type root: NonTerminal or Terminal
-    :type order: str
-    :rtype: list of (int,int,str)/(int,int)
+    Parameters
+    ----------
+    root: NonTerminal or Terminal
+    include_terminal: bool, default False
+    order: str, default "pre-order"
+
+    Returns
+    -------
+    list[(int,int,str)] or list[(int,int)]
     """
     nodes = traverse(root, order=order, include_terminal=include_terminal, acc=None)
 
@@ -179,12 +236,18 @@ def aggregate_spans(root, include_terminal=False, order="pre-order"):
 
     return spans
 
+
 def aggregate_composition_spans(root, order="pre-order", binary=True):
     """
-    :type root: NonTerminal/Terminal
-    :type order: str
-    :type binary: bool
-    :rtype: list of [(int,int), (int,int), str]/[(int,int), (int,int)]
+    Parameters
+    ----------
+    root: NonTerminal or Terminal
+    order: str, default "pre-order"
+    binary: bool, default True
+
+    Returns
+    -------
+    list[[(int,int), (int,int), str]] or list[[(int,int), (int,int)]]
     """
     nodes = traverse(root, order=order, include_terminal=False, acc=None)
 
@@ -204,13 +267,21 @@ def aggregate_composition_spans(root, order="pre-order", binary=True):
 
     return comp_spans
 
+
 ################
 # Aggregation of constituents
 
+
 def aggregate_constituents(root, order="pre-order"):
     """
-    :type root: NonTerminal/Terminal
-    :rtype: list of list of str
+    Parameters
+    ----------
+    root: NonTerminal or Terminal
+    order: str, default "pre-order"
+
+    Returns
+    -------
+    list[list[str]]
     """
     nodes = traverse(root, order=order, include_terminal=False, acc=None)
 
@@ -220,14 +291,23 @@ def aggregate_constituents(root, order="pre-order"):
 
     return constituents
 
+
 ################
 # Tree shifting
 
+
 def left_shift(node):
     """
-    :type node: NonTerminal
-    :rtype: NonTerminal
+    Parameters
+    ----------
+    node: NonTerminal
 
+    Returns
+    -------
+    NonTerminal
+
+    Notes
+    --------
     e.g., (A (B C)) -> ((A B) C)
     """
     assert not node.is_terminal()
@@ -241,11 +321,19 @@ def left_shift(node):
     right.children[0] = node
     return right
 
+
 def right_shift(node):
     """
-    :type node: NonTerminal
-    :rtype: NonTerminal
+    Parameters
+    ----------
+    node: NonTerminal
 
+    Returns
+    -------
+    NonTerminal
+
+    Notes
+    -----
     e.g., ((A B) C) -> (A (B C))
     """
     assert not node.is_terminal()
@@ -259,15 +347,22 @@ def right_shift(node):
     left.children[1] = node
     return left
 
+
 ################
 # Label assignment
 
+
 def assign_labels(node, span2label, with_terminal_labels):
     """
-    :type node: NonTerminal/Terminal
-    :type spans: {(int, int): str}
-    :type with_terminal_labels: bool
-    :rtype: NonTerminal/Terminal
+    Parameters
+    ----------
+    node: NonTerminal or Terminal
+    span2label: dict[(int, int), str]
+    with_terminal_labels: bool
+
+    Returns
+    -------
+    NonTerminal or Terminal
     """
     if node.is_terminal():
         if with_terminal_labels:
@@ -287,13 +382,20 @@ def assign_labels(node, span2label, with_terminal_labels):
             node.children[c_i] = assign_labels(node.children[c_i], span2label, with_terminal_labels=with_terminal_labels)
     return node
 
+
 ################
 # Checking
 
+
 def is_completely_binary(node):
     """
-    :type node: NonTerminal or Terminal
-    :rtype: bool
+    Parameters
+    ----------
+    node: NonTerminal or Terminal
+
+    Returns
+    -------
+    bool
     """
     if node.is_terminal():
         return True
@@ -304,8 +406,10 @@ def is_completely_binary(node):
         acc *= is_completely_binary(c)
     return bool(acc)
 
+
 ################
 # Visualization
+
 
 LEAF_WINDOW = 8
 SPACE_SIZE = 1
@@ -315,12 +419,19 @@ EMPTY = 0
 VERTICAL = 1
 HORIZONTAL = 2
 
+
 def pretty_print(tree, return_str=False, LPAREN="(", RPAREN=")"):
     """
-    :type tree: NonTerminal or Terminal
-    :type LPAREN: str
-    :type RPAREN: str
-    :rtype: None or str
+    Parameters
+    ----------
+    tree: NonTerminal or Terminal
+    return_str: bool, default False
+    LPAREN: str, default "("
+    RPAREN: str, default ")"
+
+    Returns
+    -------
+    None or str
     """
     # Tokens with padding
     tokens = tree.leaves()
@@ -337,10 +448,16 @@ def pretty_print(tree, return_str=False, LPAREN="(", RPAREN=")"):
     else:
         print(text)
 
+
 def _pad_token(token):
     """
-    :type token: str
-    :rtype: str
+    Parameters
+    ----------
+    token: str
+
+    Returns
+    -------
+    str
     """
     token = " " + token + " "
     while len(token) <= LEAF_WINDOW:
@@ -348,11 +465,17 @@ def _pad_token(token):
     token = "[" + token[1:-1] + "]"
     return token
 
+
 def _init_textmap(tokens_padded, tree):
     """
-    :type tokens_padded: list of str
-    :type tree: NonTerminal or Terminal
-    :rtype: numpy.ndarray(shape=(R,C), dtype="O")
+    Parameters
+    ----------
+    tokens_padded: list[str]
+    tree: NonTerminal or Terminal
+
+    Returns
+    -------
+    numpy.ndarray(shape=(R,C), dtype="O")
     """
     max_height = tree.set_height()
     max_height += 1 # include POS nodes
@@ -361,12 +484,18 @@ def _init_textmap(tokens_padded, tree):
                        dtype="O")
     return textmap
 
+
 def _edit_textmap(textmap, tokens_padded, tree):
     """
-    :type textmap: numpy.ndarray(shape=(R,C), dtype="O")
-    :type tokens_padded: list of str
-    :type tree: NonTerminal or Terminal
-    :rtype: numpy.ndarray(shape=(R,C), dtype="O")
+    Parameters
+    ----------
+    textmap: numpy.ndarray(shape=(R,C), dtype="O")
+    tokens_padded: list[str]
+    tree: NonTerminal or Terminal
+
+    Returns
+    -------
+    numpy.ndarray(shape=(R,C), dtype="O")
     """
     # Token index -> center position (i.e., column index in textmap)
     index2position = {} # {int: int}
@@ -386,11 +515,17 @@ def _edit_textmap(textmap, tokens_padded, tree):
     textmap = textmap[1:, :]
     return textmap
 
+
 def _set_position_for_each_node(node, index2position):
     """
-    :type node: NonTerminal or Terminal
-    :type index2position: {int: int}
-    :rtype: numpy.ndarray(shape=(R,C), dtype=int)
+    Parameters
+    ----------
+    node: NonTerminal or Terminal
+    index2position: dict[int, int]
+
+    Returns
+    --------
+    numpy.ndarray(shape=(R,C), dtype=int)
     """
     if node.is_terminal():
         position = index2position[node.index]
@@ -413,9 +548,14 @@ def _set_position_for_each_node(node, index2position):
 
 def _edit_vertical_lines(node, textmap):
     """
-    :type node: NonTerminal or Terminal
-    :type textmap: numpy.ndarray(shape=(R,C), dtype=int)
-    :rtype: numpy.ndarray(shape=(R,C), dtype=int)
+    Parameters
+    ----------
+    node: NonTerminal or Terminal
+    textmap: numpy.ndarray(shape=(R,C), dtype=int)
+
+    Returns
+    -------
+    numpy.ndarray(shape=(R,C), dtype=int)
     """
     row_i = node.height * 3 + 1
     col_i = node.position
@@ -458,11 +598,17 @@ def _edit_vertical_lines(node, textmap):
 
     return textmap
 
+
 def _edit_horizontal_lines(node, textmap):
     """
-    :type node: NonTerminal or Terminal
-    :type textmap: numpy.ndarray(shape=(R,C), dtype="O")
-    :rtype: numpy.ndarray(shape=(R,C), dtype="O")
+    Parameters
+    ----------
+    node: NonTerminal or Terminal
+    textmap: numpy.ndarray(shape=(R,C), dtype="O")
+
+    Returns
+    -------
+    numpy.ndarray(shape=(R,C), dtype="O")
     """
     if node.is_terminal():
         return textmap
@@ -486,10 +632,17 @@ def _edit_horizontal_lines(node, textmap):
 
     return textmap
 
+
 def _generate_text(textmap, tokens_padded):
     """
-    :type textmap: numpy.ndarray(shape=(R,C), dtype="O")
-    :type tokens_padded: list of str
+    Parameters
+    ----------
+    textmap: numpy.ndarray(shape=(R,C), dtype="O")
+    tokens_padded: list[str]
+
+    Returns
+    -------
+    str
     """
     text = ""
     for row_i in range(textmap.shape[0]):
@@ -511,12 +664,14 @@ def _generate_text(textmap, tokens_padded):
     text = text[:-SPACE_SIZE]
     return text
 
+
 def nltk_pretty_print(tree, LPAREN="(", RPAREN=")"):
     """
-    :type tree: NonTerminal or Terminal
-    :type LPAREN: str
-    :type RPAREN: str
-    :rtype: None
+    Parameters
+    ----------
+    tree: NonTerminal or Terminal
+    LPAREN: str, default "("
+    RPAREN: str, default ")"
     """
     import nltk.tree
     text = tree.__str__()
@@ -526,12 +681,14 @@ def nltk_pretty_print(tree, LPAREN="(", RPAREN=")"):
                 LPAREN=LPAREN)
     nltk.tree.Tree.fromstring(text).pretty_print()
 
+
 def nltk_draw(tree, LPAREN="(", RPAREN=")"):
     """
-    :type tree: NonTerminal or Terminal
-    :type LPAREN: str
-    :type RPAREN: str
-    :rtype: None
+    Parameters
+    ----------
+    tree: NonTerminal or Terminal
+    LPAREN: str, default "("
+    RPAREN: str, default ")"
     """
     import nltk.tree
     text = tree.__str__()
@@ -541,11 +698,18 @@ def nltk_draw(tree, LPAREN="(", RPAREN=")"):
                 LPAREN=LPAREN)
     nltk.tree.Tree.fromstring(text).draw()
 
+
 def _insert_dummy_nonterminal_labels(text, with_terminal_labels, LPAREN="("):
     """
-    :type text: str
-    :type with_terminal_labels: bool
-    :rtype: str
+    Parameters
+    ----------
+    text: str
+    with_terminal_labels: bool
+    LPAREN: str, default "("
+
+    Returns
+    -------
+    str
     """
     if not with_terminal_labels:
         text = text.replace(LPAREN, "%s * " % LPAREN)

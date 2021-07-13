@@ -5,8 +5,15 @@ from .ll import NonTerminal, Terminal
 
 def read_sexps(path, LPAREN="(", RPAREN=")"):
     """
-    :type path: str
-    :rtype: list of list of str
+    Parameters
+    ----------
+    path: str
+    LPAREN: str, default "("
+    RPAREN: str, default "("
+
+    Returns
+    -------
+    list[list[str]]
     """
     sexps = []
     buf = []
@@ -27,8 +34,10 @@ def read_sexps(path, LPAREN="(", RPAREN=")"):
                 buf = []
     return sexps
 
+
 ############################
 # Preprocessing
+
 
 PUNCTUATIONS = ["``", "''", ":", ",", ".",
                 "?", "!", ";", "...",
@@ -37,10 +46,16 @@ PUNCTUATIONS = ["``", "''", ":", ",", ".",
                 "(", ")", "{", "}",
                 "$", "#"]
 
+
 def lowercasing(node):
     """
-    :type node: NonTerminal/Terminal
-    :rtype: NonTerminal/Terminal
+    Parameters
+    ----------
+    node: NonTerminal or Terminal
+
+    Returns
+    -------
+    NonTerminal or Terminal
     """
     if node.is_terminal():
         node.token = node.token.lower()
@@ -54,8 +69,13 @@ def lowercasing(node):
 
 def remove_function_tags(node):
     """
-    :type node: NonTerminal/Terminal
-    :rtype: NonTerminal/Terminal
+    Parameters
+    ----------
+    node: NonTerminal or Terminal
+
+    Returns
+    -------
+    NonTerminal or Terminal
     """
     if node.is_terminal():
         return node
@@ -69,10 +89,16 @@ def remove_function_tags(node):
 
     return node
 
+
 def _remove_function_tags(label):
     """
-    :type label: str
-    :rtype: str
+    Parameters
+    ----------
+    label: str
+
+    Returns
+    -------
+    str
     """
     if "-" in label and not label in ["-NONE-", "-LRB-", "-RRB-", "-LCB-", "-RCB-"]:
         lst = label.split("-")
@@ -84,20 +110,32 @@ def _remove_function_tags(label):
 
     return label
 
+
 def remove_empty_nodes(node):
     """
-    :type node: NonTerminal/Terminal
-    :rtype: NonTerminal/Terminal
+    Parameters
+    ----------
+    node: NonTerminal or Terminal
+
+    Returns
+    -------
+    NonTerminal or Terminal
     """
     node = _remove_nodes(node, removal_tags=["-NONE-"])
     node = _remove_invalid_nonterminals(node)
     return node
 
+
 def remove_punctuations(node, punctuations=None):
     """
-    :type node: NonTerminal/Terminal
-    :type punctuations: list of str
-    :rtype: NonTerminal/Terminal
+    Parameters
+    ----------
+    node: NonTerminal or Terminal
+    punctuations: list[str]
+
+    Returns
+    -------
+    NonTerminal or Terminal
     """
     if punctuations is None:
         punctuations = PUNCTUATIONS
@@ -105,11 +143,17 @@ def remove_punctuations(node, punctuations=None):
     node = _remove_invalid_nonterminals(node)
     return node
 
+
 def _remove_nodes(node, removal_tags):
     """
-    :type node: NonTerminal/Terminal
-    :type removal_tags: list of str
-    :rtype: NonTerminal/Terminal
+    Parameters
+    ----------
+    node: NonTerminal or Terminal
+    removal_tags: list[str]
+
+    Returns
+    -------
+    NonTerminal or Terminal
     """
     if node.is_terminal():
         return node
@@ -128,10 +172,16 @@ def _remove_nodes(node, removal_tags):
         node.children[c_i] = _remove_nodes(node.children[c_i], removal_tags=removal_tags)
     return node
 
+
 def _remove_invalid_nonterminals(node):
     """
-    :type node: NonTerminal/Terminal
-    :rtype: NonTerminal/Terminal
+    Parameters
+    ----------
+    node: NonTerminal or Terminal
+
+    Returns
+    -------
+    NonTerminal or Terminal
     """
     if node.is_terminal():
         return node
@@ -150,10 +200,16 @@ def _remove_invalid_nonterminals(node):
         node.children[c_i] = _remove_invalid_nonterminals(node.children[c_i])
     return node
 
+
 def _count_terminals(node):
     """
-    :type node: NonTerminal/Terminal
-    :rtype: int
+    Parameters
+    ----------
+    node: NonTerminal or Terminal
+
+    Returns
+    -------
+    int
     """
     if node.is_terminal():
         return 1
@@ -163,10 +219,16 @@ def _count_terminals(node):
         count += _count_terminals(c)
     return count
 
+
 def remove_repetive_unary_chains(node):
     """
-    :type node: NonTerminal/Terminal
-    :rtype: NonTerminal/Terminal
+    Parameters
+    ----------
+    node: NonTerminal or Terminal
+
+    Returns
+    -------
+    NonTerminal or Terminal
     """
     if node.is_terminal():
         return node
@@ -188,15 +250,22 @@ def remove_repetive_unary_chains(node):
         # A -> A
         return node.children[0]
 
+
 ############################
 # Preprocessing (more optional)
 
+
 def binarize(node, right_branching=True, special_empty_label=None):
     """
-    :type node: NonTerminal/Terminal
-    :type right_branching: bool
-    :type special_empty_label: str
-    :rtype: NonTerminal/Terminal
+    Parameters
+    ----------
+    node: NonTerminal or Terminal
+    right_branching: bool, default True
+    special_empty_label: str or None, default None
+
+    Returns
+    -------
+    NonTerminal or Terminal
     """
     if node.is_terminal():
         return node
@@ -225,13 +294,21 @@ def binarize(node, right_branching=True, special_empty_label=None):
                                       special_empty_label=special_empty_label)
     return node
 
+
 def _right_branching(nodes, inherit, parent_label=None, special_empty_label=None):
     """
-    :type nodes: list of NonTerminal/Terminal
-    :type inherit: bool
-    :type parent_label: str
-    :type special_empty_label: str
-    :rtype: [NonTerminal/Terminal, NonTerminal/Terminal]
+    Parameters
+    ----------
+    nodes: list[T]
+        T -> NonTerminal or Terminal
+    inherit: bool
+    parent_label: str or None, default None
+    special_empty_label: str or None, default None
+
+    Returns
+    -------
+    list[T]
+        T -> NonTerminal or Terminal
     """
     if len(nodes) == 2:
         return nodes
@@ -254,11 +331,18 @@ def _right_branching(nodes, inherit, parent_label=None, special_empty_label=None
 
 def _left_branching(nodes, inherit, parent_label=None, special_empty_label=None):
     """
-    :type nodes: list of NonTerminal/Terminal
-    :type inherit: bool
-    :type parent_label: str
-    :type special_empty_label: str
-    :rtype: [NonTerminal/Terminal, NonTerminal/Terminal]
+    Parameters
+    ----------
+    nodes: list[T]
+        T -> NonTerminal or Terminal
+    inherit: bool
+    parent_label: str or None, default None
+    special_empty_label: str or None, default None
+
+    Returns
+    -------
+    list[T]
+        T -> NonTerminal or Terminal
     """
     if len(nodes) == 2:
         return nodes
@@ -279,11 +363,17 @@ def _left_branching(nodes, inherit, parent_label=None, special_empty_label=None)
 
     return [lhs, rhs]
 
+
 def convert_unary_chains_to_atomic_nodes(node, special_empty_label):
     """
-    :type node: NonTerminal/Terminal
-    :type special_empty_label: str
-    :rtype: NonTerminal/Terminal
+    Parameters
+    ----------
+    node: NonTerminal or Terminal
+    special_empty_label: str
+
+    Returns
+    -------
+    NonTerminal or Terminal
     """
     if node.is_terminal():
         return node
@@ -318,14 +408,21 @@ def convert_unary_chains_to_atomic_nodes(node, special_empty_label):
         node.children = node.children[0].children
         return node
 
+
 ############################
 # Postprocessing
 
+
 def recover_nary_trees_by_removing_special_empty_labels(node, special_empty_label):
     """
-    :type node: NonTerminal/Terminal
-    :type special_empty_label: str
-    :rtype: NonTerminal/Terminal
+    Parameters
+    ----------
+    node: NonTerminal or Terminal
+    special_empty_label: str
+
+    Returns
+    -------
+    NonTerminal or Terminal
     """
     if node.is_terminal():
         return node
@@ -351,11 +448,17 @@ def recover_nary_trees_by_removing_special_empty_labels(node, special_empty_labe
 
     return node
 
+
 def recover_unary_chains_by_decomposing_atomic_nodes(node, special_empty_label):
     """
-    :type node: NonTerminal/Terminal
-    :type special_empty_label: str
-    :rtype: NonTerminal/Terminal
+    Parameters
+    ----------
+    node: NonTerminal or Terminal
+    special_empty_label: str
+
+    Returns
+    -------
+    NonTerminal or Terminal
     """
     if node.is_terminal():
         return node
@@ -373,10 +476,16 @@ def recover_unary_chains_by_decomposing_atomic_nodes(node, special_empty_label):
         node = _decompose_atomic_nodes(node)
     return node
 
+
 def _decompose_atomic_nodes(node):
     """
-    :type node: NonTerminal
-    :rtype: NonTerminal
+    Parameters
+    ----------
+    node: NonTerminal
+
+    Returns
+    -------
+    NonTerminal
     """
     labels = node.label.split("->")
 
@@ -388,6 +497,7 @@ def _decompose_atomic_nodes(node):
     new_parent_node.children = [node]
 
     return new_parent_node
+
 
 ############################
 # Others

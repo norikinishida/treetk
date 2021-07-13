@@ -4,9 +4,10 @@ class Terminal(object):
 
     def __init__(self, token, index):
         """
-        :type token: str
-        :type index: int
-        :rtype: None
+        Parameters
+        ----------
+        token: str
+        index: int
         """
         self.token = token
         self.index = index
@@ -23,66 +24,85 @@ class Terminal(object):
 
     ###########
     def __str__(self):
-        """
-        :rtype: str
-        """
         return "%s" % self.token
 
     def tolist(self):
         """
-        :rtype: str
+        Returns
+        -------
+        str
         """
         return self.token
 
     def leaves(self):
         """
-        :rtype: list of str, i.e., [str]
+        Returns
+        -------
+        list[str]
         """
         return [self.token]
 
     ###########
     def is_terminal(self):
         """
-        :rtype: bool
+        Returns
+        -------
+        bool
         """
         return True
 
     ###########
     def calc_spans(self):
         """
-        :rtype: (int, int)
+        Returns
+        -------
+        (int, int)
         """
         return self.index_span
 
     def calc_heads(self, func_head_child_rule):
         """
-        :type func_head_child_rule: function of NonTerminal -> int
-        :rtype: int
+        Parameters
+        ----------
+        func_head_child_rule: function: NonTerminal -> int
+
+        Returns
+        -------
+        int
         """
         return self.head_token_index
 
     ###########
     def set_depth(self, depth=0):
         """
-        :type depth: int
-        :rtype: int
+        Parameters
+        ----------
+        depth: int
+
+        Returns
+        -------
+        int
         """
         self.depth = depth
         return self.depth
 
     def set_height(self):
         """
-        :rtype: int
+        Returns
+        -------
+        int
         """
         self.height = 0
         return self.height
+
 
 class NonTerminal(object):
 
     def __init__(self, label):
         """
-        :type label: str
-        :rtype: None
+        Parameters
+        ----------
+        label: str
         """
         self.label = label
         self.children = []
@@ -99,29 +119,32 @@ class NonTerminal(object):
 
     def add_child(self, node):
         """
-        :type node: NonTerminal or Terminal
-        :rtype: None
+        Parameters
+        ----------
+        node: NonTerminal or Terminal
         """
         self.children.append(node)
 
     ###########
     def __str__(self):
-        """
-        :rtype: str
-        """
         inner = " ".join([c.__str__() for c in self.children])
         return "( %s %s )" % (self.label, inner)
 
     def tolist(self):
         """
-        :rtype: (list of)+ str
+        Returns
+        -------
+        list[T]
+            T -> str or list[T]
         """
         inner = [self.label] + [c.tolist() for c in self.children]
         return inner
 
     def leaves(self):
         """
-        :rtype: list of str
+        Returns
+        -------
+        list[str]
         """
         leaves = []
         for c in self.children:
@@ -131,14 +154,18 @@ class NonTerminal(object):
     ###########
     def is_terminal(self):
         """
-        :rtype: bool
+        Returns
+        -------
+        bool
         """
         return False
 
     ###########
     def calc_spans(self):
         """
-        :rtype: (int, int)
+        Returns
+        -------
+        (int, int)
         """
         min_index = math.inf
         max_index = -math.inf
@@ -153,8 +180,13 @@ class NonTerminal(object):
 
     def calc_heads(self, func_head_child_rule):
         """
-        :type func_head_child_rule: function of NonTerminal -> int
-        :rtype: int
+        Parameters
+        ----------
+        func_head_child_rule: function: NonTerminal -> int
+
+        Returns
+        -------
+        int
         """
         head_token_indices = []
         for c_i in range(len(self.children)):
@@ -168,8 +200,13 @@ class NonTerminal(object):
     ###########
     def set_depth(self, depth=0):
         """
-        :type depth: int
-        :rtype: int
+        Parameters
+        ----------
+        depth: int
+
+        Returns
+        -------
+        int
         """
         self.depth = depth
         max_cdepth = -1
@@ -181,7 +218,9 @@ class NonTerminal(object):
 
     def set_height(self):
         """
-        :rtype: int
+        Returns
+        -------
+        int
         """
         max_height = -1
         for c_i in range(len(self.children)):
@@ -191,12 +230,18 @@ class NonTerminal(object):
         self.height = max_height + 1
         return self.height
 
+
 def sexp2tree(sexp, LPAREN, RPAREN):
     """
-    :type sexp: list of str, e.g., "( S ( NP a cat ) ( VP bites ( NP a mouse ) ) )".split()
-    :type LPAREN: str
-    :type RPAREN: str
-    :rtype: NonTerminal
+    Parameters
+    ----------
+    sexp: list[str]
+    LPAREN: str
+    RPAREN: str
+
+    Returns
+    -------
+    NonTerminal
     """
     tokens = sexp
     n_tokens = len(tokens)
