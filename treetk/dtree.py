@@ -2,7 +2,12 @@ from collections import defaultdict
 
 import numpy as np
 
-from . import treetk
+from .ctree import traverse
+
+
+#####################################
+# Creation
+#####################################
 
 
 class DependencyTree(object):
@@ -135,11 +140,13 @@ def sort_arcs(arcs):
 
 
 #####################################
-# Aggregation of arcs
+# Aggregation
+#####################################
 
 
 def traverse_dtree(dtree, head_i, order="pre-order", acc=None):
-    """
+    """Aggregate arcs
+
     Parameters
     ----------
     dtree: DependencyTree
@@ -176,6 +183,8 @@ def traverse_dtree(dtree, head_i, order="pre-order", acc=None):
     return acc
 
 
+#####################################
+# Visualization
 #####################################
 
 
@@ -378,25 +387,30 @@ def _generate_text(textmap, tokens_padded):
 
 
 #####################################
+# Constituent tree <-> Dependency tree
+#####################################
 
 
-def ctree2dtree(tree, func_label_rule=None):
+def ctree2dtree(tree, func_label_rule=None, root_symbol=None):
     """
     Parameters
     ----------
     tyee: NonTerminal or Terminal
     func_label_rule: function: NonTerminal, int, int -> str, optional
+    root_symbol: str or None, default None
 
     Returns
     -------
     DependencyTree
     """
     if (tree.head_token_index is None) or (tree.head_child_index is None):
-        raise ValueError("Please call ``tree.calc_heads(func_head_child_rule)'' before conversion.")
+        raise ValueError("Please call ``calc_heads(func_head_child_rule) function'' before conversion.")
     assert not tree.is_terminal()
 
-    nodes = treetk.traverse(tree, order="post-order", include_terminal=False)
+    # Aggregate non-terminal nodes
+    nodes = traverse(tree, order="post-order", include_terminal=False)
 
+    # Aggregate dependency arcs
     arcs = []
     for node in nodes:
         head_token_index = node.head_token_index
@@ -411,16 +425,16 @@ def ctree2dtree(tree, func_label_rule=None):
             arcs.append((head_token_index, dep_token_index, label))
     tokens = tree.leaves()
 
-    # Add a ROOT symbol to the dependency tree
+    # Add a ROOT symbol to the dependency arcs
+    if root_symbol is None:
+        root_symbol = "<root>"
     arcs = [(h+1, d+1, l) for h,d,l in arcs]
-    arcs.append((0, tree.head_token_index+1, "<root>"))
-    tokens = ["<root>"] + tokens
+    arcs.append((0, tree.head_token_index+1, root_symbol))
+    tokens = [root_symbol] + tokens
 
+    # Generate
     dtree = arcs2dtree(arcs=arcs, tokens=tokens)
     return dtree
-
-
-#####################################
 
 
 def dtree2ctree(dtree):

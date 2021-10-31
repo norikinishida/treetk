@@ -10,7 +10,8 @@ PARENS = [LPAREN, RPAREN]
 
 
 ###########################
-# Text -> S-expression
+# Creation
+###########################
 
 
 def read_sexp(path):
@@ -35,10 +36,6 @@ def read_sexp(path):
             continue
         sexp.extend(tokens)
     return sexp
-
-
-###########################
-# S-expression -> Tree
 
 
 def make_terminal(edu, edu_i, relation, nuclearity):
@@ -215,6 +212,11 @@ def sexp2tree(sexp):
     return tmp_node.children[0]
 
 
+###########################
+# Preprocessing
+###########################
+
+
 def shift_labels(node):
     """
     Parameters
@@ -272,10 +274,6 @@ def tree2str(node, labeled=True):
         return "( %s )" % inner
 
 
-###########################
-# Preprocessing (optional)
-
-
 def binarize(node):
     """
     Parameters
@@ -304,13 +302,11 @@ def _right_branching(nodes):
     """
     Parameters
     ----------
-    nodes: list[T]
-        T -> NonTerminal or Terminal
+    nodes: list[T], where T denotes NonTerminal or Terminal
 
     Returns
     -------
-    list[T]
-        T -> NonTerminal or Terminal
+    list[T], where T denotes NonTerminal or Terminal
     """
     if len(nodes) == 2:
         return nodes
@@ -326,6 +322,7 @@ def _right_branching(nodes):
 
 ###########################
 # Postprocessing (necessary)
+###########################
 
 
 def postprocess(root):
@@ -407,13 +404,14 @@ def assign_heads(root):
 
 ###########################
 # Renaming of relation labels
+###########################
 
 
 class RelationMapper(object):
     """
     A class for mapping between fine-grained relations and coarse-grained classes.
-    Mapping is defined in ./rstdt_relation_mapping.txt
-    We also make mapping from coarse-grained relations to the corresponding abbreviations (defined in ./rstdt_relation_abbreviations.txt).
+    Mapping is defined in ./mapping/*_relation_mapping.txt
+    We also make mapping from coarse-grained relations to the corresponding abbreviations (defined in ./*_relation_abbreviations.txt).
     """
 
     def __init__(self, corpus_name="rstdt"):
@@ -422,21 +420,8 @@ class RelationMapper(object):
         ----------
         corpus_name: str, default "rstdt"
         """
-
-        if corpus_name == "rstdt":
-            mapping_file = "rstdt_relation_mapping.txt"
-            abb_file = "rstdt_relation_abbreviations.txt"
-        elif corpus_name == "rstdt_yung17":
-            mapping_file = "rstdt_yung17_relation_mapping.txt"
-            abb_file = "rstdt_yung17_relation_abbreviations.txt"
-        elif corpus_name == "scidtb":
-            mapping_file = "scidtb_relation_mapping.txt"
-            abb_file = "scidtb_relation_abbreviations.txt"
-        elif corpus_name == "covid19dt":
-            mapping_file = "covid19dt_relation_mapping.txt"
-            abb_file = "covid19dt_relation_abbreviations.txt"
-        else:
-            raise ValueError("Invalid corpus_name=%s" % corpus_name)
+        mapping_file = "./mapping/%s_relation_mapping.txt" % corpus_name
+        abb_file = "./mapping/%s_relation_abbreviations.txt" % corpus_name
 
         self.fine2coarse = {} # {str: str}
         self.coarse2fine = {} # {str: list of str}
@@ -459,13 +444,6 @@ class RelationMapper(object):
             abb = items[1]
             self.coarse2abb[crel] = abb
             self.abb2coarse[abb] = crel
-
-    # def c2f(self, crel):
-    #     """
-    #     :type crel: str
-    #     :rtype: list of str
-    #     """
-    #     return self.coarse2fine[crel]
 
     ###
 
@@ -518,7 +496,8 @@ class RelationMapper(object):
 
 
 def map_relations(root, mode):
-    """
+    """Apply label mapping to each non-terminal node in the tree recursively.
+
     Parametrs
     ---------
     root: NonTerminal or Terminal

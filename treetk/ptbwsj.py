@@ -1,7 +1,10 @@
 from .ll import NonTerminal, Terminal
 
+
 ############################
-# IO
+# Creation
+############################
+
 
 def read_sexps(path, LPAREN="(", RPAREN=")"):
     """
@@ -37,6 +40,7 @@ def read_sexps(path, LPAREN="(", RPAREN=")"):
 
 ############################
 # Preprocessing
+############################
 
 
 PUNCTUATIONS = ["``", "''", ":", ",", ".",
@@ -253,6 +257,7 @@ def remove_repetive_unary_chains(node):
 
 ############################
 # Preprocessing (more optional)
+############################
 
 
 def binarize(node, right_branching=True, special_empty_label=None):
@@ -411,6 +416,7 @@ def convert_unary_chains_to_atomic_nodes(node, special_empty_label):
 
 ############################
 # Postprocessing
+############################
 
 
 def recover_nary_trees_by_removing_special_empty_labels(node, special_empty_label):

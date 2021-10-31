@@ -1,36 +1,35 @@
-####################################
 
-# S-expression -> Constituent tree
-from .treetk import sexp2tree
-from .treetk import tree2sexp
-from .treetk import preprocess
-from .treetk import filter_parens
+# Creation
+from .ctree import sexp2tree
+from .ctree import tree2sexp
+from .ctree import preprocess
+from .ctree import filter_parens
 
 # Aggregation
-from .treetk import traverse
-from .treetk import aggregate_production_rules
-from .treetk import aggregate_spans
-from .treetk import aggregate_composition_spans
-from .treetk import aggregate_constituents
+from .ctree import traverse
+from .ctree import aggregate_production_rules
+from .ctree import aggregate_spans
+from .ctree import aggregate_composition_spans
+from .ctree import aggregate_constituents
 
-# Tree shifting
-from .treetk import left_shift
-from .treetk import right_shift
+# Tree modification
+from .ctree import left_shift
+from .ctree import right_shift
 
 # Label assignment
-from .treetk import assign_labels
+from .ctree import assign_labels
 
 # Checking
-from .treetk import is_completely_binary
+from .ctree import is_completely_binary
 
 # Visualization
-from .treetk import pretty_print
-from .treetk import nltk_pretty_print
-from .treetk import nltk_draw
+from .ctree import pretty_print
+from .ctree import nltk_pretty_print
+from .ctree import nltk_draw
 
 ####################################
 
-# Arcs -> Dependency tree
+# Creation
 from .dtree import arcs2dtree
 from .dtree import hyphens2arcs
 from .dtree import sort_arcs

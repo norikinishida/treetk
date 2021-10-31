@@ -1,10 +1,14 @@
-import sys
-
 import numpy as np
+
+from . import ll
+from . import lu
+from . import ul
+from . import uu
 
 
 ################
-# Conversion (sexp -> tree, or tree -> sexp)
+# Creation
+################
 
 
 def sexp2tree(sexp, with_nonterminal_labels, with_terminal_labels, LPAREN="(", RPAREN=")"):
@@ -22,21 +26,16 @@ def sexp2tree(sexp, with_nonterminal_labels, with_terminal_labels, LPAREN="(", R
     NonTerminal
     """
     if with_nonterminal_labels and with_terminal_labels:
-        from . import ll
         tree = ll.sexp2tree(sexp, LPAREN=LPAREN, RPAREN=RPAREN)
     elif with_nonterminal_labels and not with_terminal_labels:
-        from . import lu
         tree = lu.sexp2tree(sexp, LPAREN=LPAREN, RPAREN=RPAREN)
     elif not with_nonterminal_labels and with_terminal_labels:
-        from . import ul
         tree = ul.sexp2tree(sexp, LPAREN=LPAREN, RPAREN=RPAREN)
     elif not with_nonterminal_labels and not with_terminal_labels:
-        from . import uu
         tree = uu.sexp2tree(sexp, LPAREN=LPAREN, RPAREN=RPAREN)
     else:
-        print("Unsupported argument pairs: with_nonterminal_labels=%s, with_terminal_labels=%s" % \
-                (with_nonterminal_labels, with_terminal_labels))
-        sys.exit(-1)
+        raise Exception("Unsupported argument pairs: with_nonterminal_labels=%s, with_terminal_labels=%s" % \
+                            (with_nonterminal_labels, with_terminal_labels))
     return tree
 
 
@@ -113,23 +112,23 @@ def filter_parens(sexp, LPAREN="(", RPAREN=")"):
 
 
 ################
-# Aggregation of nodes
+# Aggregation
+################
 
 
 def traverse(node, order="pre-order", include_terminal=True, acc=None):
-    """
+    """Aggregate nodes.
+
     Parameters
     ----------
     node: NonTerminal or Terminal
     order: str, default "pre-order"
     include_terminal: bool, default True
-    acc: list[T] or None, default None
-        T -> NonTerminal or Terminal
+    acc: list[T] or None, where T denotes NonTerminal or Terminal, default None
 
     Returns
     -------
-    list[T]
-        T -> NonTerminal or Terminal
+    list[T], where T denotes NonTerminal or Terminal
     """
     if acc is None:
         acc = []
@@ -152,17 +151,14 @@ def traverse(node, order="pre-order", include_terminal=True, acc=None):
         # Process the current node
         acc.append(node)
     else:
-        raise ValueError("Invalid order=%s" % order)
+        raise ValueError("Invalid order: %s" % order)
 
     return acc
 
 
-################
-# Aggregation of production rules
-
-
 def aggregate_production_rules(root, order="pre-order", include_terminal=True):
-    """
+    """Aggregate production rules.
+
     Parameters
     ----------
     root: NonTerminal
@@ -172,6 +168,21 @@ def aggregate_production_rules(root, order="pre-order", include_terminal=True):
     Returns
     -------
     list[tuple[str]]
+
+    Examples
+    --------
+    >>> sexp = "(S (NP (DT a) (NN cat)) (VP (VBZ bites) (NP (DT a) (NN mouse))))"
+    >>> ctree = treetk.sexp2tree(treetk.preprocess(sexp))
+    >>> treetk.aggregate_production_rules(ctree, include_terminal=True, order="pre-order")
+	[('S', 'NP', 'VP'),
+	 ('NP', 'DT', 'NN'),
+	 ('DT', 'a'),
+	 ('NN', 'cat'),
+	 ('VP', 'VBZ', 'NP'),
+	 ('VBZ', 'bites'),
+	 ('NP', 'DT', 'NN'),
+	 ('DT', 'a'),
+	 ('NN', 'mouse')]
     """
     # NOTE: only for trees with nonterminal labels
     assert root.with_nonterminal_labels
@@ -199,12 +210,9 @@ def aggregate_production_rules(root, order="pre-order", include_terminal=True):
     return rules
 
 
-################
-# Aggregation of spans
-
-
 def aggregate_spans(root, include_terminal=False, order="pre-order"):
-    """
+    """Aggregate spans.
+
     Parameters
     ----------
     root: NonTerminal or Terminal
@@ -214,6 +222,21 @@ def aggregate_spans(root, include_terminal=False, order="pre-order"):
     Returns
     -------
     list[(int,int,str)] or list[(int,int)]
+
+    Examples
+    --------
+    >>> sexp = "(S (NP (DT a) (NN cat)) (VP (VBZ bites) (NP (DT a) (NN mouse))))"
+    >>> ctree = treetk.sexp2tree(treetk.preprocess(sexp))
+    >>> treetk.aggregate_spans(ctree, include_terminal=True, order="pre-order")
+    [(0, 4, 'S')
+     (0, 1, 'NP')
+     (0, 0, 'DT')
+     (1, 1, 'NN')
+     (2, 4, 'VP')
+     (2, 2, 'VBZ')
+     (3, 4, 'NP')
+     (3, 3, 'DT')
+     (4, 4, 'NN')]
     """
     nodes = traverse(root, order=order, include_terminal=include_terminal, acc=None)
 
@@ -238,7 +261,8 @@ def aggregate_spans(root, include_terminal=False, order="pre-order"):
 
 
 def aggregate_composition_spans(root, order="pre-order", binary=True):
-    """
+    """Aggregate composed span pairs
+
     Parameters
     ----------
     root: NonTerminal or Terminal
@@ -248,6 +272,16 @@ def aggregate_composition_spans(root, order="pre-order", binary=True):
     Returns
     -------
     list[[(int,int), (int,int), str]] or list[[(int,int), (int,int)]]
+
+     Examples
+    --------
+    >>> sexp = "(S (NP (DT a) (NN cat)) (VP (VBZ bites) (NP (DT a) (NN mouse))))"
+    >>> ctree = treetk.sexp2tree(treetk.preprocess(sexp))
+    >>> treetk.aggregate_composition_spans(ctree, order="pre-order", binary=True)
+	[[(0, 1), (2, 4), 'S'],
+	 [(0, 0), (1, 1), 'NP'],
+	 [(2, 2), (3, 4), 'VP'],
+	 [(3, 3), (4, 4), 'NP']]
     """
     nodes = traverse(root, order=order, include_terminal=False, acc=None)
 
@@ -268,12 +302,9 @@ def aggregate_composition_spans(root, order="pre-order", binary=True):
     return comp_spans
 
 
-################
-# Aggregation of constituents
-
-
 def aggregate_constituents(root, order="pre-order"):
-    """
+    """Aggregate constituents.
+
     Parameters
     ----------
     root: NonTerminal or Terminal
@@ -282,6 +313,16 @@ def aggregate_constituents(root, order="pre-order"):
     Returns
     -------
     list[list[str]]
+
+    Examples
+    --------
+    >>> sexp = "(S (NP (DT a) (NN cat)) (VP (VBZ bites) (NP (DT a) (NN mouse))))"
+    >>> ctree = treetk.sexp2tree(treetk.preprocess(sexp))
+    >>> treetk.aggregate_constituents(ctree, order="pre-order")
+	[['a', 'cat', 'bites', 'a', 'mouse'],
+	 ['a', 'cat'],
+	 ['bites', 'a', 'mouse'],
+	 ['a', 'mouse']]
     """
     nodes = traverse(root, order=order, include_terminal=False, acc=None)
 
@@ -293,7 +334,8 @@ def aggregate_constituents(root, order="pre-order"):
 
 
 ################
-# Tree shifting
+# Tree modification
+################
 
 
 def left_shift(node):
@@ -350,6 +392,7 @@ def right_shift(node):
 
 ################
 # Label assignment
+################
 
 
 def assign_labels(node, span2label, with_terminal_labels):
@@ -385,6 +428,7 @@ def assign_labels(node, span2label, with_terminal_labels):
 
 ################
 # Checking
+################
 
 
 def is_completely_binary(node):
@@ -409,6 +453,7 @@ def is_completely_binary(node):
 
 ################
 # Visualization
+################
 
 
 LEAF_WINDOW = 8
