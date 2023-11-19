@@ -495,7 +495,7 @@ class RelationMapper(object):
         return crels, frels
 
 
-def map_relations(root, mode):
+def map_relations(root, mode, corpus_name="rstdt"):
     """Apply label mapping to each non-terminal node in the tree recursively.
 
     Parametrs
@@ -507,7 +507,7 @@ def map_relations(root, mode):
     -------
     NonTermina or Terminal
     """
-    relation_mapper = RelationMapper()
+    relation_mapper = RelationMapper(corpus_name=corpus_name)
     map_func = None
     if mode == "f2c":
         map_func = relation_mapper.f2c

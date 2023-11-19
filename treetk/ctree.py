@@ -465,7 +465,7 @@ VERTICAL = 1
 HORIZONTAL = 2
 
 
-def pretty_print(tree, return_str=False, LPAREN="(", RPAREN=")"):
+def pretty_print(tree, return_str=False, LPAREN="(", RPAREN=")", separate_leaves=False):
     """
     Parameters
     ----------
@@ -480,7 +480,7 @@ def pretty_print(tree, return_str=False, LPAREN="(", RPAREN=")"):
     """
     # Tokens with padding
     tokens = tree.leaves()
-    tokens_padded = [_pad_token(token) for token in tokens]
+    tokens_padded = [_pad_token(token, separate_leaves=separate_leaves) for token in tokens]
     # Create a textmap.
     textmap = _init_textmap(tokens_padded, tree)
     # Edit the textmap.
@@ -494,7 +494,7 @@ def pretty_print(tree, return_str=False, LPAREN="(", RPAREN=")"):
         print(text)
 
 
-def _pad_token(token):
+def _pad_token(token, separate_leaves):
     """
     Parameters
     ----------
@@ -507,7 +507,8 @@ def _pad_token(token):
     token = " " + token + " "
     while len(token) <= LEAF_WINDOW:
         token = " " + token + " "
-    token = "[" + token[1:-1] + "]"
+    if separate_leaves:
+        token = "[" + token[1:-1] + "]"
     return token
 
 

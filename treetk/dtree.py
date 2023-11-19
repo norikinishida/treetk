@@ -200,7 +200,7 @@ HORIZONTAL = 3
 # LABEL_END = 5
 
 
-def pretty_print_dtree(dtree, return_str=False):
+def pretty_print_dtree(dtree, return_str=False, separate_leaves=False):
     """
     Parameters
     ----------
@@ -217,7 +217,7 @@ def pretty_print_dtree(dtree, return_str=False):
 
     # Tokens with padding
     tokens = dtree.tokens
-    tokens_padded = [_pad_token(token) for token in tokens]
+    tokens_padded = [_pad_token(token, separate_leaves=separate_leaves) for token in tokens]
     # Compute heights of the arcs.
     arc2height = _get_arc2height(arcs_unlabeled)
     # Create a textmap.
@@ -232,7 +232,7 @@ def pretty_print_dtree(dtree, return_str=False):
         print(text)
 
 
-def _pad_token(token):
+def _pad_token(token, separate_leaves):
     """
     Parameters
     ----------
@@ -245,7 +245,8 @@ def _pad_token(token):
     token = " " + token + " "
     while len(token) <= LEAF_WINDOW:
         token = " " + token + " "
-    token = "[" + token[1:-1] + "]"
+    if separate_leaves:
+        token = "[" + token[1:-1] + "]"
     return token
 
 
